@@ -1,0 +1,53 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:stable
+    
+    steps:
+      - checkout
+      
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y cmake g++ libsfml-dev
+      
+      - run:
+          name: Show versions
+          command: |
+            cmake --version
+            g++ --version
+      
+      - run:
+          name: Configure project
+          command: |
+            mkdir build
+            cd build
+            cmake ..
+      
+      - run:
+          name: Build logic library
+          command: |
+            cd build
+            make GameLogic
+      
+      - run:
+          name: Build full game
+          command: |
+            cd build
+            make PacManGame
+      
+      - run:
+          name: Verify outputs
+          command: |
+            ls -lh build/logic/libGameLogic.a
+            ls -lh build/representation/PacManGame
+            echo "✅ All builds successful!"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
