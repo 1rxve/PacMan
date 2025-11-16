@@ -4,41 +4,55 @@ jobs:
   build:
     docker:
       - image: cimg/base:stable
-    
+
     steps:
       - checkout
-      
+
+      # Install modern CMake 3.28
+      - run:
+          name: Install CMake 3.28
+          command: |
+            wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+            sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+            sudo apt-get update
+            sudo apt-get install -y cmake
+
+      # Install other dependencies
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get update
-            sudo apt-get install -y cmake g++ libsfml-dev
-      
+            sudo apt-get install -y g++ libsfml-dev
+
+      # Verify versions
       - run:
           name: Show versions
           command: |
             cmake --version
             g++ --version
-      
+
+      # Configure project
       - run:
           name: Configure project
           command: |
             mkdir build
             cd build
             cmake ..
-      
+
+      # Build logic library
       - run:
           name: Build logic library
           command: |
             cd build
             make GameLogic
-      
+
+      # Build full game
       - run:
           name: Build full game
           command: |
             cd build
             make PacManGame
-      
+
+      # Verify outputs
       - run:
           name: Verify outputs
           command: |
