@@ -3,7 +3,7 @@
 # ============================================
 
 # Zoek SFML (ALLEEN hier!)
-find_package(SFML 2.6 COMPONENTS graphics window system REQUIRED)
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Verzamel alle representation source files
 set(REPRESENTATION_SOURCES
