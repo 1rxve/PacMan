@@ -2,7 +2,12 @@
 # REPRESENTATION (SFML + Logic Library)
 # ============================================
 
-# Zoek SFML (ALLEEN hier!)
+# SFML voor Windows - ALLEEN het pad instellen
+if(WIN32)
+    set(SFML_DIR "C:/SFML-2.6.1/lib/cmake/SFML")
+endif()
+
+# Zoek SFML
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Verzamel alle representation source files
@@ -34,3 +39,12 @@ target_include_directories(PacManGame PRIVATE
 target_compile_options(PacManGame PRIVATE
         -Wall -Wextra -Wpedantic
 )
+
+# Kopieer DLL's NA het maken van PacManGame target
+if(WIN32)
+    add_custom_command(TARGET PacManGame POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "C:/SFML-2.6.1/bin"
+            $<TARGET_FILE_DIR:PacManGame>
+    )
+endif()
