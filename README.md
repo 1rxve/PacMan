@@ -17,10 +17,16 @@ make PacManGame
 
 ## 📁 Structure
 ```
-├── logic/              # Game logic (no SFML)
-├── representation/     # SFML visualization
-├── resources/          # Assets
-└── .circleci/          # CI configuration
+├── logic/                      # Game logic library (no SFML)
+│   ├── include/
+│   └── src/
+├── representation/             # SFML visualization
+│   ├── include/
+│   └── src/
+│       └── main.cpp
+├── resources/                  # Assets
+└── .circleci/
+    └── config.yml
 ```
 
 ## ✅ CI/CD
