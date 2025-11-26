@@ -1,25 +1,23 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include "logic/entities/PacManModel.h"
+
 
 int main() {
     // Create window
     sf::RenderWindow window(sf::VideoMode(800, 600), "PacMan Game - SFML Test");
     window.setFramerateLimit(60);
 
-    // Create a simple circle (test shape)
-    sf::CircleShape pacman(50.f);
-    pacman.setFillColor(sf::Color::Yellow);
-    pacman.setPosition(375.f, 275.f);
+    // Maak PacManModel (in NORMALIZED coordinates)
+    logic::PacManModel pacman(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
 
-    // Velocity for movement
-    sf::Vector2f velocity(0.f, 0.f);
-    float speed = 200.f; // pixels per second
+    // Create a simple circle (test shape)
+    sf::CircleShape circle(25.f);
+    circle.setFillColor(sf::Color::Yellow);
 
     // Clock for deltaTime
     sf::Clock clock;
 
-    std::cout << "SFML working! Use arrow keys to move the circle.\n";
-    std::cout << "Press ESC to close.\n";
 
     // Main game loop
     while (window.isOpen()) {
@@ -32,47 +30,41 @@ int main() {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-
-            if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Escape) {
-                    window.close();
-                }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                window.close();
             }
         }
 
-        // Input handling (continuous)
-        velocity = sf::Vector2f(0.f, 0.f);
-
+        // Input handling - zet nextDirection op PacManModel
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            velocity.x = -speed;
+            pacman.setNextDirection(logic::Direction::LEFT);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            velocity.x = speed;
+            pacman.setNextDirection(logic::Direction::RIGHT);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            velocity.y = -speed;
+            pacman.setNextDirection(logic::Direction::UP);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            velocity.y = speed;
+            pacman.setNextDirection(logic::Direction::DOWN);
         }
 
-        // Update position
-        pacman.move(velocity * dt);
+        // Update PacManModel (dit beweegt hem in normalized coords)
+        pacman.update(dt);
 
-        // Keep within bounds
-        sf::Vector2f pos = pacman.getPosition();
-        if (pos.x < 0) pacman.setPosition(0, pos.y);
-        if (pos.x > 700) pacman.setPosition(700, pos.y);
-        if (pos.y < 0) pacman.setPosition(pos.x, 0);
-        if (pos.y > 500) pacman.setPosition(pos.x, 500);
+        // Convert normalized → pixel voor visualisatie
+        float pixelX = (pacman.getX() + 1.0f) * 400.0f;
+        float pixelY = (pacman.getY() + 1.0f) * 300.0f;
+
+        // Positioneer circle op basis van PacMan's positie
+        circle.setPosition(pixelX - 25.f, pixelY - 25.f);  // -radius voor centrum
 
         // Render
         window.clear(sf::Color::Black);
-        window.draw(pacman);
+        window.draw(circle);
         window.display();
     }
 
-    std::cout << "Window closed. Goodbye!\n";
     return 0;
 }
 

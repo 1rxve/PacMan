@@ -1,33 +1,34 @@
 #include "../../include/logic/entities/EntityModel.h"
+namespace logic {
 
-logic::EntityModel::EntityModel(float x, float y, float width, float height)
+EntityModel::EntityModel(float x, float y, float width, float height)
     : x(x), y(y), width(width), height(height) {
 }
 
-float logic::EntityModel::getX() const {
+float EntityModel::getX() const {
     return x;
 }
 
-float logic::EntityModel::getY() const {
+float EntityModel::getY() const {
     return y;
 }
 
-float logic::EntityModel::getWidth() const {
+float EntityModel::getWidth() const {
     return width;
 }
 
-float logic::EntityModel::getHeight() const {
+float EntityModel::getHeight() const {
     return height;
 }
 
 
-void logic::EntityModel::setPosition(float newX, float newY) {
+void EntityModel::setPosition(float newX, float newY) {
     x = newX;
     y = newY;
 }
 
 // Collision detecting
-bool logic::EntityModel::intersects(const EntityModel& other) const {
+bool EntityModel::intersects(const EntityModel& other) const {
     float left1 = x - width / 2.0f;
     float right1 = x + width / 2.0f;
     float top1 = y - height / 2.0f;
@@ -40,4 +41,10 @@ bool logic::EntityModel::intersects(const EntityModel& other) const {
 
     return !(right1 < left2 || left1 > right2 ||
              bottom1 < top2 || top1 > bottom2);
+}
+
+    EntityModel::~EntityModel() {
+
+    }
+
 }
