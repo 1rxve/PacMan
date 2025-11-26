@@ -1,36 +1,28 @@
-# ============================================
-# GAME LOGIC LIBRARY (GEEN SFML!)
-# ============================================
+# Optioneel maar aanbevolen
+cmake_minimum_required(VERSION 3.28)
+project(GameLogic)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Verzamel alle logic source files
+# Source files
 set(LOGIC_SOURCES
-        # src/entities/EntityModel.cpp
-        # src/entities/PacMan.cpp
-        # src/entities/Ghost.cpp
-        # src/world/World.cpp
-        # ... (voeg later toe als je ze maakt)
+        src/entities/EntityModel.cpp
 )
 
-# Als er nog geen .cpp files zijn, maak een dummy library
-if(NOT LOGIC_SOURCES)
-    # Dummy source om library te kunnen maken zonder files
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp "// Dummy file for empty library\n")
-    set(LOGIC_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp)
-endif()
+# Header files (IDE support)
+set(LOGIC_HEADERS
+        include/logic/entities/EntityModel.h
+)
 
-# Maak static library
-add_library(GameLogic STATIC ${LOGIC_SOURCES})
+# Create library
+add_library(GameLogic STATIC ${LOGIC_SOURCES} ${LOGIC_HEADERS})
 
-# Public include directory (zodat representation het kan gebruiken)
+# Include directories
 target_include_directories(GameLogic PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# BELANGRIJK: GEEN find_package(SFML) hier!
-# GEEN SFML links!
-# Deze library moet compileren zonder SFML!
-
-# Optioneel: warnings
+# Warnings
 target_compile_options(GameLogic PRIVATE
         -Wall -Wextra -Wpedantic
 )

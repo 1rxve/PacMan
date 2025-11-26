@@ -1,0 +1,43 @@
+#include "../../include/logic/entities/EntityModel.h"
+
+logic::EntityModel::EntityModel(float x, float y, float width, float height)
+    : x(x), y(y), width(width), height(height) {
+}
+
+float logic::EntityModel::getX() const {
+    return x;
+}
+
+float logic::EntityModel::getY() const {
+    return y;
+}
+
+float logic::EntityModel::getWidth() const {
+    return width;
+}
+
+float logic::EntityModel::getHeight() const {
+    return height;
+}
+
+
+void logic::EntityModel::setPosition(float newX, float newY) {
+    x = newX;
+    y = newY;
+}
+
+// Collision detecting
+bool logic::EntityModel::intersects(const EntityModel& other) const {
+    float left1 = x - width / 2.0f;
+    float right1 = x + width / 2.0f;
+    float top1 = y - height / 2.0f;
+    float bottom1 = y + height / 2.0f;
+
+    float left2 = other.x - other.width / 2.0f;
+    float right2 = other.x + other.width / 2.0f;
+    float top2 = other.y - other.height / 2.0f;
+    float bottom2 = other.y + other.height / 2.0f;
+
+    return !(right1 < left2 || left1 > right2 ||
+             bottom1 < top2 || top1 > bottom2);
+}

@@ -1,30 +1,26 @@
-# ============================================
-# REPRESENTATION (SFML + Logic Library)
-# ============================================
+# Optioneel maar aanbevolen
+cmake_minimum_required(VERSION 3.28)
+project(PacManGame-Representation)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# SFML voor Windows - ALLEEN het pad instellen
+# Find SFML
 if(WIN32)
     set(SFML_DIR "C:/SFML-2.6.1/lib/cmake/SFML")
 endif()
-
-# Zoek SFML
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
-# Verzamel alle representation source files
+# Source files
 set(REPRESENTATION_SOURCES
         src/main.cpp
-        # src/Game.cpp
-        # src/Camera.cpp
-        # src/views/PacManView.cpp
-        # ... (voeg later toe)
 )
 
-# Maak executable
+# Create executable
 add_executable(PacManGame ${REPRESENTATION_SOURCES})
 
-# Link met Logic library + SFML
+# Link libraries
 target_link_libraries(PacManGame PRIVATE
-        GameLogic              # Onze logic library!
+        GameLogic
         sfml-graphics
         sfml-window
         sfml-system
@@ -35,12 +31,12 @@ target_include_directories(PacManGame PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Optioneel: warnings
+# Warnings
 target_compile_options(PacManGame PRIVATE
         -Wall -Wextra -Wpedantic
 )
 
-# Kopieer DLL's NA het maken van PacManGame target
+# Copy SFML DLLs (Windows)
 if(WIN32)
     add_custom_command(TARGET PacManGame POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
