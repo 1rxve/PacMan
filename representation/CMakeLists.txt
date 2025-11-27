@@ -13,6 +13,7 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 # Source files
 set(REPRESENTATION_SOURCES
         src/main.cpp
+        src/Camera.cpp
 )
 
 # Create executable

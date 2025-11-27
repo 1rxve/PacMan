@@ -1,4 +1,4 @@
-#include "../../include/logic/entities/EntityModel.h"
+#include "logic/entities/EntityModel.h"
 namespace logic {
 
 EntityModel::EntityModel(float x, float y, float width, float height)
