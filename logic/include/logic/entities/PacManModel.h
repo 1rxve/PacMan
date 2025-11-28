@@ -4,16 +4,15 @@
 #include "EntityModel.h"
 namespace logic {
 
-    enum Direction {
-        NONE,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
-    };
+enum Direction {
+    NONE,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+};
 
 class PacManModel : public EntityModel {
-public:
 private:
     float speed;
     int lives;

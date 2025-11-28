@@ -8,12 +8,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(LOGIC_SOURCES
         src/entities/EntityModel.cpp
         src/entities/PacManModel.cpp
+        src/world/World.cpp
 )
 
 # Header files (IDE support)
 set(LOGIC_HEADERS
         include/logic/entities/EntityModel.h
         include/logic/entities/PacManModel.h
+        include/logic/world/World.h
 )
 
 # Create library

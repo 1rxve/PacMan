@@ -2,6 +2,7 @@
 #include <iostream>
 #include "logic/entities/PacManModel.h"
 #include "representation/Camera.h"
+#include "logic/world/World.h"
 
 
 int main() {
@@ -12,8 +13,14 @@ int main() {
     // Maak Camera instantie
     representation::Camera camera(800.0f, 600.0f);
 
-    // Maak PacManModel (in NORMALIZED coordinates)
-    logic::PacManModel pacman(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
+    // Maak world
+    logic::World world;
+
+    // Maak PacMan en onthoud pointer voor rendering
+    auto pacmanPtr = new logic::PacManModel(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
+    logic::PacManModel* pacman = pacmanPtr;  // Raw pointer voor toegang
+
+    world.addEntity(std::unique_ptr<logic::EntityModel>(pacmanPtr));
 
     // Create a simple circle (test shape)
     sf::CircleShape circle(25.f);
@@ -41,24 +48,24 @@ int main() {
 
         // Input handling - zet nextDirection op PacManModel
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            pacman.setNextDirection(logic::Direction::LEFT);
+            pacman->setNextDirection(logic::Direction::LEFT);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            pacman.setNextDirection(logic::Direction::RIGHT);
+            pacman->setNextDirection(logic::Direction::RIGHT);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            pacman.setNextDirection(logic::Direction::UP);
+            pacman->setNextDirection(logic::Direction::UP);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            pacman.setNextDirection(logic::Direction::DOWN);
+            pacman->setNextDirection(logic::Direction::DOWN);
         }
 
         // Update PacManModel (dit beweegt hem in normalized coords)
-        pacman.update(dt);
+        world.update(dt);
 
         // Convert normalized → pixel voor visualisatie
-        float pixelX = camera.normalizedToPixelX(pacman.getX());
-        float pixelY = camera.normalizedToPixelY(pacman.getY());
+        float pixelX = camera.normalizedToPixelX(pacman->getX());
+        float pixelY = camera.normalizedToPixelY(pacman->getY());
 
         // Positioneer circle op basis van PacMan's positie
         circle.setPosition(pixelX - 25.f, pixelY - 25.f);  // -radius voor centrum

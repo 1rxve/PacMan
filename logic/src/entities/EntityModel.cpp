@@ -5,6 +5,10 @@ EntityModel::EntityModel(float x, float y, float width, float height)
     : x(x), y(y), width(width), height(height) {
 }
 
+EntityModel::~EntityModel() {
+
+}
+
 float EntityModel::getX() const {
     return x;
 }
@@ -43,8 +47,6 @@ bool EntityModel::intersects(const EntityModel& other) const {
              bottom1 < top2 || top1 > bottom2);
 }
 
-    EntityModel::~EntityModel() {
 
-    }
 
 }
