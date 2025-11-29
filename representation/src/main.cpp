@@ -3,39 +3,29 @@
 #include "logic/entities/PacManModel.h"
 #include "representation/Camera.h"
 #include "logic/world/World.h"
-
+#include "representation/views/PacManView.h"  // <-- Nieuw
 
 int main() {
-    // Create window
     sf::RenderWindow window(sf::VideoMode(800, 600), "PacMan Game - SFML Test");
     window.setFramerateLimit(60);
 
-    // Maak Camera instantie
     representation::Camera camera(800.0f, 600.0f);
 
-    // Maak world
     logic::World world;
 
-    // Maak PacMan en onthoud pointer voor rendering
     auto pacmanPtr = new logic::PacManModel(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
-    logic::PacManModel* pacman = pacmanPtr;  // Raw pointer voor toegang
+    logic::PacManModel* pacman = pacmanPtr;
 
     world.addEntity(std::unique_ptr<logic::EntityModel>(pacmanPtr));
 
-    // Create a simple circle (test shape)
-    sf::CircleShape circle(25.f);
-        circle.setFillColor(sf::Color::Yellow);
+    // Maak PacManView
+    representation::PacManView pacmanView(pacman);
 
-    // Clock for deltaTime
     sf::Clock clock;
 
-
-    // Main game loop
     while (window.isOpen()) {
-        // Delta time
         float dt = clock.restart().asSeconds();
 
-        // Event handling
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -46,7 +36,6 @@ int main() {
             }
         }
 
-        // Input handling - zet nextDirection op PacManModel
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
             pacman->setNextDirection(logic::Direction::LEFT);
         }
@@ -60,23 +49,13 @@ int main() {
             pacman->setNextDirection(logic::Direction::DOWN);
         }
 
-        // Update PacManModel (dit beweegt hem in normalized coords)
         world.update(dt);
+        pacmanView.update(dt);  // Update animatie
 
-        // Convert normalized → pixel voor visualisatie
-        float pixelX = camera.normalizedToPixelX(pacman->getX());
-        float pixelY = camera.normalizedToPixelY(pacman->getY());
-
-        // Positioneer circle op basis van PacMan's positie
-        circle.setPosition(pixelX - 25.f, pixelY - 25.f);  // -radius voor centrum
-
-        // Render
         window.clear(sf::Color::Black);
-        window.draw(circle);
+        pacmanView.draw(window, camera);  // Teken PacMan
         window.display();
     }
 
     return 0;
 }
-
-//

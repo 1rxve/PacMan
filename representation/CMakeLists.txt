@@ -14,6 +14,8 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 set(REPRESENTATION_SOURCES
         src/main.cpp
         src/Camera.cpp
+        src/views/PacManView.cpp
+        include/representation/views/PacManView.h
 )
 
 # Create executable
