@@ -1,8 +1,10 @@
 #ifndef PACMANGAME_ENTITYMODEL_H
 #define PACMANGAME_ENTITYMODEL_H
 
+#include "logic/patterns/Subject.h"
+
 namespace logic {
-    class EntityModel {
+    class EntityModel : public Subject {
     protected:
         float x;
         float y;

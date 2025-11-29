@@ -6,6 +6,6 @@ namespace logic {
     }
 
     void WallModel::update(float /*deltaTime*/) {
-
+        notify();
     }
 }

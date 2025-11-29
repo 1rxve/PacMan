@@ -37,6 +37,8 @@ namespace logic {
         }
 
         setPosition(newX, newY);
+
+        notify();
     }
 
     int PacManModel::getLives() const {
