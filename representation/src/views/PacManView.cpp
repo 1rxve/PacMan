@@ -2,9 +2,8 @@
 #include <iostream>
 
 namespace representation {
-
     PacManView::PacManView(logic::PacManModel *model)
-            : model(model), animationTimer(0.0f), frameIndex(0) {
+        : model(model), animationTimer(0.0f), frameIndex(0) {
         if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
             std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
         }
@@ -20,8 +19,7 @@ namespace representation {
             animationTimer = 0.0f;
 
             int currentFrame = frames[frameIndex];
-            SpriteRect rect = {853, 5, 33, 33};  // Default waarde
-
+            SpriteRect rect = {853, 5, 33, 33}; // Default waarde
 
 
             switch (model->getCurrentDirection()) {
@@ -71,7 +69,6 @@ namespace representation {
             }
 
             sprite.setTextureRect(sf::IntRect(rect.x, rect.y, rect.width, rect.height));
-
         }
     }
 
@@ -84,5 +81,4 @@ namespace representation {
 
         window.draw(sprite);
     }
-
 }
