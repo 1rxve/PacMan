@@ -7,7 +7,10 @@
 
 namespace representation {
     struct SpriteRect {
-        int x, y, width, height;
+        int x;
+        int y;
+        int width;
+        int height;
     };
 
     class PacManView {

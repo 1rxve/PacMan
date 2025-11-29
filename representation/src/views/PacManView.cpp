@@ -3,7 +3,9 @@
 
 namespace representation {
     PacManView::PacManView(logic::PacManModel *model)
-        : model(model), animationTimer(0.0f), frameIndex(0) {
+        : model(model),
+        animationTimer(0.0f),
+        frameIndex(0) {
         if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
             std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
         }

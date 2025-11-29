@@ -3,7 +3,7 @@
 #include "logic/entities/PacManModel.h"
 #include "representation/Camera.h"
 #include "logic/world/World.h"
-#include "representation/views/PacManView.h"  // <-- Nieuw
+#include "representation/views/PacManView.h"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(800, 600), "PacMan Game - SFML Test");
@@ -12,6 +12,8 @@ int main() {
     representation::Camera camera(800.0f, 600.0f);
 
     logic::World world;
+
+    world.loadMap("resources/maps/test_map.txt");
 
     auto pacmanPtr = new logic::PacManModel(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
     logic::PacManModel* pacman = pacmanPtr;

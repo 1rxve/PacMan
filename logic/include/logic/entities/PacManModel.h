@@ -17,16 +17,13 @@ namespace logic {
         float speed;
         int lives;
 
-
         Direction currentDirection;
         Direction nextDirection;
 
     public:
         PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
-        Direction getCurrentDirection() const;
-
-        void setNextDirection(Direction direction);
+        void update(float deltaTime) override;
 
         int getLives() const;
 
@@ -34,9 +31,11 @@ namespace logic {
 
         float getSpeed() const;
 
+        Direction getCurrentDirection() const;
+
         void setSpeed(float speed);
 
-        void update(float deltaTime) override;
+        void setNextDirection(Direction direction);
     };
 }
 

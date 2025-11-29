@@ -2,7 +2,8 @@
 
 namespace representation {
     Camera::Camera(float windowWidth, float windowHeight)
-        : windowWidth(windowWidth), windowHeight(windowHeight) {
+        : windowWidth(windowWidth),
+        windowHeight(windowHeight) {
     }
 
     float Camera::normalizedToPixelX(float normalizedX) const {

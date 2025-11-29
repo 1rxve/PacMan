@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <fstream>
+#include <iostream>
 #include "logic/entities/EntityModel.h"
 
 namespace logic {
@@ -13,11 +16,13 @@ namespace logic {
     public:
         World() = default;
 
-        void addEntity(std::unique_ptr<EntityModel> entity);
-
         void update(float deltaTime);
 
+        void addEntity(std::unique_ptr<EntityModel> entity);
+
         void checkCollisions();
+
+        void loadMap(const std::string& filename);
     };
 }
 

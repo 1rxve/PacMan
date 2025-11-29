@@ -9,6 +9,7 @@ set(LOGIC_SOURCES
         src/entities/EntityModel.cpp
         src/entities/PacManModel.cpp
         src/world/World.cpp
+        src/entities/WallModel.cpp
 )
 
 # Header files (IDE support)
@@ -16,6 +17,7 @@ set(LOGIC_HEADERS
         include/logic/entities/EntityModel.h
         include/logic/entities/PacManModel.h
         include/logic/world/World.h
+        include/logic/entities/WallModel.h
 )
 
 # Create library

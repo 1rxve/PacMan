@@ -14,6 +14,8 @@ namespace logic {
 
         virtual ~EntityModel();
 
+        virtual void update(float deltaTime) = 0;
+
         float getX() const;
 
         float getY() const;
@@ -23,8 +25,6 @@ namespace logic {
         float getHeight() const;
 
         void setPosition(float newX, float newY);
-
-        virtual void update(float deltaTime) = 0;
 
         // Collision detection
         bool intersects(const EntityModel &other) const;

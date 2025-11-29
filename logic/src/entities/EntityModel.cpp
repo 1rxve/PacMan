@@ -2,7 +2,10 @@
 
 namespace logic {
     EntityModel::EntityModel(float x, float y, float width, float height)
-        : x(x), y(y), width(width), height(height) {
+        : x(x),
+          y(y),
+          width(width),
+          height(height) {
     }
 
     EntityModel::~EntityModel() {

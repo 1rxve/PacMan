@@ -51,12 +51,12 @@ namespace logic {
         return speed;
     }
 
-    void PacManModel::setSpeed(float speed) {
-        PacManModel::speed = speed;
-    }
-
     Direction PacManModel::getCurrentDirection() const {
         return currentDirection;
+    }
+
+    void PacManModel::setSpeed(float speed) {
+        PacManModel::speed = speed;
     }
 
     void PacManModel::setNextDirection(Direction direction) {
