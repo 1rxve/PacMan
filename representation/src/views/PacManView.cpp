@@ -61,15 +61,17 @@ namespace representation {
             sprite.setTextureRect(sf::IntRect(rect.x, rect.y, rect.width, rect.height));
         }
 
-        // Teken PacMan (center-based zoals altijd)
         float centerX = pacManModel->getX();
         float centerY = pacManModel->getY();
 
-        float pixelX = camera->normalizedToPixelX(centerX);
-        float pixelY = camera->normalizedToPixelY(centerY);
+        // Convert center naar pixels
+        float pixelCenterX = camera->normalizedToPixelX(centerX);
+        float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-        sprite.setPosition(pixelX, pixelY);
-        sprite.setScale(2.0f, 2.0f);
+        // Sprite origin naar center zetten (sprite is 50x50, scaled 2x = 100x100)
+        sprite.setOrigin(25.0f, 25.0f);  // Half van 50x50
+        sprite.setPosition(pixelCenterX, pixelCenterY);
+        sprite.setScale(1.0f, 1.0f);
 
         window->draw(sprite);
     }

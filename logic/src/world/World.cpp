@@ -50,19 +50,25 @@ namespace logic {
         int height = mapLines.size();
         int width = mapLines[0].length();
 
+        // Cell dimensions
+        float cellWidth = 2.0f / width;
+        float cellHeight = 2.0f / height;
+
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 char symbol = mapLines[row][col];
 
-                float normalizedX = -1.0f + (static_cast<float>(col) / (width - 1)) * 2.0f;
-                float normalizedY = 1.0f - (static_cast<float>(row) / (height - 1)) * 2.0f;
-
-                float cellWidth = 2.0f / width;
-                float cellHeight = 2.0f / height;
+                // Cell center positioned so edges align with [-1, 1] bounds
+                float normalizedX = -1.0f + cellWidth / 2.0f + col * cellWidth;
+                float normalizedY = -1.0f + cellHeight / 2.0f + row * cellHeight;
 
                 switch (symbol) {
                     case '#': {
                         if (factory) {
+                            std::cout << "Creating wall at row=" << row << " col=" << col
+                                      << " -> normalized(" << normalizedX << ", " << normalizedY << ")"
+                                      << " size(" << cellWidth << ", " << cellHeight << ")" << std::endl;
+
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));

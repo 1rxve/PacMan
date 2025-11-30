@@ -1,31 +1,42 @@
+#include <iostream>
 #include "representation/views/WallView.h"
 
 namespace representation {
     WallView::WallView(logic::WallModel* model, sf::RenderWindow* window, const Camera* camera)
             : EntityView(model, window, camera) {
         shape.setFillColor(sf::Color::Blue);  // Klassieke PacMan blauwe walls
-        shape.setOutlineColor(sf::Color::Cyan);
-        shape.setOutlineThickness(1.0f);
     }
 
     void WallView::draw() {
-        // Model positie is CENTER, niet top-left
         float centerX = model->getX();
         float centerY = model->getY();
         float width = model->getWidth();
         float height = model->getHeight();
 
-        // Bereken top-left corner
         float topLeftX = centerX - width / 2.0f;
         float topLeftY = centerY - height / 2.0f;
 
-        // Convert naar pixels
         float pixelX = camera->normalizedToPixelX(topLeftX);
         float pixelY = camera->normalizedToPixelY(topLeftY);
 
-        // Bereken size in pixels
-        float pixelW = camera->normalizedToPixelX(topLeftX + width) - pixelX;
-        float pixelH = camera->normalizedToPixelY(topLeftY + height) - pixelY;
+        float bottomRightX = centerX + width / 2.0f;
+        float bottomRightY = centerY + height / 2.0f;
+
+        float pixelRightX = camera->normalizedToPixelX(bottomRightX);
+        float pixelBottomY = camera->normalizedToPixelY(bottomRightY);
+
+        float pixelW = pixelRightX - pixelX;
+        float pixelH = pixelBottomY - pixelY;
+
+        // DEBUG OUTPUT - print eerste wall
+        static bool printed = false;
+        if (!printed) {
+            std::cout << "FIRST WALL RENDER:" << std::endl;
+            std::cout << "  Normalized: center(" << centerX << ", " << centerY << ") size(" << width << ", " << height << ")" << std::endl;
+            std::cout << "  TopLeft normalized: (" << topLeftX << ", " << topLeftY << ")" << std::endl;
+            std::cout << "  Pixels: position(" << pixelX << ", " << pixelY << ") size(" << pixelW << ", " << pixelH << ")" << std::endl;
+            printed = true;
+        }
 
         shape.setPosition(pixelX, pixelY);
         shape.setSize(sf::Vector2f(pixelW, pixelH));
