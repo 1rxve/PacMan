@@ -16,6 +16,8 @@ set(REPRESENTATION_SOURCES
         src/Camera.cpp
         src/views/PacManView.cpp
         include/representation/views/PacManView.h
+        src/views/EntityView.cpp
+        include/representation/views/EntityView.h
 )
 
 # Create executable
