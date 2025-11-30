@@ -1,8 +1,7 @@
 #ifndef PACMANGAME_PACMANVIEW_H
 #define PACMANGAME_PACMANVIEW_H
 
-#include <SFML/Graphics.hpp>
-#include "representation/Camera.h"
+#include "EntityView.h"
 #include "logic/entities/PacManModel.h"
 
 namespace representation {
@@ -13,9 +12,9 @@ namespace representation {
         int height;
     };
 
-    class PacManView {
+    class PacManView : public EntityView{
     private:
-        logic::PacManModel *model;
+        logic::PacManModel* pacManModel;
 
         sf::Texture texture;
         sf::Sprite sprite;
@@ -25,11 +24,11 @@ namespace representation {
         const int frames[4] = {0, 1, 2, 1};
 
     public:
-        PacManView(logic::PacManModel *model);
+        PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera);
 
         void update(float deltaTime);
 
-        void draw(sf::RenderWindow &window, const Camera &camera);
+        void draw() override;
     };
 }
 

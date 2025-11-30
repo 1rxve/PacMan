@@ -2,15 +2,16 @@
 #include <iostream>
 
 namespace representation {
-    PacManView::PacManView(logic::PacManModel *model)
-        : model(model),
-        animationTimer(0.0f),
-        frameIndex(0) {
+    PacManView::PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera)
+            : EntityView(model, window, camera),  // <- Base class constructor
+              pacManModel(model),
+              animationTimer(0.0f),
+              frameIndex(0) {
         if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
             std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
         }
         sprite.setTexture(texture);
-        sprite.setTextureRect(sf::IntRect(853, 5, 33, 33));
+        sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
     }
 
     void PacManView::update(float deltaTime) {
@@ -24,7 +25,7 @@ namespace representation {
             SpriteRect rect = {853, 5, 33, 33}; // Default waarde
 
 
-            switch (model->getCurrentDirection()) {
+            switch (pacManModel->getCurrentDirection()) {
                 case logic::Direction::RIGHT:
                     if (currentFrame == 0) {
                         rect = {840, 0, 50, 50};
@@ -74,13 +75,13 @@ namespace representation {
         }
     }
 
-    void PacManView::draw(sf::RenderWindow &window, const Camera &camera) {
-        float pixelX = camera.normalizedToPixelX(model->getX());
-        float pixelY = camera.normalizedToPixelY(model->getY());
+    void PacManView::draw() {
+        float pixelX = camera->normalizedToPixelX(model->getX());
+        float pixelY = camera->normalizedToPixelY(model->getY());
 
         sprite.setPosition(pixelX, pixelY);
         sprite.setScale(2.0f, 2.0f);
 
-        window.draw(sprite);
+        window->draw(sprite);
     }
 }
