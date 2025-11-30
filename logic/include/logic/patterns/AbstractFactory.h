@@ -1,0 +1,25 @@
+#ifndef PACMANGAME_ABSTRACTFACTORY_H
+#define PACMANGAME_ABSTRACTFACTORY_H
+
+
+#include <memory>
+#include "logic/entities/EntityModel.h"
+#include "logic/patterns/Observer.h"
+
+namespace logic {
+    struct EntityCreationResult {
+        std::unique_ptr<EntityModel> model;
+        std::unique_ptr<Observer> view;
+    };
+
+    class AbstractFactory {
+    public:
+        virtual ~AbstractFactory() = default;
+
+        virtual EntityCreationResult createWall(float x, float y, float w, float h) = 0;
+        virtual EntityCreationResult createPacMan(float x, float y, float w, float h, float speed) = 0;
+    };
+}
+
+
+#endif //PACMANGAME_ABSTRACTFACTORY_H

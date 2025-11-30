@@ -9,6 +9,10 @@ namespace logic {
         }
     }
 
+    void World::setFactory(AbstractFactory* factory) {
+        this->factory = factory;
+    }
+
     void World::addEntity(std::unique_ptr<logic::EntityModel> entity) {
         entities.push_back(std::move(entity));
     }
@@ -31,7 +35,6 @@ namespace logic {
             return;
         }
 
-        // Lees alle regels in
         std::vector<std::string> mapLines;
         std::string line;
         while (std::getline(file, line)) {
@@ -44,39 +47,39 @@ namespace logic {
             return;
         }
 
-        // Bereken map dimensies
         int height = mapLines.size();
         int width = mapLines[0].length();
 
-        // Parse de map
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 char symbol = mapLines[row][col];
 
-                // Bereken normalized coordinates
                 float normalizedX = -1.0f + (static_cast<float>(col) / (width - 1)) * 2.0f;
                 float normalizedY = 1.0f - (static_cast<float>(row) / (height - 1)) * 2.0f;
 
-                // Cell size (voor bounding box)
                 float cellWidth = 2.0f / width;
                 float cellHeight = 2.0f / height;
 
-                // Maak entities op basis van symbol
                 switch (symbol) {
-                    case '#':  // Wall
-                        addEntity(std::make_unique<WallModel>(
-                                normalizedX, normalizedY, cellWidth, cellHeight
-                        ));
+                    case '#': {
+                        if (factory) {
+                            auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
                         break;
+                    }
 
-                    case 'C':  // PacMan spawn
-                        addEntity(std::make_unique<PacManModel>(
-                                normalizedX, normalizedY, cellWidth, cellHeight, 0.5f
-                        ));
+                    case 'C': {
+                        if (factory) {
+                            auto result = factory->createPacMan(normalizedX, normalizedY, cellWidth, cellHeight, 0.5f);
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
                         break;
+                    }
 
-                    case '.':  // Empty space
-                        // Niets doen
+                    case '.':
                         break;
 
                     default:
@@ -89,5 +92,13 @@ namespace logic {
 
         std::cout << "Map loaded: " << width << "x" << height
                   << " (" << entities.size() << " entities)" << std::endl;
+    }
+
+    PacManModel* World::getPacMan() {
+        for (auto& entity : entities) {
+            auto* pacman = dynamic_cast<PacManModel*>(entity.get());
+            if (pacman) return pacman;
+        }
+        return nullptr;
     }
 }

@@ -9,19 +9,27 @@ namespace representation {
     }
 
     void WallView::draw() {
-        // Bereken pixel positie via camera
-        float pixelX = camera->normalizedToPixelX(model->getX());
-        float pixelY = camera->normalizedToPixelY(model->getY());
+        // Model positie is CENTER, niet top-left
+        float centerX = model->getX();
+        float centerY = model->getY();
+        float width = model->getWidth();
+        float height = model->getHeight();
 
-        // Bereken pixel size
-        float pixelW = camera->normalizedToPixelX(model->getX() + model->getWidth()) - pixelX;
-        float pixelH = camera->normalizedToPixelY(model->getY() + model->getHeight()) - pixelY;
+        // Bereken top-left corner
+        float topLeftX = centerX - width / 2.0f;
+        float topLeftY = centerY - height / 2.0f;
 
-        // Update shape
+        // Convert naar pixels
+        float pixelX = camera->normalizedToPixelX(topLeftX);
+        float pixelY = camera->normalizedToPixelY(topLeftY);
+
+        // Bereken size in pixels
+        float pixelW = camera->normalizedToPixelX(topLeftX + width) - pixelX;
+        float pixelH = camera->normalizedToPixelY(topLeftY + height) - pixelY;
+
         shape.setPosition(pixelX, pixelY);
         shape.setSize(sf::Vector2f(pixelW, pixelH));
 
-        // Teken
         window->draw(shape);
     }
 }

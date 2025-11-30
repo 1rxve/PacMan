@@ -22,6 +22,7 @@ set(LOGIC_HEADERS
         include/logic/entities/WallModel.h
         include/logic/patterns/Observer.h
         include/logic/patterns/Subject.h
+        include/logic/patterns/AbstractFactory.h
 )
 
 # Create library

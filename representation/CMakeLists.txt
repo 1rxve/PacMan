@@ -17,6 +17,8 @@ set(REPRESENTATION_SOURCES
         src/views/PacManView.cpp
         src/views/EntityView.cpp
         src/views/WallView.cpp
+        src/ConcreteFactory.cpp
+        include/representation/ConcreteFactory.h
 )
 
 # Create executable

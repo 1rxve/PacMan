@@ -23,10 +23,10 @@ namespace representation {
         int frameIndex;
         const int frames[4] = {0, 1, 2, 1};
 
+        sf::Clock animationClock;
+
     public:
         PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera);
-
-        void update(float deltaTime);
 
         void draw() override;
     };
