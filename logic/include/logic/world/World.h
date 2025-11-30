@@ -12,14 +12,19 @@
 #include "logic/patterns/Observer.h"
 
 namespace logic {
+    class PacManModel;
+    class WallModel;
+
     class World {
     private:
         std::vector<std::unique_ptr<EntityModel> > entities;
         std::vector<std::unique_ptr<Observer>> views;
         AbstractFactory* factory;
+        PacManModel* pacman;
+        std::vector<WallModel*> walls;
 
     public:
-        World() = default;
+        World() : factory(nullptr), pacman(nullptr) {}
 
         void update(float deltaTime);
 

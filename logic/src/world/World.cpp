@@ -7,6 +7,7 @@ namespace logic {
         for (const auto &entity: entities) {
             entity->update(deltaTime);
         }
+        checkCollisions();
     }
 
     void World::setFactory(AbstractFactory* factory) {
@@ -18,12 +19,13 @@ namespace logic {
     }
 
     void World::checkCollisions() {
-        // TODO: Implement collision detection
-        for (size_t i = 0; i < entities.size(); i++) {
-            for (size_t j = i + 1; j < entities.size(); j++) {
-                if (entities[i]->intersects(*entities[j])) {
-                    // Handle collision
-                }
+        if (!pacman) return;
+
+        for (WallModel* wall : walls) {
+            if (pacman->intersects(*wall)) {
+                pacman->restorePreviousPosition();
+                pacman->stopMovement();  // TOEVOEGEN - stop de beweging
+                return;
             }
         }
     }
@@ -65,11 +67,11 @@ namespace logic {
                 switch (symbol) {
                     case '#': {
                         if (factory) {
-                            std::cout << "Creating wall at row=" << row << " col=" << col
-                                      << " -> normalized(" << normalizedX << ", " << normalizedY << ")"
-                                      << " size(" << cellWidth << ", " << cellHeight << ")" << std::endl;
-
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
+                            WallModel* wallPtr = dynamic_cast<WallModel*>(result.model.get());
+                            if (wallPtr) {
+                                walls.push_back(wallPtr);  // SLA POINTER OP
+                            }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }
@@ -79,6 +81,7 @@ namespace logic {
                     case 'C': {
                         if (factory) {
                             auto result = factory->createPacMan(normalizedX, normalizedY, cellWidth, cellHeight, 0.5f);
+                            pacman = dynamic_cast<PacManModel*>(result.model.get());  // SLA POINTER OP
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }

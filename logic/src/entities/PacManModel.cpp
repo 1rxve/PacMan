@@ -6,10 +6,16 @@ namespace logic {
           speed(speed),
           lives(3),
           currentDirection(Direction::NONE),
-          nextDirection(Direction::NONE) {
+          nextDirection(Direction::NONE),
+          prevX(x),
+          prevY(y){
     }
 
     void PacManModel::update(float deltaTime) {
+        // Sla oude positie op VOOR beweging
+        prevX = getX();
+        prevY = getY();
+
         // Als er een nieuwe richting is aangevraagd, probeer die te gebruiken
         if (nextDirection != Direction::NONE) {
             currentDirection = nextDirection;
@@ -63,5 +69,13 @@ namespace logic {
 
     void PacManModel::setNextDirection(Direction direction) {
         nextDirection = direction;
+    }
+
+    void PacManModel::restorePreviousPosition() {
+        setPosition(prevX, prevY);
+    }
+
+    void PacManModel::stopMovement() {
+        currentDirection = Direction::NONE;
     }
 }
