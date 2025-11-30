@@ -20,7 +20,7 @@ namespace representation {
         void onNotify() override;
         virtual void draw() = 0;
     };
-}
+};
 
 
 
