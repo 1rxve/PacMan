@@ -5,7 +5,7 @@ namespace logic {
     class Observer {
     public:
         virtual ~Observer() = default;
-        virtual void onNotify();
+        virtual void onNotify() = 0;
     };
 }
 
