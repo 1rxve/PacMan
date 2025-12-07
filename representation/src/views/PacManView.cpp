@@ -83,7 +83,7 @@ namespace representation {
             debugBox.setFillColor(sf::Color::Transparent);
             debugBox.setOutlineColor(sf::Color::Green);
             debugBox.setOutlineThickness(1.0f);
-            debugBox.setOrigin(29.5f, 22.0f);  // Zelfde origin als sprite
+            debugBox.setOrigin(25.0f, 25.0f);  // Zelfde origin als sprite
             debugBox.setPosition(pixelCenterX, pixelCenterY);
             window->draw(debugBox);
 

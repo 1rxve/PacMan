@@ -98,7 +98,7 @@ namespace logic {
 
                     case 'C': {
                         if (factory) {
-                            auto result = factory->createPacMan(normalizedX, normalizedY,cellWidth * 0.95f, cellHeight * 0.95f,0.5f);
+                            auto result = factory->createPacMan(normalizedX, normalizedY,cellWidth * 0.9f, cellHeight * 0.9f,0.5f);
                             pacman = dynamic_cast<PacManModel*>(result.model.get());
 
                             if (pacman) {
@@ -164,7 +164,7 @@ namespace logic {
         if (direction == Direction::NONE) return true;
 
         // Bereken waar PacMan zou zijn na een kleine stap in die richting
-        const float TEST_DISTANCE = 0.01f;
+        const float TEST_DISTANCE = 0.1f;
 
         float testX = pacman->getX();
         float testY = pacman->getY();
