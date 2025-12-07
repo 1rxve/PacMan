@@ -37,6 +37,9 @@ namespace logic {
         PacManModel* getPacMan();
 
         static std::pair<int, int> getMapDimensions(const std::string& filename);
+
+        // NIEUW: Check of een richting valide is voor PacMan
+        bool isDirectionValid(Direction direction) const;
     };
 }
 

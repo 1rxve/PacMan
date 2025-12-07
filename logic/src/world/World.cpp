@@ -162,4 +162,58 @@ namespace logic {
 
         return {width, height};
     }
+
+    bool World::isDirectionValid(Direction direction) const {
+        if (!pacman) return false;
+        if (direction == Direction::NONE) return true;
+
+        // Bereken waar PacMan zou zijn na een kleine stap in die richting
+        const float TEST_DISTANCE = 0.01f;  // Kleine stap om te testen
+
+        float testX = pacman->getX();
+        float testY = pacman->getY();
+
+        switch (direction) {
+            case Direction::LEFT:
+                testX -= TEST_DISTANCE;
+                break;
+            case Direction::RIGHT:
+                testX += TEST_DISTANCE;
+                break;
+            case Direction::UP:
+                testY -= TEST_DISTANCE;
+                break;
+            case Direction::DOWN:
+                testY += TEST_DISTANCE;
+                break;
+            case Direction::NONE:
+                break;
+        }
+
+        // Maak een tijdelijke EntityModel om collision te testen
+        // We gebruiken PacMan's huidige size
+        float width = pacman->getWidth();
+        float height = pacman->getHeight();
+
+        // Check of deze positie zou colliden met walls
+        // We berekenen de bounds handmatig (zoals intersects() doet)
+        float left = testX - width / 2.0f;
+        float right = testX + width / 2.0f;
+        float top = testY - height / 2.0f;
+        float bottom = testY + height / 2.0f;
+
+        for (const WallModel* wall : walls) {
+            float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
+            float wallRight = wall->getX() + wall->getWidth() / 2.0f;
+            float wallTop = wall->getY() - wall->getHeight() / 2.0f;
+            float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
+
+            // AABB collision check
+            if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
+                return false;  // Zou colliden - richting is NIET valide
+            }
+        }
+
+        return true;  // Geen collision - richting is valide
+    }
 }

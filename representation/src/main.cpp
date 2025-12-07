@@ -8,7 +8,6 @@
 int main() {
     const std::string MAP_FILE = "resources/maps/test_map.txt";
 
-    // STAP 1: Lees map dimensies
     auto [mapWidth, mapHeight] = logic::World::getMapDimensions(MAP_FILE);
 
     if (mapWidth == 0 || mapHeight == 0) {
@@ -16,8 +15,7 @@ int main() {
         return -1;
     }
 
-    // STAP 2: Bereken window size (vierkante cells)
-    const int CELL_SIZE_PIXELS = 50;  // Pas aan naar wens (20, 25, 30, 40, etc.)
+    const int CELL_SIZE_PIXELS = 50;
     int windowWidth = mapWidth * CELL_SIZE_PIXELS;
     int windowHeight = mapHeight * CELL_SIZE_PIXELS;
 
@@ -27,33 +25,27 @@ int main() {
     std::cout << "Window size: " << windowWidth << " x " << windowHeight << " pixels" << std::endl;
     std::cout << "=========================" << std::endl;
 
-    // STAP 3: Setup window met dynamische grootte
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "PacMan Game");
     window.setFramerateLimit(60);
 
-    // STAP 4: Setup camera met correcte dimensies
     representation::Camera camera(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
 
-    // STAP 5: Setup factory en world
     representation::ConcreteFactory factory(&window, &camera);
     logic::World world;
     world.setFactory(&factory);
     world.loadMap(MAP_FILE);
 
-    // STAP 6: Get PacMan reference for input
     logic::PacManModel* pacman = world.getPacMan();
     if (!pacman) {
         std::cerr << "ERROR: PacMan not found in map!" << std::endl;
         return -1;
     }
 
-    // Game loop
     sf::Clock clock;
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
 
-        // Event handling
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
@@ -64,21 +56,26 @@ int main() {
             }
         }
 
-        // Input handling
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            pacman->setNextDirection(logic::Direction::LEFT);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            pacman->setNextDirection(logic::Direction::RIGHT);
-        }
+        // Input handling - met validatie
+        // Alleen richting zetten als die richting valide is
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            pacman->setNextDirection(logic::Direction::UP);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            pacman->setNextDirection(logic::Direction::DOWN);
+            if (world.isDirectionValid(logic::Direction::UP)) {
+                pacman->setNextDirection(logic::Direction::UP);
+            }
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+            if (world.isDirectionValid(logic::Direction::DOWN)) {
+                pacman->setNextDirection(logic::Direction::DOWN);
+            }
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            if (world.isDirectionValid(logic::Direction::LEFT)) {
+                pacman->setNextDirection(logic::Direction::LEFT);
+            }
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            if (world.isDirectionValid(logic::Direction::RIGHT)) {
+                pacman->setNextDirection(logic::Direction::RIGHT);
+            }
         }
 
-        // Update world (triggers notify() -> Views draw themselves)
         window.clear(sf::Color::Black);
         world.update(dt);
         window.display();
