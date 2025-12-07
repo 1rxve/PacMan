@@ -2,46 +2,42 @@
 
 namespace logic {
     PacManModel::PacManModel(float x, float y, float width, float height, float speed)
-        : EntityModel(x, y, width, height),
-          speed(speed),
-          lives(3),
-          currentDirection(Direction::NONE),
-          nextDirection(Direction::NONE),
-          prevX(x),
-          prevY(y){
+            : EntityModel(x, y, width, height),
+              speed(speed),
+              lives(3),
+              currentDirection(Direction::NONE),
+              nextDirection(Direction::NONE) {
     }
 
     void PacManModel::update(float deltaTime) {
-        // Sla oude positie op VOOR beweging
-        prevX = getX();
-        prevY = getY();
-
-        // Als er een nieuwe richting is aangevraagd, probeer die te gebruiken
+        // Als er een nieuwe richting is aangevraagd, gebruik die
         if (nextDirection != Direction::NONE) {
             currentDirection = nextDirection;
-            // nextDirection = Direction::NONE;  // Optioneel: reset na gebruik
         }
 
-        float newX = getX();
-        float newY = getY();
+        // Bereken hoeveel we willen bewegen (World checkt of dit safe is)
+        float moveDistance = speed * deltaTime;
+        float newX = x;
+        float newY = y;
 
         switch (currentDirection) {
             case Direction::LEFT:
-                newX -= speed * deltaTime;
+                newX -= moveDistance;
                 break;
             case Direction::RIGHT:
-                newX += speed * deltaTime;
+                newX += moveDistance;
                 break;
             case Direction::UP:
-                newY -= speed * deltaTime;
+                newY -= moveDistance;
                 break;
             case Direction::DOWN:
-                newY += speed * deltaTime;
+                newY += moveDistance;
                 break;
             case Direction::NONE:
                 break;
         }
 
+        // Zet nieuwe positie (World heeft dit al gecheckt)
         setPosition(newX, newY);
 
         notify();
@@ -63,19 +59,16 @@ namespace logic {
         return currentDirection;
     }
 
-    void PacManModel::setSpeed(float speed) {
-        PacManModel::speed = speed;
+    void PacManModel::setSpeed(float newSpeed) {
+        speed = newSpeed;
     }
 
     void PacManModel::setNextDirection(Direction direction) {
         nextDirection = direction;
     }
 
-    void PacManModel::restorePreviousPosition() {
-        setPosition(prevX, prevY);
-    }
-
     void PacManModel::stopMovement() {
         currentDirection = Direction::NONE;
+        nextDirection = Direction::NONE;
     }
 }

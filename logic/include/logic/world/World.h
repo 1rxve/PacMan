@@ -32,13 +32,12 @@ namespace logic {
 
         void addEntity(std::unique_ptr<EntityModel> entity);
 
-        void checkCollisions();
-
         void loadMap(const std::string& filename);
 
         PacManModel* getPacMan();
+
+        static std::pair<int, int> getMapDimensions(const std::string& filename);
     };
 }
-
 
 #endif //PACMANGAME_WORLD_H

@@ -6,22 +6,41 @@
 #include "representation/ConcreteFactory.h"
 
 int main() {
-    // Setup window
-    sf::RenderWindow window(sf::VideoMode(800, 600), "PacMan Game");
+    const std::string MAP_FILE = "resources/maps/test_map.txt";
+
+    // STAP 1: Lees map dimensies
+    auto [mapWidth, mapHeight] = logic::World::getMapDimensions(MAP_FILE);
+
+    if (mapWidth == 0 || mapHeight == 0) {
+        std::cerr << "ERROR: Invalid map dimensions!" << std::endl;
+        return -1;
+    }
+
+    // STAP 2: Bereken window size (vierkante cells)
+    const int CELL_SIZE_PIXELS = 50;  // Pas aan naar wens (20, 25, 30, 40, etc.)
+    int windowWidth = mapWidth * CELL_SIZE_PIXELS;
+    int windowHeight = mapHeight * CELL_SIZE_PIXELS;
+
+    std::cout << "=== Map & Window Info ===" << std::endl;
+    std::cout << "Map dimensions: " << mapWidth << " x " << mapHeight << " cells" << std::endl;
+    std::cout << "Cell size: " << CELL_SIZE_PIXELS << " pixels" << std::endl;
+    std::cout << "Window size: " << windowWidth << " x " << windowHeight << " pixels" << std::endl;
+    std::cout << "=========================" << std::endl;
+
+    // STAP 3: Setup window met dynamische grootte
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "PacMan Game");
     window.setFramerateLimit(60);
 
-    // Setup camera
-    representation::Camera camera(800.0f, 600.0f);
+    // STAP 4: Setup camera met correcte dimensies
+    representation::Camera camera(static_cast<float>(windowWidth), static_cast<float>(windowHeight));
 
-    // Setup factory
+    // STAP 5: Setup factory en world
     representation::ConcreteFactory factory(&window, &camera);
-
-    // Setup world
     logic::World world;
     world.setFactory(&factory);
-    world.loadMap("resources/maps/test_map.txt");
+    world.loadMap(MAP_FILE);
 
-    // Get PacMan reference for input
+    // STAP 6: Get PacMan reference for input
     logic::PacManModel* pacman = world.getPacMan();
     if (!pacman) {
         std::cerr << "ERROR: PacMan not found in map!" << std::endl;

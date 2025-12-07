@@ -4,10 +4,42 @@
 
 namespace logic {
     void World::update(float deltaTime) {
+        // Update alle entities, maar met predictive collision voor PacMan
         for (const auto &entity: entities) {
-            entity->update(deltaTime);
+            // Check of dit PacMan is
+            PacManModel* pm = dynamic_cast<PacManModel*>(entity.get());
+
+            if (pm) {
+                // PREDICTIVE COLLISION voor PacMan
+
+                // Sla oude positie op
+                float oldX = pm->getX();
+                float oldY = pm->getY();
+
+                // Laat PacMan berekenen waar hij naartoe wil
+                pm->update(deltaTime);
+
+                // Check of nieuwe positie collides met walls
+                bool collided = false;
+                for (WallModel* wall : walls) {
+                    if (pm->intersects(*wall)) {
+                        collided = true;
+                        break;
+                    }
+                }
+
+                if (collided) {
+                    // Collision detected - restore oude positie en stop movement
+                    pm->setPosition(oldX, oldY);
+                    pm->stopMovement();
+                }
+                // Else: geen collision, PacMan blijft op nieuwe positie
+
+            } else {
+                // Andere entities updaten normaal (walls, ghosts later, etc.)
+                entity->update(deltaTime);
+            }
         }
-        checkCollisions();
     }
 
     void World::setFactory(AbstractFactory* factory) {
@@ -16,18 +48,6 @@ namespace logic {
 
     void World::addEntity(std::unique_ptr<logic::EntityModel> entity) {
         entities.push_back(std::move(entity));
-    }
-
-    void World::checkCollisions() {
-        if (!pacman) return;
-
-        for (WallModel* wall : walls) {
-            if (pacman->intersects(*wall)) {
-                pacman->restorePreviousPosition();
-                pacman->stopMovement();  // TOEVOEGEN - stop de beweging
-                return;
-            }
-        }
     }
 
     void World::loadMap(const std::string &filename) {
@@ -70,7 +90,7 @@ namespace logic {
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
                             WallModel* wallPtr = dynamic_cast<WallModel*>(result.model.get());
                             if (wallPtr) {
-                                walls.push_back(wallPtr);  // SLA POINTER OP
+                                walls.push_back(wallPtr);
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
@@ -81,7 +101,7 @@ namespace logic {
                     case 'C': {
                         if (factory) {
                             auto result = factory->createPacMan(normalizedX, normalizedY, cellWidth, cellHeight, 0.5f);
-                            pacman = dynamic_cast<PacManModel*>(result.model.get());  // SLA POINTER OP
+                            pacman = dynamic_cast<PacManModel*>(result.model.get());
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }
@@ -109,5 +129,30 @@ namespace logic {
             if (pacman) return pacman;
         }
         return nullptr;
+    }
+
+    std::pair<int, int> World::getMapDimensions(const std::string& filename) {
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "ERROR: Could not open map file: " << filename << std::endl;
+            return {0, 0};
+        }
+
+        std::vector<std::string> lines;
+        std::string line;
+        while (std::getline(file, line)) {
+            lines.push_back(line);
+        }
+        file.close();
+
+        if (lines.empty()) {
+            std::cerr << "ERROR: Map file is empty!" << std::endl;
+            return {0, 0};
+        }
+
+        int height = static_cast<int>(lines.size());
+        int width = static_cast<int>(lines[0].length());
+
+        return {width, height};
     }
 }

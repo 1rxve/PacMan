@@ -20,8 +20,6 @@ namespace logic {
         Direction currentDirection;
         Direction nextDirection;
 
-        float prevX, prevY;
-
     public:
         PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
@@ -39,11 +37,8 @@ namespace logic {
 
         void setNextDirection(Direction direction);
 
-        void restorePreviousPosition();
-
         void stopMovement();
     };
 }
-
 
 #endif //PACMANGAME_PACMANMODEL_H
