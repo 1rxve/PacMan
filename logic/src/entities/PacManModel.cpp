@@ -1,4 +1,5 @@
 #include "logic/entities/PacManModel.h"
+#include <cmath>
 
 namespace logic {
     PacManModel::PacManModel(float x, float y, float width, float height, float speed)
@@ -6,16 +7,16 @@ namespace logic {
               speed(speed),
               lives(3),
               currentDirection(Direction::NONE),
-              nextDirection(Direction::NONE) {
+              nextDirection(Direction::NONE),
+              cellWidth(0.0f),
+              cellHeight(0.0f) {
     }
 
     void PacManModel::update(float deltaTime) {
-        // Als er een nieuwe richting is aangevraagd, gebruik die
         if (nextDirection != Direction::NONE) {
             currentDirection = nextDirection;
         }
 
-        // Bereken hoeveel we willen bewegen (World checkt of dit safe is)
         float moveDistance = speed * deltaTime;
         float newX = x;
         float newY = y;
@@ -37,9 +38,21 @@ namespace logic {
                 break;
         }
 
-        // Zet nieuwe positie (World heeft dit al gecheckt)
-        setPosition(newX, newY);
+        // CENTER-LOCKING
+        if (cellWidth > 0.0f && cellHeight > 0.0f) {
+            if (currentDirection == Direction::LEFT || currentDirection == Direction::RIGHT) {
+                float gridY = std::floor((newY + 1.0f) / cellHeight);
+                float centerY = -1.0f + cellHeight / 2.0f + gridY * cellHeight;
+                newY = centerY;
 
+            } else if (currentDirection == Direction::UP || currentDirection == Direction::DOWN) {
+                float gridX = std::floor((newX + 1.0f) / cellWidth);
+                float centerX = -1.0f + cellWidth / 2.0f + gridX * cellWidth;
+                newX = centerX;
+            }
+        }
+
+        setPosition(newX, newY);
         notify();
     }
 
@@ -70,5 +83,10 @@ namespace logic {
     void PacManModel::stopMovement() {
         currentDirection = Direction::NONE;
         nextDirection = Direction::NONE;
+    }
+
+    void PacManModel::setCellDimensions(float cellW, float cellH) {
+        cellWidth = cellW;
+        cellHeight = cellH;
     }
 }

@@ -4,7 +4,7 @@
 namespace representation {
     WallView::WallView(logic::WallModel* model, sf::RenderWindow* window, const Camera* camera)
             : EntityView(model, window, camera) {
-        shape.setFillColor(sf::Color::Blue);  // Klassieke PacMan blauwe walls
+        shape.setFillColor(sf::Color::Blue);
     }
 
     void WallView::draw() {
@@ -27,16 +27,6 @@ namespace representation {
 
         float pixelW = pixelRightX - pixelX;
         float pixelH = pixelBottomY - pixelY;
-
-        // DEBUG OUTPUT - print eerste wall
-        static bool printed = false;
-        if (!printed) {
-            std::cout << "FIRST WALL RENDER:" << std::endl;
-            std::cout << "  Normalized: center(" << centerX << ", " << centerY << ") size(" << width << ", " << height << ")" << std::endl;
-            std::cout << "  TopLeft normalized: (" << topLeftX << ", " << topLeftY << ")" << std::endl;
-            std::cout << "  Pixels: position(" << pixelX << ", " << pixelY << ") size(" << pixelW << ", " << pixelH << ")" << std::endl;
-            printed = true;
-        }
 
         shape.setPosition(pixelX, pixelY);
         shape.setSize(sf::Vector2f(pixelW, pixelH));

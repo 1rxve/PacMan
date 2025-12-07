@@ -20,6 +20,10 @@ namespace logic {
         Direction currentDirection;
         Direction nextDirection;
 
+        // Grid info voor center-locking
+        float cellWidth;
+        float cellHeight;
+
     public:
         PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
@@ -38,6 +42,9 @@ namespace logic {
         void setNextDirection(Direction direction);
 
         void stopMovement();
+
+        // NIEUW: Zet cell dimensies (gebruikt voor center-locking)
+        void setCellDimensions(float cellW, float cellH);
     };
 }
 

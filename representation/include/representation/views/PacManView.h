@@ -25,12 +25,14 @@ namespace representation {
 
         sf::Clock animationClock;
 
+        // DEBUG
+        bool showDebugVisualization = false;  // Zet op true om debug te zien
+
     public:
         PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera);
 
         void draw() override;
     };
 }
-
 
 #endif //PACMANGAME_PACMANVIEW_H

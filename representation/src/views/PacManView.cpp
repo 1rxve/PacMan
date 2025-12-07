@@ -3,7 +3,7 @@
 
 namespace representation {
     PacManView::PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera)
-            : EntityView(model, window, camera),  // <- Base class constructor
+            : EntityView(model, window, camera),
               pacManModel(model),
               animationTimer(0.0f),
               frameIndex(0) {
@@ -14,14 +14,10 @@ namespace representation {
         sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
     }
 
-
-
     void PacManView::draw() {
-        // Alleen animeren als PacMan beweegt
         logic::Direction currentDir = pacManModel->getCurrentDirection();
 
         if (currentDir != logic::Direction::NONE) {
-            // Update animatie
             float deltaTime = animationClock.restart().asSeconds();
             animationTimer += deltaTime;
 
@@ -58,28 +54,45 @@ namespace representation {
                         break;
 
                     case logic::Direction::NONE:
-                        // Wordt niet bereikt door if check hierboven
                         break;
                 }
 
                 sprite.setTextureRect(sf::IntRect(rect.x, rect.y, rect.width, rect.height));
             }
         } else {
-            // PacMan beweegt niet - reset animation clock maar blijf op huidige sprite
             animationClock.restart();
         }
 
-        // Rendering (altijd, ook als still)
+        // Rendering
         float centerX = pacManModel->getX();
         float centerY = pacManModel->getY();
 
         float pixelCenterX = camera->normalizedToPixelX(centerX);
         float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-        sprite.setOrigin(25.0f, 25.0f);
+        // Sprite rendering met GECORRIGEERDE origin
+        sprite.setOrigin(29.5f, 22.0f);  // Handmatig bepaald voor correcte centering
         sprite.setPosition(pixelCenterX, pixelCenterY);
         sprite.setScale(1.0f, 1.0f);
-
         window->draw(sprite);
+
+        // DEBUG VISUALISATIE (optioneel)
+        if (showDebugVisualization) {
+            // Groen vierkant = sprite texture bounds
+            sf::RectangleShape debugBox(sf::Vector2f(50.0f, 50.0f));
+            debugBox.setFillColor(sf::Color::Transparent);
+            debugBox.setOutlineColor(sf::Color::Green);
+            debugBox.setOutlineThickness(1.0f);
+            debugBox.setOrigin(29.5f, 22.0f);  // Zelfde origin als sprite
+            debugBox.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(debugBox);
+
+            // Rode dot = logische center positie
+            sf::CircleShape debugCircle(3.0f);
+            debugCircle.setFillColor(sf::Color::Red);
+            debugCircle.setOrigin(3.0f, 3.0f);
+            debugCircle.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(debugCircle);
+        }
     }
 }

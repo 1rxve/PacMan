@@ -87,6 +87,7 @@ namespace logic {
                 switch (symbol) {
                     case '#': {
                         if (factory) {
+                            // Walls are 100% of cell size
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
                             WallModel* wallPtr = dynamic_cast<WallModel*>(result.model.get());
                             if (wallPtr) {
@@ -100,8 +101,14 @@ namespace logic {
 
                     case 'C': {
                         if (factory) {
-                            auto result = factory->createPacMan(normalizedX, normalizedY, cellWidth, cellHeight, 0.5f);
+                            // PacMan hitbox is 95% of cell size
+                            auto result = factory->createPacMan(normalizedX, normalizedY,cellWidth * 0.95f, cellHeight * 0.95f,0.5f);
                             pacman = dynamic_cast<PacManModel*>(result.model.get());
+
+                            if (pacman) {
+                                pacman->setCellDimensions(cellWidth, cellHeight);
+                            }
+
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }
