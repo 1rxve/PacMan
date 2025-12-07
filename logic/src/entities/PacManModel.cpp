@@ -13,9 +13,8 @@ namespace logic {
     }
 
     void PacManModel::update(float deltaTime) {
-        if (nextDirection != Direction::NONE) {
-            currentDirection = nextDirection;
-        }
+        // nextDirection wordt NU in World::update() geapplied
+        // Hier alleen beweging berekenen op basis van currentDirection
 
         float moveDistance = speed * deltaTime;
         float newX = x;
@@ -72,12 +71,23 @@ namespace logic {
         return currentDirection;
     }
 
+    Direction PacManModel::getNextDirection() const {
+        return nextDirection;
+    }
+
     void PacManModel::setSpeed(float newSpeed) {
         speed = newSpeed;
     }
 
     void PacManModel::setNextDirection(Direction direction) {
         nextDirection = direction;
+    }
+
+    void PacManModel::applyNextDirection() {
+        if (nextDirection != Direction::NONE) {
+            currentDirection = nextDirection;
+            nextDirection = Direction::NONE;  // Clear buffer na gebruik
+        }
     }
 
     void PacManModel::stopMovement() {

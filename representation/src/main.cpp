@@ -56,22 +56,21 @@ int main() {
             }
         }
 
-        // Input handling - met validatie
-        // Alleen richting zetten als die richting valide is
+        // Input handling - buffer alleen als andere richting dan current
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            if (world.isDirectionValid(logic::Direction::UP)) {
+            if (pacman->getCurrentDirection() != logic::Direction::UP) {
                 pacman->setNextDirection(logic::Direction::UP);
             }
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            if (world.isDirectionValid(logic::Direction::DOWN)) {
+            if (pacman->getCurrentDirection() != logic::Direction::DOWN) {
                 pacman->setNextDirection(logic::Direction::DOWN);
             }
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            if (world.isDirectionValid(logic::Direction::LEFT)) {
+            if (pacman->getCurrentDirection() != logic::Direction::LEFT) {
                 pacman->setNextDirection(logic::Direction::LEFT);
             }
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            if (world.isDirectionValid(logic::Direction::RIGHT)) {
+            if (pacman->getCurrentDirection() != logic::Direction::RIGHT) {
                 pacman->setNextDirection(logic::Direction::RIGHT);
             }
         }

@@ -4,22 +4,23 @@
 
 namespace logic {
     void World::update(float deltaTime) {
-        // Update alle entities, maar met predictive collision voor PacMan
         for (const auto &entity: entities) {
-            // Check of dit PacMan is
             PacManModel* pm = dynamic_cast<PacManModel*>(entity.get());
 
             if (pm) {
-                // PREDICTIVE COLLISION voor PacMan
+                // BUFFERED INPUT HANDLING
+                // Check of nextDirection valide is, zo ja → apply
+                Direction nextDir = pm->getNextDirection();
+                if (nextDir != Direction::NONE && isDirectionValid(nextDir)) {
+                    pm->applyNextDirection();
+                }
 
-                // Sla oude positie op
+                // PREDICTIVE COLLISION
                 float oldX = pm->getX();
                 float oldY = pm->getY();
 
-                // Laat PacMan berekenen waar hij naartoe wil
                 pm->update(deltaTime);
 
-                // Check of nieuwe positie collides met walls
                 bool collided = false;
                 for (WallModel* wall : walls) {
                     if (pm->intersects(*wall)) {
@@ -29,14 +30,11 @@ namespace logic {
                 }
 
                 if (collided) {
-                    // Collision detected - restore oude positie en stop movement
                     pm->setPosition(oldX, oldY);
                     pm->stopMovement();
                 }
-                // Else: geen collision, PacMan blijft op nieuwe positie
 
             } else {
-                // Andere entities updaten normaal (walls, ghosts later, etc.)
                 entity->update(deltaTime);
             }
         }
@@ -87,7 +85,6 @@ namespace logic {
                 switch (symbol) {
                     case '#': {
                         if (factory) {
-                            // Walls are 100% of cell size
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
                             WallModel* wallPtr = dynamic_cast<WallModel*>(result.model.get());
                             if (wallPtr) {
@@ -101,7 +98,6 @@ namespace logic {
 
                     case 'C': {
                         if (factory) {
-                            // PacMan hitbox is 95% of cell size
                             auto result = factory->createPacMan(normalizedX, normalizedY,cellWidth * 0.95f, cellHeight * 0.95f,0.5f);
                             pacman = dynamic_cast<PacManModel*>(result.model.get());
 
@@ -168,7 +164,7 @@ namespace logic {
         if (direction == Direction::NONE) return true;
 
         // Bereken waar PacMan zou zijn na een kleine stap in die richting
-        const float TEST_DISTANCE = 0.01f;  // Kleine stap om te testen
+        const float TEST_DISTANCE = 0.01f;
 
         float testX = pacman->getX();
         float testY = pacman->getY();
@@ -190,13 +186,9 @@ namespace logic {
                 break;
         }
 
-        // Maak een tijdelijke EntityModel om collision te testen
-        // We gebruiken PacMan's huidige size
         float width = pacman->getWidth();
         float height = pacman->getHeight();
 
-        // Check of deze positie zou colliden met walls
-        // We berekenen de bounds handmatig (zoals intersects() doet)
         float left = testX - width / 2.0f;
         float right = testX + width / 2.0f;
         float top = testY - height / 2.0f;
@@ -208,12 +200,11 @@ namespace logic {
             float wallTop = wall->getY() - wall->getHeight() / 2.0f;
             float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
 
-            // AABB collision check
             if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
-                return false;  // Zou colliden - richting is NIET valide
+                return false;
             }
         }
 
-        return true;  // Geen collision - richting is valide
+        return true;
     }
 }

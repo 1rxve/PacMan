@@ -37,13 +37,16 @@ namespace logic {
 
         Direction getCurrentDirection() const;
 
+        Direction getNextDirection() const;  // NIEUW
+
         void setSpeed(float speed);
 
         void setNextDirection(Direction direction);
 
+        void applyNextDirection();  // NIEUW
+
         void stopMovement();
 
-        // NIEUW: Zet cell dimensies (gebruikt voor center-locking)
         void setCellDimensions(float cellW, float cellH);
     };
 }
