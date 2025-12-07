@@ -12,6 +12,8 @@ set(LOGIC_SOURCES
         src/entities/WallModel.cpp
         src/patterns/Observer.cpp
         src/patterns/Subject.cpp
+        src/utils/Stopwatch.cpp
+        src/utils/Random.cpp
 )
 
 # Header files (IDE support)
@@ -23,6 +25,8 @@ set(LOGIC_HEADERS
         include/logic/patterns/Observer.h
         include/logic/patterns/Subject.h
         include/logic/patterns/AbstractFactory.h
+        include/logic/utils/Stopwatch.h
+        include/logic/utils/Random.h
 )
 
 # Create library

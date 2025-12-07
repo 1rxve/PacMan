@@ -2,6 +2,7 @@
 #include <iostream>
 #include "logic/world/World.h"
 #include "logic/entities/PacManModel.h"
+#include "logic/utils/Stopwatch.h"      // ← TOEVOEGEN
 #include "representation/Camera.h"
 #include "representation/ConcreteFactory.h"
 
@@ -41,10 +42,14 @@ int main() {
         return -1;
     }
 
-    sf::Clock clock;
+    // ← NIEUW: Stopwatch singleton ipv sf::Clock
+    logic::Stopwatch& stopwatch = logic::Stopwatch::getInstance();
+    stopwatch.restart();
 
     while (window.isOpen()) {
-        float dt = clock.restart().asSeconds();
+        // ← NIEUW: Update stopwatch en get deltaTime
+        stopwatch.update();
+        float dt = stopwatch.getDeltaTime();
 
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -56,7 +61,7 @@ int main() {
             }
         }
 
-        // Input handling - buffer alleen als andere richting dan current
+        // Input handling - jouw versie is perfect, blijft EXACT zo
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
             if (pacman->getCurrentDirection() != logic::Direction::UP) {
                 pacman->setNextDirection(logic::Direction::UP);
