@@ -19,6 +19,7 @@ set(REPRESENTATION_SOURCES
         src/views/WallView.cpp
         src/ConcreteFactory.cpp
         include/representation/ConcreteFactory.h
+        src/views/CoinView.cpp
 )
 
 # Create executable

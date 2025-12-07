@@ -1,6 +1,8 @@
+// logic/src/world/World.cpp
 #include "logic/world/World.h"
 #include "logic/entities/WallModel.h"
 #include "logic/entities/PacManModel.h"
+#include "logic/entities/CoinModel.h"
 
 namespace logic {
     void World::update(float deltaTime) {
@@ -9,7 +11,6 @@ namespace logic {
 
             if (pm) {
                 // BUFFERED INPUT HANDLING
-                // Check of nextDirection valide is, zo ja → apply
                 Direction nextDir = pm->getNextDirection();
                 if (nextDir != Direction::NONE && isDirectionValid(nextDir)) {
                     pm->applyNextDirection();
@@ -21,6 +22,7 @@ namespace logic {
 
                 pm->update(deltaTime);
 
+                // Check wall collision
                 bool collided = false;
                 for (WallModel* wall : walls) {
                     if (pm->intersects(*wall)) {
@@ -32,6 +34,16 @@ namespace logic {
                 if (collided) {
                     pm->setPosition(oldX, oldY);
                     pm->stopMovement();
+                }
+
+                // ← NIEUW: Check coin collision
+                for (CoinModel* coin : coins) {
+                    if (!coin->isCollected() && pm->intersects(*coin)) {
+                        coin->collect();
+                        coinsCollected++;
+                        std::cout << "Coin collected! Total: " << coinsCollected
+                                  << "/" << coins.size() << std::endl;
+                    }
                 }
 
             } else {
@@ -70,7 +82,6 @@ namespace logic {
         int height = mapLines.size();
         int width = mapLines[0].length();
 
-        // Cell dimensions
         float cellWidth = 2.0f / width;
         float cellHeight = 2.0f / height;
 
@@ -78,7 +89,6 @@ namespace logic {
             for (int col = 0; col < width; col++) {
                 char symbol = mapLines[row][col];
 
-                // Cell center positioned so edges align with [-1, 1] bounds
                 float normalizedX = -1.0f + cellWidth / 2.0f + col * cellWidth;
                 float normalizedY = -1.0f + cellHeight / 2.0f + row * cellHeight;
 
@@ -98,7 +108,8 @@ namespace logic {
 
                     case 'C': {
                         if (factory) {
-                            auto result = factory->createPacMan(normalizedX, normalizedY,cellWidth * 0.9f, cellHeight * 0.9f,0.5f);
+                            auto result = factory->createPacMan(normalizedX, normalizedY,
+                                                                cellWidth * 0.9f, cellHeight * 0.9f, 0.5f);
                             pacman = dynamic_cast<PacManModel*>(result.model.get());
 
                             if (pacman) {
@@ -111,7 +122,22 @@ namespace logic {
                         break;
                     }
 
-                    case '.':
+                        // ← NIEUW: Coin symbol
+                    case '.': {
+                        if (factory) {
+                            auto result = factory->createCoin(normalizedX, normalizedY,
+                                                              cellWidth * 0.3f, cellHeight * 0.3f);
+                            CoinModel* coinPtr = dynamic_cast<CoinModel*>(result.model.get());
+                            if (coinPtr) {
+                                coins.push_back(coinPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case ' ':  // ← NIEUW: Empty space
                         break;
 
                     default:
@@ -123,7 +149,8 @@ namespace logic {
         }
 
         std::cout << "Map loaded: " << width << "x" << height
-                  << " (" << entities.size() << " entities)" << std::endl;
+                  << " (" << entities.size() << " entities, "
+                  << coins.size() << " coins)" << std::endl;
     }
 
     PacManModel* World::getPacMan() {
@@ -163,7 +190,6 @@ namespace logic {
         if (!pacman) return false;
         if (direction == Direction::NONE) return true;
 
-        // Bereken waar PacMan zou zijn na een kleine stap in die richting
         const float TEST_DISTANCE = 0.1f;
 
         float testX = pacman->getX();

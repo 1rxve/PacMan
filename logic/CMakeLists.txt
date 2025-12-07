@@ -14,6 +14,7 @@ set(LOGIC_SOURCES
         src/patterns/Subject.cpp
         src/utils/Stopwatch.cpp
         src/utils/Random.cpp
+        src/entities/CoinModel.cpp
 )
 
 # Header files (IDE support)
@@ -27,6 +28,7 @@ set(LOGIC_HEADERS
         include/logic/patterns/AbstractFactory.h
         include/logic/utils/Stopwatch.h
         include/logic/utils/Random.h
+        include/logic/entities/CoinModel.h
 )
 
 # Create library

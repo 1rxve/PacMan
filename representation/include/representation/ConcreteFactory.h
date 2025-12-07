@@ -15,7 +15,8 @@ namespace representation {
         ConcreteFactory(sf::RenderWindow* window, const Camera* camera);
 
         logic::EntityCreationResult createWall(float x, float y, float w, float h) override;
-        logic::EntityCreationResult createPacMan(float x, float y, float w, float h, float speed) override;
+        logic::EntityCreationResult createPacMan(float x, float y, float w, float h, float speed) override;\
+        logic::EntityCreationResult createCoin(float x, float y, float w, float h) override;
     };
 }
 

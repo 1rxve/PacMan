@@ -8,12 +8,14 @@
 #include <iostream>
 #include "logic/entities/EntityModel.h"
 #include "logic/entities/PacManModel.h"
+#include "logic/entities/CoinModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 
 namespace logic {
     class PacManModel;
     class WallModel;
+    class CoinModel;
 
     class World {
     private:
@@ -22,6 +24,10 @@ namespace logic {
         AbstractFactory* factory;
         PacManModel* pacman;
         std::vector<WallModel*> walls;
+        std::vector<CoinModel*> coins;
+
+        int coinsCollected;
+
 
     public:
         World() : factory(nullptr), pacman(nullptr) {}
@@ -38,8 +44,10 @@ namespace logic {
 
         static std::pair<int, int> getMapDimensions(const std::string& filename);
 
-        // NIEUW: Check of een richting valide is voor PacMan
         bool isDirectionValid(Direction direction) const;
+
+        int getCoinsCollected() const { return coinsCollected; }
+        int getTotalCoins() const { return static_cast<int>(coins.size()); }
     };
 }
 

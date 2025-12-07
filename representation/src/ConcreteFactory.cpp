@@ -1,8 +1,10 @@
 #include "representation/ConcreteFactory.h"
 #include "representation/views/WallView.h"
 #include "representation/views/PacManView.h"
+#include "representation/views/CoinView.h"
 #include "logic/entities/WallModel.h"
 #include "logic/entities/PacManModel.h"
+#include "logic/entities/CoinModel.h"
 
 namespace representation {
     ConcreteFactory::ConcreteFactory(sf::RenderWindow* window, const Camera* camera)
@@ -28,6 +30,12 @@ namespace representation {
         auto view = std::make_unique<PacManView>(model.get(), window, camera);
 
         // Return beide als unique_ptr
+        return {std::move(model), std::move(view)};
+    }
+
+    logic::EntityCreationResult ConcreteFactory::createCoin(float x, float y, float w, float h) {
+        auto model = std::make_unique<logic::CoinModel>(x, y, w, h);
+        auto view = std::make_unique<CoinView>(model.get(), window, camera);
         return {std::move(model), std::move(view)};
     }
 }
