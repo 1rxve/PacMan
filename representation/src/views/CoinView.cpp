@@ -16,7 +16,7 @@ namespace representation {
         // Coin sprite coordinates - KLEINE WITTE DOT
         // Check je sprite sheet voor exacte coordinaten
         // Meestal zijn coins kleine dots in de sheet
-        sprite.setTextureRect(sf::IntRect(505, 610, 20, 20));
+        sprite.setTextureRect(sf::IntRect(410, 208, 6, 6));
 
         // Origin op center voor correcte positioning
         sprite.setOrigin(5.0f, 5.0f);  // Half van 10x10

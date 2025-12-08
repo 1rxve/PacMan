@@ -7,7 +7,7 @@
 #include "representation/ConcreteFactory.h"
 
 int main() {
-    const std::string MAP_FILE = "resources/maps/test_map.txt";
+    const std::string MAP_FILE = "resources/maps/map";
 
     auto [mapWidth, mapHeight] = logic::World::getMapDimensions(MAP_FILE);
 
