@@ -10,6 +10,7 @@ namespace representation {
     private:
         sf::RenderWindow* window;
         const Camera* camera;
+        std::shared_ptr<sf::Texture> sharedTexture;
 
     public:
         ConcreteFactory(sf::RenderWindow* window, const Camera* camera);

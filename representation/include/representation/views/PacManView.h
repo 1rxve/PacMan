@@ -1,6 +1,7 @@
 #ifndef PACMANGAME_PACMANVIEW_H
 #define PACMANGAME_PACMANVIEW_H
 
+#include <memory>  // ← Voor shared_ptr
 #include "EntityView.h"
 #include "logic/entities/PacManModel.h"
 
@@ -16,7 +17,7 @@ namespace representation {
     private:
         logic::PacManModel* pacManModel;
 
-        sf::Texture texture;
+        std::shared_ptr<sf::Texture> texture;  // ← SHARED_PTR (niet sf::Texture texture)
         sf::Sprite sprite;
 
         float animationTimer;
@@ -25,14 +26,14 @@ namespace representation {
 
         sf::Clock animationClock;
 
-        // DEBUG
-        bool showDebugVisualization = false;  // Zet op true om debug te zien
+        bool showDebugVisualization = false;
 
     public:
-        PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera);
+        PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera,
+                   std::shared_ptr<sf::Texture> sharedTexture);  // ← SHARED_PTR parameter
 
         void draw() override;
     };
 }
 
-#endif //PACMANGAME_PACMANVIEW_H
+#endif

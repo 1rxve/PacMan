@@ -2,24 +2,16 @@
 #include <iostream>
 
 namespace representation {
-    CoinView::CoinView(logic::CoinModel* model, sf::RenderWindow* window, const Camera* camera)
+    CoinView::CoinView(logic::CoinModel* model, sf::RenderWindow* window, const Camera* camera,
+                       std::shared_ptr<sf::Texture> sharedTexture)
             : EntityView(model, window, camera),
-              coinModel(model) {
+              coinModel(model),
+              texture(sharedTexture) {  // ← Store shared_ptr
 
-        // Load sprite sheet
-        if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
-            std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
-        }
-
-        sprite.setTexture(texture);
-
-        // Coin sprite coordinates - KLEINE WITTE DOT
-        // Check je sprite sheet voor exacte coordinaten
-        // Meestal zijn coins kleine dots in de sheet
+        // Gebruik shared texture (NIET opnieuw laden)
+        sprite.setTexture(*texture);
         sprite.setTextureRect(sf::IntRect(410, 208, 6, 6));
-
-        // Origin op center voor correcte positioning
-        sprite.setOrigin(5.0f, 5.0f);  // Half van 10x10
+        sprite.setOrigin(3.0f, 3.0f);
     }
 
     void CoinView::draw() {

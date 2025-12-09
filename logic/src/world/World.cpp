@@ -126,7 +126,7 @@ namespace logic {
                     case '.': {
                         if (factory) {
                             auto result = factory->createCoin(normalizedX, normalizedY,
-                                                              cellWidth * 0.3f, cellHeight * 0.3f);
+                                                              cellWidth * 0.15f, cellHeight * 0.15f);
                             CoinModel* coinPtr = dynamic_cast<CoinModel*>(result.model.get());
                             if (coinPtr) {
                                 coins.push_back(coinPtr);

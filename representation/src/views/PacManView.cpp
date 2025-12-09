@@ -2,15 +2,16 @@
 #include <iostream>
 
 namespace representation {
-    PacManView::PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera)
+    PacManView::PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera,
+                           std::shared_ptr<sf::Texture> sharedTexture)
             : EntityView(model, window, camera),
               pacManModel(model),
+              texture(sharedTexture),  // ← Store shared_ptr
               animationTimer(0.0f),
               frameIndex(0) {
-        if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
-            std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
-        }
-        sprite.setTexture(texture);
+
+        // Gebruik shared texture (NIET opnieuw laden)
+        sprite.setTexture(*texture);
         sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
     }
 
