@@ -23,6 +23,10 @@ set(REPRESENTATION_SOURCES
         include/representation/states/State.h
         src/StateManager.cpp
         include/representation/StateManager.h
+        src/states/LevelState.cpp
+        include/representation/states/LevelState.h
+        src/Game.cpp
+        include/representation/Game.h
 )
 
 # Create executable
