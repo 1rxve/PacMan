@@ -20,6 +20,9 @@ set(REPRESENTATION_SOURCES
         src/ConcreteFactory.cpp
         include/representation/ConcreteFactory.h
         src/views/CoinView.cpp
+        include/representation/states/State.h
+        src/StateManager.cpp
+        include/representation/StateManager.h
 )
 
 # Create executable
