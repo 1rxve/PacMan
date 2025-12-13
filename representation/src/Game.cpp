@@ -1,6 +1,6 @@
 #include "representation/Game.h"
-#include "representation/states/LevelState.h"
-#include "representation/states/State.h"  // ← ADD: Include State.h voor complete type
+#include "representation/states/MenuState.h"  // ← CHANGE: MenuState ipv LevelState
+#include "representation/states/State.h"
 #include "logic/utils/Stopwatch.h"
 #include <iostream>
 
@@ -24,17 +24,15 @@ namespace representation {
         // Create StateManager
         stateManager = std::make_unique<StateManager>();
 
-        // Start with LevelState (later MenuState)
-        stateManager->pushState(std::make_unique<LevelState>(
+        // ← CHANGE: Start with MenuState
+        stateManager->pushState(std::make_unique<MenuState>(
                 window, factory.get(), camera.get(), stateManager.get(), mapFile
         ));
-        std::cout << "Game: LevelState pushed to StateManager" << std::endl;
+        std::cout << "Game: MenuState pushed to StateManager" << std::endl;
     }
 
-    // ← ADD EXPLICIT DESTRUCTOR DEFINITION
     Game::~Game() {
-        // Destructor moet gedefinieerd worden in .cpp waar State.h included is
-        // unique_ptr kan nu correct State destructor aanroepen
+        // Destructor body
     }
 
     void Game::run() {
