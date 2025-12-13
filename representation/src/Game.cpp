@@ -50,10 +50,7 @@ namespace representation {
                 if (event.type == sf::Event::Closed) {
                     window->close();
                 }
-                if (event.type == sf::Event::KeyPressed &&
-                    event.key.code == sf::Keyboard::Escape) {
-                    window->close();
-                }
+                // ← REMOVE ESC handling - states handle dit nu
 
                 stateManager->handleEvent(event);
             }

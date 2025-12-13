@@ -1,4 +1,6 @@
 #include "representation/states/LevelState.h"
+#include "representation/states/PausedState.h"  // ← ADD
+#include "representation/StateManager.h"          // ← ADD
 #include "logic/entities/PacManModel.h"
 #include <iostream>
 
@@ -13,7 +15,7 @@ namespace representation {
         world->setFactory(factory);
         world->loadMap(mapFile);
 
-        // Setup PacMan cell dimensions (voor center-locking)
+        // Setup PacMan cell dimensions
         logic::PacManModel* pacman = world->getPacMan();
         if (!pacman) {
             std::cerr << "ERROR: PacMan not found in map!" << std::endl;
@@ -26,30 +28,42 @@ namespace representation {
         float cellHeight = 2.0f / mapHeight;
         pacman->setCellDimensions(cellWidth, cellHeight);
 
-        std::cout << "LevelState initialized with map: " << mapFile << std::endl;
+        std::cout << "LevelState: Initialized" << std::endl;
     }
 
     void LevelState::update(float deltaTime) {
         world->update(deltaTime);
 
         // TODO: Check win/lose conditions
-        // if (world->getCoinsCollected() == world->getTotalCoins()) { ... }
-        // if (pacman->getLives() <= 0) { ... }
     }
 
     void LevelState::render() {
-        // World entities tekenen automatisch via Observer pattern
-        // Views roepen draw() aan bij notify()
-
-        // TODO: Later UI toevoegen (score, lives text)
+        // World entities draw themselves via Observer pattern
+        // TODO: Later add UI (score, lives)
     }
 
     void LevelState::handleEvent(const sf::Event& event) {
         logic::PacManModel* pacman = world->getPacMan();
         if (!pacman) return;
 
-        // Input handling - EXACT zoals main.cpp deed
         if (event.type == sf::Event::KeyPressed) {
+            // P = pause
+            if (event.key.code == sf::Keyboard::P) {
+                std::cout << "LevelState: P pressed, pausing game" << std::endl;
+                stateManager->pushState(std::make_unique<PausedState>(
+                        window, factory, camera, stateManager
+                ));
+                return;
+            }
+
+            // ESC = close game
+            if (event.key.code == sf::Keyboard::Escape) {
+                std::cout << "LevelState: ESC pressed, closing game" << std::endl;
+                window->close();
+                return;
+            }
+
+            // Arrow key handling
             if (event.key.code == sf::Keyboard::Up) {
                 if (pacman->getCurrentDirection() != logic::Direction::UP) {
                     pacman->setNextDirection(logic::Direction::UP);

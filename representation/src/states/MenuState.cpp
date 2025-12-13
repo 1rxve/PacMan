@@ -69,10 +69,15 @@ namespace representation {
             if (event.key.code == sf::Keyboard::Space) {
                 std::cout << "MenuState: SPACE pressed, transitioning to LevelState" << std::endl;
 
-                // Transition to LevelState
                 stateManager->pushState(std::make_unique<LevelState>(
                         window, factory, camera, stateManager, mapFile
                 ));
+            }
+
+            // ← ADD: ESC closes game
+            if (event.key.code == sf::Keyboard::Escape) {
+                std::cout << "MenuState: ESC pressed, closing game" << std::endl;
+                window->close();
             }
         }
     }
