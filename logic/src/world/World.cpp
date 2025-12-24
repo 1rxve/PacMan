@@ -7,9 +7,8 @@
 namespace logic {
     void World::update(float deltaTime) {
         for (const auto &entity: entities) {
-            PacManModel* pm = dynamic_cast<PacManModel*>(entity.get());
-
-            if (pm) {
+            if (entity->isPacMan()) {
+                PacManModel* pm = static_cast<PacManModel*>(entity.get());
                 // BUFFERED INPUT HANDLING
                 Direction nextDir = pm->getNextDirection();
                 if (nextDir != Direction::NONE && isDirectionValid(nextDir)) {
@@ -96,8 +95,8 @@ namespace logic {
                     case '#': {
                         if (factory) {
                             auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
-                            WallModel* wallPtr = dynamic_cast<WallModel*>(result.model.get());
-                            if (wallPtr) {
+                            if (result.model->isWall()) {
+                                WallModel* wallPtr = static_cast<WallModel*>(result.model.get());
                                 walls.push_back(wallPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -110,9 +109,8 @@ namespace logic {
                         if (factory) {
                             auto result = factory->createPacMan(normalizedX, normalizedY,
                                                                 cellWidth * 0.9f, cellHeight * 0.9f, 0.5f);
-                            pacman = dynamic_cast<PacManModel*>(result.model.get());
-
-                            if (pacman) {
+                            if (result.model->isPacMan()) {
+                                pacman = static_cast<PacManModel*>(result.model.get());
                                 pacman->setCellDimensions(cellWidth, cellHeight);
                             }
 
@@ -127,8 +125,8 @@ namespace logic {
                         if (factory) {
                             auto result = factory->createCoin(normalizedX, normalizedY,
                                                               cellWidth * 0.15f, cellHeight * 0.15f);
-                            CoinModel* coinPtr = dynamic_cast<CoinModel*>(result.model.get());
-                            if (coinPtr) {
+                            if (result.model->isCoin()) {
+                                CoinModel* coinPtr = static_cast<CoinModel*>(result.model.get());
                                 coins.push_back(coinPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -155,8 +153,9 @@ namespace logic {
 
     PacManModel* World::getPacMan() {
         for (auto& entity : entities) {
-            auto* pacman = dynamic_cast<PacManModel*>(entity.get());
-            if (pacman) return pacman;
+            if (entity->isPacMan()) {
+                return static_cast<PacManModel*>(entity.get());
+            }
         }
         return nullptr;
     }

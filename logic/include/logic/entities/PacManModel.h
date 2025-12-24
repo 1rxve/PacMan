@@ -48,6 +48,9 @@ namespace logic {
         void stopMovement();
 
         void setCellDimensions(float cellW, float cellH);
+
+        bool isPacMan() const override { return true; }
+
     };
 }
 

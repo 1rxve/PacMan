@@ -9,6 +9,9 @@ namespace logic {
             WallModel(float x, float y, float width, float height);
 
             void update(float deltaTime) override;
+
+        bool isWall() const override { return true; }
+
     };
 }
 

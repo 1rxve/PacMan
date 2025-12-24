@@ -22,6 +22,10 @@ namespace logic {
         std::vector<std::unique_ptr<EntityModel> > entities;
         std::vector<std::unique_ptr<Observer>> views;
         AbstractFactory* factory;
+
+        // Non-owning references to entities for performance optimization.
+        // Lifetime: Guaranteed by entities vector ownership (unique_ptr).
+        // Usage: Cached pointers to avoid searching entities vector in game loop.
         PacManModel* pacman;
         std::vector<WallModel*> walls;
         std::vector<CoinModel*> coins;

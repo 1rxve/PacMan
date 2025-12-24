@@ -15,6 +15,9 @@ namespace logic {
 
         bool isCollected() const;
         void collect();
+
+        bool isCoin() const override { return true; }
+
     };
 }
 
