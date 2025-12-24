@@ -17,7 +17,6 @@ namespace representation {
             std::cerr << "ERROR: Could not load sprite sheet!" << std::endl;
         }
 
-        std::cout << "Sprite sheet loaded once (shared by all Views)" << std::endl;
     }
 
     logic::EntityCreationResult ConcreteFactory::createWall(float x, float y, float w, float h) {

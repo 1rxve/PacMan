@@ -5,6 +5,13 @@
 #include <iostream>
 
 namespace representation {
+    LevelState::~LevelState() {
+        // Detach Score observer
+        if (world) {
+            world->getScoreSubject()->detach(world->getScoreObject());
+        }
+    }
+
     LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
                            const Camera* cam, StateManager* sm,
                            const std::string& mapFile)
@@ -22,13 +29,15 @@ namespace representation {
             return;
         }
 
+
         // Calculate cell dimensions
         auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
         float cellWidth = 2.0f / mapWidth;
         float cellHeight = 2.0f / mapHeight;
         pacman->setCellDimensions(cellWidth, cellHeight);
 
-        std::cout << "LevelState: Initialized" << std::endl;
+        world->getScoreSubject()->attach(world->getScoreObject());
+
     }
 
     void LevelState::update(float deltaTime) {
@@ -49,7 +58,6 @@ namespace representation {
         if (event.type == sf::Event::KeyPressed) {
             // P = pause
             if (event.key.code == sf::Keyboard::P) {
-                std::cout << "LevelState: P pressed, pausing game" << std::endl;
                 stateManager->pushState(std::make_unique<PausedState>(
                         window, factory, camera, stateManager
                 ));
@@ -58,7 +66,6 @@ namespace representation {
 
             // ESC = close game
             if (event.key.code == sf::Keyboard::Escape) {
-                std::cout << "LevelState: ESC pressed, closing game" << std::endl;
                 window->close();
                 return;
             }

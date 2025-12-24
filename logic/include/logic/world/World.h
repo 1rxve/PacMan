@@ -11,6 +11,7 @@
 #include "logic/entities/CoinModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
+#include "logic/utils/Score.h"
 
 namespace logic {
     class PacManModel;
@@ -31,10 +32,12 @@ namespace logic {
         std::vector<CoinModel*> coins;
 
         int coinsCollected;
+        Score score;
+        Subject scoreSubject;
 
 
     public:
-        World() : factory(nullptr), pacman(nullptr) {}
+        World() : factory(nullptr), pacman(nullptr), coinsCollected(0) {}
 
         void update(float deltaTime);
 
@@ -52,6 +55,10 @@ namespace logic {
 
         int getCoinsCollected() const { return coinsCollected; }
         int getTotalCoins() const { return static_cast<int>(coins.size()); }
+
+        int getScore() const { return score.getScore(); }
+        Score* getScoreObject() { return &score; }
+        Subject* getScoreSubject() { return &scoreSubject; }
     };
 }
 

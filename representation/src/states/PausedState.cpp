@@ -33,7 +33,6 @@ namespace representation {
             instructionText.setPosition(instructionX, 350);
         }
 
-        std::cout << "PausedState: Initialized" << std::endl;
     }
 
     void PausedState::update(float /*deltaTime*/) {
@@ -66,7 +65,6 @@ namespace representation {
             // P or ESC = resume
             if (event.key.code == sf::Keyboard::P ||
                 event.key.code == sf::Keyboard::Escape) {
-                std::cout << "PausedState: Resume key pressed" << std::endl;
                 stateManager->popState();
             }
         }

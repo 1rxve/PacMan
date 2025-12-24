@@ -8,18 +8,15 @@ namespace representation {
     Game::Game(sf::RenderWindow* win, const std::string& mapFile)
             : window(win), mapFile(mapFile) {
 
-        std::cout << "Game: Initializing..." << std::endl;
 
         // Create Camera
         camera = std::make_unique<Camera>(
                 static_cast<float>(window->getSize().x),
                 static_cast<float>(window->getSize().y)
         );
-        std::cout << "Game: Camera created" << std::endl;
 
         // Create Factory
         factory = std::make_unique<ConcreteFactory>(window, camera.get());
-        std::cout << "Game: ConcreteFactory created" << std::endl;
 
         // Create StateManager
         stateManager = std::make_unique<StateManager>();
@@ -28,7 +25,6 @@ namespace representation {
         stateManager->pushState(std::make_unique<MenuState>(
                 window, factory.get(), camera.get(), stateManager.get(), mapFile
         ));
-        std::cout << "Game: MenuState pushed to StateManager" << std::endl;
     }
 
     Game::~Game() {
@@ -39,7 +35,6 @@ namespace representation {
         logic::Stopwatch& stopwatch = logic::Stopwatch::getInstance();
         stopwatch.restart();
 
-        std::cout << "Game: Starting main loop" << std::endl;
 
         while (window->isOpen()) {
             stopwatch.update();
@@ -61,6 +56,5 @@ namespace representation {
             window->display();
         }
 
-        std::cout << "Game: Main loop ended" << std::endl;
     }
 }

@@ -6,6 +6,8 @@
 
 namespace logic {
     void World::update(float deltaTime) {
+        score.update(deltaTime);
+
         for (const auto &entity: entities) {
             if (entity->isPacMan()) {
                 PacManModel* pm = static_cast<PacManModel*>(entity.get());
@@ -36,12 +38,19 @@ namespace logic {
                 }
 
                 // ← NIEUW: Check coin collision
+                // Check coin collision
                 for (CoinModel* coin : coins) {
                     if (!coin->isCollected() && pm->intersects(*coin)) {
                         coin->collect();
                         coinsCollected++;
+
+                        // Notify score via Observer pattern
+                        score.setEvent(logic::ScoreEvent::COIN_COLLECTED);
+                        scoreSubject.notify();
+
                         std::cout << "Coin collected! Total: " << coinsCollected
-                                  << "/" << coins.size() << std::endl;
+                                  << "/" << coins.size()
+                                  << " | Score: " << score.getScore() << std::endl;
                     }
                 }
 

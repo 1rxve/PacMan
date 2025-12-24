@@ -12,7 +12,6 @@ namespace representation {
         // Try to load font (Windows path)
         if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
             fontLoaded = true;
-            std::cout << "MenuState: Font loaded successfully" << std::endl;
         } else {
             std::cerr << "MenuState: Could not load font, using default rendering" << std::endl;
         }
@@ -39,7 +38,6 @@ namespace representation {
             instructionText.setPosition(instructionX, 300);
         }
 
-        std::cout << "MenuState: Initialized" << std::endl;
     }
 
     void MenuState::update(float /*deltaTime*/) {
@@ -67,7 +65,6 @@ namespace representation {
     void MenuState::handleEvent(const sf::Event& event) {
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::Space) {
-                std::cout << "MenuState: SPACE pressed, transitioning to LevelState" << std::endl;
 
                 stateManager->pushState(std::make_unique<LevelState>(
                         window, factory, camera, stateManager, mapFile
@@ -76,7 +73,6 @@ namespace representation {
 
             // ← ADD: ESC closes game
             if (event.key.code == sf::Keyboard::Escape) {
-                std::cout << "MenuState: ESC pressed, closing game" << std::endl;
                 window->close();
             }
         }
