@@ -77,7 +77,7 @@ namespace representation {
         int totalCoins = world->getTotalCoins();
 
         // WIN: All coins collected
-        if (coinsCollected >= totalCoins && totalCoins > 0) {
+        if (coinsCollected >= 5 ) {
             stateManager->pushState(std::make_unique<VictoryState>(
                     window, factory, camera, stateManager,
                     true,

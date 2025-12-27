@@ -1,6 +1,7 @@
 #include "logic/utils/Score.h"
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 namespace logic {
     Score::Score()
@@ -70,5 +71,56 @@ namespace logic {
 
     int Score::getScore() const {
         return score;
+    }
+
+    std::string Score::getHighScoresFilePath() {
+        return "highscores.txt";
+    }
+
+    std::vector<Score::HighScoreEntry> Score::loadHighScores() {
+        std::vector<HighScoreEntry> scores;
+
+        std::ifstream file(getHighScoresFilePath());
+        if (!file.is_open()) {
+            return scores;  // File doesn't exist yet
+        }
+
+        std::string name;
+        int score;
+
+        while (file >> name >> score) {
+            if (scores.size() < 5) {
+                scores.push_back({name, score});
+            }
+        }
+
+        file.close();
+        return scores;
+    }
+
+    void Score::saveHighScore(const std::string& name, int score) {
+        std::vector<HighScoreEntry> scores = loadHighScores();
+
+        scores.push_back({name, score});
+
+        std::sort(scores.begin(), scores.end(),
+                  [](const HighScoreEntry& a, const HighScoreEntry& b) {
+                      return a.score > b.score;
+                  });
+
+        if (scores.size() > 5) {
+            scores.resize(5);
+        }
+
+        std::ofstream file(getHighScoresFilePath());
+        if (!file.is_open()) {
+            return;
+        }
+
+        for (const auto& entry : scores) {
+            file << entry.name << " " << entry.score << "\n";
+        }
+
+        file.close();
     }
 }

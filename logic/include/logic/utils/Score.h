@@ -2,6 +2,8 @@
 #define PACMANGAME_SCORE_H
 
 #include "logic/patterns/Observer.h"
+#include <string>
+#include <vector>
 
 namespace logic {
     enum class ScoreEvent {
@@ -12,17 +14,21 @@ namespace logic {
         LEVEL_CLEARED
     };
 
+
+
     class Score : public Observer {
     private:
         int score;
         float timeSinceLastCoin;
-        float accumulatedDecay;  // ← NIEUW: accumulate fractional decay
+        float accumulatedDecay;
 
         static constexpr int BASE_COIN_VALUE = 10;
         static constexpr float DECAY_RATE = 1.0f;
         static constexpr float TIME_BONUS_MULTIPLIER = 2.0f;
 
         ScoreEvent lastEvent;
+
+        void handleCoinCollected();
 
     public:
         Score();
@@ -34,8 +40,17 @@ namespace logic {
 
         int getScore() const;
 
-    private:
-        void handleCoinCollected();
+
+        // High score management
+        struct HighScoreEntry {
+            std::string name;
+            int score;
+        };
+
+        static void saveHighScore(const std::string& name, int score);
+        static std::vector<HighScoreEntry> loadHighScores();
+        static std::string getHighScoresFilePath();
+
     };
 }
 

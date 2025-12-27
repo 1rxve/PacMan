@@ -1,6 +1,8 @@
 #include "representation/states/VictoryState.h"
 #include "representation/states/MenuState.h"
 #include "representation/StateManager.h"
+#include "logic/utils/Score.h"
+
 
 namespace representation {
     VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac,
@@ -11,6 +13,10 @@ namespace representation {
               finalScore(finalScore),
               mapFile(mapFile),
               fontLoaded(false) {
+
+        if (won && finalScore > 0) {
+            logic::Score::saveHighScore("YOU", finalScore);
+        }
 
         // Load font
         if (font.loadFromFile("resources/fonts/joystix.otf")) {

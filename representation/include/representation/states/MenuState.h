@@ -14,6 +14,9 @@ namespace representation {
         sf::Text highScoresTitle;
         sf::Text highScoresText[5];
         bool fontLoaded;
+        bool needsRefresh;
+
+        void refreshHighScores();
 
     public:
         MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac,

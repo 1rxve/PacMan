@@ -1,6 +1,7 @@
 #include "representation/states/MenuState.h"
 #include "representation/states/LevelState.h"
 #include "representation/StateManager.h"
+#include "logic/utils/Score.h"
 
 namespace representation {
     MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac,
@@ -31,20 +32,24 @@ namespace representation {
             highScoresTitle.setPosition(window->getSize().x / 2.0f - 150, 200);
 
             // Top 5 high scores (placeholder data for now)
-            std::string dummyScores[5] = {
-                    "1. 5000",
-                    "2. 4500",
-                    "3. 4000",
-                    "4. 3500",
-                    "5. 3000"
-            };
+            auto highScores = logic::Score::loadHighScores();
 
             for (int i = 0; i < 5; i++) {
                 highScoresText[i].setFont(font);
-                highScoresText[i].setString(dummyScores[i]);
+
+                if (i < static_cast<int>(highScores.size())) {
+                    std::string text = std::to_string(i + 1) + ". " +
+                                       highScores[i].name + " - " +
+                                       std::to_string(highScores[i].score);
+                    highScoresText[i].setString(text);
+                } else {
+                    std::string text = std::to_string(i + 1) + ". --- - 0";
+                    highScoresText[i].setString(text);
+                }
+
                 highScoresText[i].setCharacterSize(30);
                 highScoresText[i].setFillColor(sf::Color::White);
-                highScoresText[i].setPosition(window->getSize().x / 2.0f - 100, 280 + i * 50);
+                highScoresText[i].setPosition(window->getSize().x / 2.0f - 120, 280 + i * 50);
             }
 
             // Instruction text
@@ -54,13 +59,21 @@ namespace representation {
             instructionText.setFillColor(sf::Color::Green);
             instructionText.setPosition(window->getSize().x / 2.0f - 180, 600);
         }
+
+        needsRefresh = false;
     }
 
     MenuState::~MenuState() {
     }
 
     void MenuState::update(float /*deltaTime*/) {
-        // Nothing to update in menu
+        // Check if we need to refresh high scores (after returning from game)
+        if (!needsRefresh) {
+            needsRefresh = true;  // Set flag for next time
+        } else {
+            refreshHighScores();
+            needsRefresh = false;
+        }
     }
 
     void MenuState::render() {
@@ -93,6 +106,24 @@ namespace representation {
 
             if (event.key.code == sf::Keyboard::Escape) {
                 window->close();
+            }
+        }
+    }
+
+    void MenuState::refreshHighScores() {
+        if (!fontLoaded) return;
+
+        auto highScores = logic::Score::loadHighScores();
+
+        for (int i = 0; i < 5; i++) {
+            if (i < static_cast<int>(highScores.size())) {
+                std::string text = std::to_string(i + 1) + ". " +
+                                   highScores[i].name + " - " +
+                                   std::to_string(highScores[i].score);
+                highScoresText[i].setString(text);
+            } else {
+                std::string text = std::to_string(i + 1) + ". --- - 0";
+                highScoresText[i].setString(text);
             }
         }
     }
