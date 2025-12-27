@@ -23,6 +23,20 @@ namespace logic {
 
                 pm->update(deltaTime);
 
+                float newX = pm->getX();
+                float newY = pm->getY();
+
+                const float WORLD_LEFT = -1.0f;
+                const float WORLD_RIGHT = 1.0f;
+                const float TUNNEL_THRESHOLD = 0.05f;
+
+                if (newX < WORLD_LEFT - TUNNEL_THRESHOLD) {
+                    pm->setPosition(WORLD_RIGHT - TUNNEL_THRESHOLD, newY);
+                }
+                else if (newX > WORLD_RIGHT + TUNNEL_THRESHOLD) {
+                    pm->setPosition(WORLD_LEFT + TUNNEL_THRESHOLD, newY);
+                }
+
                 // Check wall collision
                 bool collided = false;
                 for (WallModel* wall : walls) {
