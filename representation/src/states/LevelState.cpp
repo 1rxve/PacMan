@@ -22,6 +22,43 @@ namespace representation {
         world->setFactory(factory);
         world->loadMap(mapFile);
 
+
+        // Load font for UI
+        fontLoaded = false;
+        if (font.loadFromFile("resources/fonts/joystix.otf")) {
+            fontLoaded = true;
+
+            // Score text
+            scoreText.setFont(font);
+            scoreText.setCharacterSize(24);
+            scoreText.setFillColor(sf::Color::Yellow);
+            scoreText.setPosition(10.0f, 10.0f);
+
+            // Lives text
+            livesText.setFont(font);
+            livesText.setCharacterSize(24);
+            livesText.setFillColor(sf::Color::White);
+            livesText.setPosition(10.0f, 40.0f);
+
+            std::cout << "LevelState: Font loaded for UI" << std::endl;
+        } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+            fontLoaded = true;
+
+            scoreText.setFont(font);
+            scoreText.setCharacterSize(24);
+            scoreText.setFillColor(sf::Color::Yellow);
+            scoreText.setPosition(10.0f, 10.0f);
+
+            livesText.setFont(font);
+            livesText.setCharacterSize(24);
+            livesText.setFillColor(sf::Color::White);
+            livesText.setPosition(10.0f, 40.0f);
+
+            std::cerr << "LevelState: Using fallback font" << std::endl;
+        } else {
+            std::cerr << "LevelState: Could not load font, UI disabled" << std::endl;
+        }
+
         // Setup PacMan cell dimensions
         logic::PacManModel* pacman = world->getPacMan();
         if (!pacman) {
@@ -43,12 +80,23 @@ namespace representation {
     void LevelState::update(float deltaTime) {
         world->update(deltaTime);
 
-        // TODO: Check win/lose conditions
+        // Update UI text
+        if (fontLoaded) {
+            scoreText.setString("SCORE: " + std::to_string(world->getScore()));
+
+            logic::PacManModel* pacman = world->getPacMan();
+            if (pacman) {
+                livesText.setString("LIVES: " + std::to_string(pacman->getLives()));
+            }
+        }
     }
 
     void LevelState::render() {
-        // World entities draw themselves via Observer pattern
-        // TODO: Later add UI (score, lives)
+        // Draw UI overlay
+        if (fontLoaded) {
+            window->draw(scoreText);
+            window->draw(livesText);
+        }
     }
 
     void LevelState::handleEvent(const sf::Event& event) {

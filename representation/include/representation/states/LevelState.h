@@ -13,6 +13,11 @@ namespace representation {
         std::unique_ptr<logic::World> world;
         std::string mapFile;
 
+        sf::Font font;
+        sf::Text scoreText;
+        sf::Text livesText;
+        bool fontLoaded;
+
     public:
         LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
                    const Camera* cam, StateManager* sm,

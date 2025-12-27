@@ -11,6 +11,8 @@ namespace representation {
         sf::Font font;
         sf::Text titleText;
         sf::Text instructionText;
+        sf::Text highScoresTitle;
+        sf::Text highScoresText[5];
         bool fontLoaded;
 
     public:

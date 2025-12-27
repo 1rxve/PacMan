@@ -8,7 +8,9 @@ namespace representation {
             : State(win, fac, cam, sm), fontLoaded(false) {
 
         // Load font
-        if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+        if (font.loadFromFile("resources/fonts/joystix.otf")) {
+            fontLoaded = true;
+        } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
             fontLoaded = true;
         }
 
