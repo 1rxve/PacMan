@@ -123,4 +123,16 @@ namespace logic {
 
         file.close();
     }
+
+    bool Score::isHighScore(int score) {
+        std::vector<HighScoreEntry> scores = loadHighScores();
+
+        // Als er minder dan 5 scores zijn, is elke score een high score
+        if (scores.size() < 5) {
+            return true;
+        }
+
+        // Check of score hoger is dan de laagste in top 5
+        return score > scores[4].score;  // scores[4] is de 5de (laagste)
+    }
 }

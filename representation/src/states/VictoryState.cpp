@@ -14,9 +14,6 @@ namespace representation {
               mapFile(mapFile),
               fontLoaded(false) {
 
-        if (won && finalScore > 0) {
-            logic::Score::saveHighScore("YOU", finalScore);
-        }
 
         // Load font
         if (font.loadFromFile("resources/fonts/joystix.otf")) {

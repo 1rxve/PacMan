@@ -3,6 +3,8 @@
 #include "representation/states/VictoryState.h"
 #include "representation/StateManager.h"
 #include "logic/entities/PacManModel.h"
+#include "representation/states/NameEntryState.h"
+
 
 namespace representation {
     LevelState::~LevelState() {
@@ -77,13 +79,27 @@ namespace representation {
         int totalCoins = world->getTotalCoins();
 
         // WIN: All coins collected
-        if (coinsCollected >= 5 ) {
-            stateManager->pushState(std::make_unique<VictoryState>(
-                    window, factory, camera, stateManager,
-                    true,
-                    world->getScore(),
-                    mapFile
-            ));
+        // WIN: All coins collected
+        if (coinsCollected >= 5) {
+            int finalScore = world->getScore();
+
+            // Check if score qualifies for top 5
+            if (logic::Score::isHighScore(finalScore)) {
+                // Show name entry
+                stateManager->pushState(std::make_unique<NameEntryState>(
+                        window, factory, camera, stateManager,
+                        finalScore,
+                        mapFile
+                ));
+            } else {
+                // Score not high enough - go directly to victory screen
+                stateManager->pushState(std::make_unique<VictoryState>(
+                        window, factory, camera, stateManager,
+                        true,
+                        finalScore,
+                        mapFile
+                ));
+            }
             return;
         }
 
