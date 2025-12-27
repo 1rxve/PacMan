@@ -28,7 +28,7 @@ namespace logic {
 
                 const float WORLD_LEFT = -1.0f;
                 const float WORLD_RIGHT = 1.0f;
-                const float TUNNEL_THRESHOLD = 0.05f;
+                const float TUNNEL_THRESHOLD = 0.02f;
 
                 if (newX < WORLD_LEFT - TUNNEL_THRESHOLD) {
                     pm->setPosition(WORLD_RIGHT - TUNNEL_THRESHOLD, newY);
