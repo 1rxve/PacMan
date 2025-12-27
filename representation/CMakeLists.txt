@@ -31,6 +31,8 @@ set(REPRESENTATION_SOURCES
         include/representation/states/MenuState.h
         src/states/PausedState.cpp
         include/representation/states/PausedState.h
+        src/states/VictoryState.cpp
+        include/representation/states/VictoryState.h
 )
 
 # Create executable

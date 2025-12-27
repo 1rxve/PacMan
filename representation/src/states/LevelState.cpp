@@ -1,6 +1,7 @@
 #include "representation/states/LevelState.h"
-#include "representation/states/PausedState.h"  // ← ADD
-#include "representation/StateManager.h"          // ← ADD
+#include "representation/states/PausedState.h"
+#include "representation/states/VictoryState.h"
+#include "representation/StateManager.h"
 #include "logic/entities/PacManModel.h"
 #include <iostream>
 
@@ -88,6 +89,37 @@ namespace representation {
             if (pacman) {
                 livesText.setString("LIVES: " + std::to_string(pacman->getLives()));
             }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // WIN/LOSE CONDITIONS
+        // ═══════════════════════════════════════════════════
+
+        // WIN: All coins collected
+        if (world->getCoinsCollected() >= 1) {
+            std::cout << "LevelState: All coins collected! Victory!" << std::endl;
+
+            stateManager->pushState(std::make_unique<VictoryState>(
+                    window, factory, camera, stateManager,
+                    true,
+                    world->getScore(),
+                    mapFile
+            ));
+            return;
+        }
+
+        // LOSE: No lives remaining
+        logic::PacManModel* pacman = world->getPacMan();
+        if (pacman && pacman->getLives() <= 0) {
+            std::cout << "LevelState: No lives remaining! Game Over!" << std::endl;
+
+            stateManager->pushState(std::make_unique<VictoryState>(
+                    window, factory, camera, stateManager,
+                    false,
+                    world->getScore(),
+                    mapFile
+            ));
+            return;
         }
     }
 
