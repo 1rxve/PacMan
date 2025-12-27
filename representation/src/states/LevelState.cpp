@@ -3,14 +3,10 @@
 #include "representation/states/VictoryState.h"
 #include "representation/StateManager.h"
 #include "logic/entities/PacManModel.h"
-#include <iostream>
 
 namespace representation {
     LevelState::~LevelState() {
-        // Detach Score observer
-        if (world) {
-            world->getScoreSubject()->detach(world->getScoreObject());
-        }
+        // World unique_ptr auto-destructs and handles cleanup
     }
 
     LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
@@ -23,25 +19,20 @@ namespace representation {
         world->setFactory(factory);
         world->loadMap(mapFile);
 
-
         // Load font for UI
         fontLoaded = false;
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
             fontLoaded = true;
 
-            // Score text
             scoreText.setFont(font);
             scoreText.setCharacterSize(24);
             scoreText.setFillColor(sf::Color::Yellow);
             scoreText.setPosition(10.0f, 10.0f);
 
-            // Lives text
             livesText.setFont(font);
             livesText.setCharacterSize(24);
             livesText.setFillColor(sf::Color::White);
             livesText.setPosition(10.0f, 40.0f);
-
-            std::cout << "LevelState: Font loaded for UI" << std::endl;
         } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
             fontLoaded = true;
 
@@ -54,28 +45,18 @@ namespace representation {
             livesText.setCharacterSize(24);
             livesText.setFillColor(sf::Color::White);
             livesText.setPosition(10.0f, 40.0f);
-
-            std::cerr << "LevelState: Using fallback font" << std::endl;
-        } else {
-            std::cerr << "LevelState: Could not load font, UI disabled" << std::endl;
         }
 
         // Setup PacMan cell dimensions
         logic::PacManModel* pacman = world->getPacMan();
-        if (!pacman) {
-            std::cerr << "ERROR: PacMan not found in map!" << std::endl;
-            return;
+        if (pacman) {
+            auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
+            float cellWidth = 2.0f / mapWidth;
+            float cellHeight = 2.0f / mapHeight;
+            pacman->setCellDimensions(cellWidth, cellHeight);
         }
 
-
-        // Calculate cell dimensions
-        auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
-        float cellWidth = 2.0f / mapWidth;
-        float cellHeight = 2.0f / mapHeight;
-        pacman->setCellDimensions(cellWidth, cellHeight);
-
         world->getScoreSubject()->attach(world->getScoreObject());
-
     }
 
     void LevelState::update(float deltaTime) {
@@ -91,14 +72,12 @@ namespace representation {
             }
         }
 
-        // ═══════════════════════════════════════════════════
-        // WIN/LOSE CONDITIONS
-        // ═══════════════════════════════════════════════════
+        // Victory conditions
+        int coinsCollected = world->getCoinsCollected();
+        int totalCoins = world->getTotalCoins();
 
         // WIN: All coins collected
-        if (world->getCoinsCollected() >= 1) {
-            std::cout << "LevelState: All coins collected! Victory!" << std::endl;
-
+        if (coinsCollected >= totalCoins && totalCoins > 0) {
             stateManager->pushState(std::make_unique<VictoryState>(
                     window, factory, camera, stateManager,
                     true,
@@ -111,8 +90,6 @@ namespace representation {
         // LOSE: No lives remaining
         logic::PacManModel* pacman = world->getPacMan();
         if (pacman && pacman->getLives() <= 0) {
-            std::cout << "LevelState: No lives remaining! Game Over!" << std::endl;
-
             stateManager->pushState(std::make_unique<VictoryState>(
                     window, factory, camera, stateManager,
                     false,
@@ -136,7 +113,6 @@ namespace representation {
         if (!pacman) return;
 
         if (event.type == sf::Event::KeyPressed) {
-            // P = pause
             if (event.key.code == sf::Keyboard::P) {
                 stateManager->pushState(std::make_unique<PausedState>(
                         window, factory, camera, stateManager
@@ -144,7 +120,6 @@ namespace representation {
                 return;
             }
 
-            // ESC = close game
             if (event.key.code == sf::Keyboard::Escape) {
                 window->close();
                 return;

@@ -39,6 +39,8 @@ namespace logic {
     public:
         World() : factory(nullptr), pacman(nullptr), coinsCollected(0) {}
 
+        ~World();
+
         void update(float deltaTime);
 
         void setFactory(AbstractFactory* factory);

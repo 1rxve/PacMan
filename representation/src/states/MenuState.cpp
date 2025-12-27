@@ -1,7 +1,6 @@
 #include "representation/states/MenuState.h"
 #include "representation/states/LevelState.h"
 #include "representation/StateManager.h"
-#include <iostream>
 
 namespace representation {
     MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac,
@@ -10,14 +9,10 @@ namespace representation {
             : State(win, fac, cam, sm), mapFile(mapFile), fontLoaded(false) {
 
         // Load custom font with fallback
-        if (font.loadFromFile("resources/fonts/joystix.otf")) {  // ← JE FONT NAAM
+        if (font.loadFromFile("resources/fonts/joystix.otf")) {
             fontLoaded = true;
-            std::cout << "MenuState: Custom font loaded" << std::endl;
         } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
             fontLoaded = true;
-            std::cout << "MenuState: Fallback font loaded" << std::endl;
-        } else {
-            std::cerr << "MenuState: No font available" << std::endl;
         }
 
         if (fontLoaded) {
@@ -59,8 +54,9 @@ namespace representation {
             instructionText.setFillColor(sf::Color::Green);
             instructionText.setPosition(window->getSize().x / 2.0f - 180, 600);
         }
+    }
 
-        std::cout << "MenuState: Initialized" << std::endl;
+    MenuState::~MenuState() {
     }
 
     void MenuState::update(float /*deltaTime*/) {

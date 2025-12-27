@@ -20,6 +20,8 @@ namespace representation {
                   const Camera* cam, StateManager* sm,
                   const std::string& mapFile);
 
+        ~MenuState();
+
         void update(float deltaTime) override;
         void render() override;
         void handleEvent(const sf::Event& event) override;

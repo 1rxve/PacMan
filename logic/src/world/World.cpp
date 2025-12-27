@@ -5,19 +5,29 @@
 #include "logic/entities/CoinModel.h"
 
 namespace logic {
+    World::~World() {
+        scoreSubject.detach(&score);
+        views.clear();
+        entities.clear();
+        pacman = nullptr;
+        walls.clear();
+        coins.clear();
+    }
+
     void World::update(float deltaTime) {
         score.update(deltaTime);
 
         for (const auto &entity: entities) {
             if (entity->isPacMan()) {
                 PacManModel* pm = static_cast<PacManModel*>(entity.get());
-                // BUFFERED INPUT HANDLING
+
+                // Buffered input handling
                 Direction nextDir = pm->getNextDirection();
                 if (nextDir != Direction::NONE && isDirectionValid(nextDir)) {
                     pm->applyNextDirection();
                 }
 
-                // PREDICTIVE COLLISION
+                // Predictive collision
                 float oldX = pm->getX();
                 float oldY = pm->getY();
 
@@ -26,6 +36,7 @@ namespace logic {
                 float newX = pm->getX();
                 float newY = pm->getY();
 
+                // Tunnel wraparound
                 const float WORLD_LEFT = -1.0f;
                 const float WORLD_RIGHT = 1.0f;
                 const float TUNNEL_THRESHOLD = 0.02f;
@@ -37,7 +48,7 @@ namespace logic {
                     pm->setPosition(WORLD_LEFT + TUNNEL_THRESHOLD, newY);
                 }
 
-                // Check wall collision
+                // Wall collision
                 bool collided = false;
                 for (WallModel* wall : walls) {
                     if (pm->intersects(*wall)) {
@@ -51,20 +62,14 @@ namespace logic {
                     pm->stopMovement();
                 }
 
-                // ← NIEUW: Check coin collision
-                // Check coin collision
+                // Coin collision
                 for (CoinModel* coin : coins) {
                     if (!coin->isCollected() && pm->intersects(*coin)) {
                         coin->collect();
                         coinsCollected++;
 
-                        // Notify score via Observer pattern
-                        score.setEvent(logic::ScoreEvent::COIN_COLLECTED);
+                        score.setEvent(ScoreEvent::COIN_COLLECTED);
                         scoreSubject.notify();
-
-                        std::cout << "Coin collected! Total: " << coinsCollected
-                                  << "/" << coins.size()
-                                  << " | Score: " << score.getScore() << std::endl;
                     }
                 }
 
@@ -78,14 +83,13 @@ namespace logic {
         this->factory = factory;
     }
 
-    void World::addEntity(std::unique_ptr<logic::EntityModel> entity) {
+    void World::addEntity(std::unique_ptr<EntityModel> entity) {
         entities.push_back(std::move(entity));
     }
 
     void World::loadMap(const std::string &filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "ERROR: Could not open map file: " << filename << std::endl;
             return;
         }
 
@@ -97,7 +101,6 @@ namespace logic {
         file.close();
 
         if (mapLines.empty()) {
-            std::cerr << "ERROR: Map file is empty!" << std::endl;
             return;
         }
 
@@ -143,7 +146,6 @@ namespace logic {
                         break;
                     }
 
-                        // ← NIEUW: Coin symbol
                     case '.': {
                         if (factory) {
                             auto result = factory->createCoin(normalizedX, normalizedY,
@@ -158,20 +160,14 @@ namespace logic {
                         break;
                     }
 
-                    case ' ':  // ← NIEUW: Empty space
+                    case ' ':
                         break;
 
                     default:
-                        std::cerr << "WARNING: Unknown symbol '" << symbol
-                                  << "' at row " << row << ", col " << col << std::endl;
                         break;
                 }
             }
         }
-
-        std::cout << "Map loaded: " << width << "x" << height
-                  << " (" << entities.size() << " entities, "
-                  << coins.size() << " coins)" << std::endl;
     }
 
     PacManModel* World::getPacMan() {
@@ -186,7 +182,6 @@ namespace logic {
     std::pair<int, int> World::getMapDimensions(const std::string& filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "ERROR: Could not open map file: " << filename << std::endl;
             return {0, 0};
         }
 
@@ -198,7 +193,6 @@ namespace logic {
         file.close();
 
         if (lines.empty()) {
-            std::cerr << "ERROR: Map file is empty!" << std::endl;
             return {0, 0};
         }
 

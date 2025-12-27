@@ -1,7 +1,6 @@
 #include "representation/states/VictoryState.h"
 #include "representation/states/MenuState.h"
 #include "representation/StateManager.h"
-#include <iostream>
 
 namespace representation {
     VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac,
@@ -21,7 +20,7 @@ namespace representation {
         }
 
         if (fontLoaded) {
-            // Title text (YOU WON / GAME OVER)
+            // Title text
             titleText.setFont(font);
             titleText.setString(won ? "YOU WON!" : "GAME OVER");
             titleText.setCharacterSize(64);
@@ -51,9 +50,6 @@ namespace representation {
             instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
             instructionText.setPosition(window->getSize().x / 2.0f, 500);
         }
-
-        std::cout << "VictoryState: " << (won ? "WIN" : "LOSE")
-                  << " | Score: " << finalScore << std::endl;
     }
 
     void VictoryState::update(float /*deltaTime*/) {
@@ -83,19 +79,21 @@ namespace representation {
     }
 
     void VictoryState::handleEvent(const sf::Event& event) {
+        if (event.type != sf::Event::KeyPressed) {
+            return;
+        }
+
         if (event.key.code == sf::Keyboard::R) {
-            std::cout << "VictoryState: Restart pressed" << std::endl;
+            // Copy pointer before destroying self
+            StateManager* sm = stateManager;
 
-            stateManager->popState();  // Pop VictoryState
-            stateManager->popState();  // Pop LevelState
+            sm->popState();  // Pop VictoryState
+            sm->popState();  // Pop LevelState
 
-            // Safety: recreate MenuState if stack is empty
-            if (stateManager->isEmpty()) {
-                std::cout << "Stack empty - recreating MenuState" << std::endl;
-                stateManager->pushState(std::make_unique<MenuState>(
-                        window, factory, camera, stateManager, mapFile
-                ));
-            }
+            return;
+        }
+        else if (event.key.code == sf::Keyboard::Escape) {
+            window->close();
         }
     }
 }
