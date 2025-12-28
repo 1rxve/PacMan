@@ -22,6 +22,7 @@ namespace logic {
         virtual EntityCreationResult createCoin(float x, float y, float w, float h) = 0;
         virtual EntityCreationResult createGhost(float x, float y, float w, float h, GhostType type, float spawnDelay) = 0;
         virtual EntityCreationResult createDoor(float x, float y, float w, float h) = 0;
+        virtual EntityCreationResult createNoEntry(float x, float y, float w, float h) = 0;
     };
 }
 

@@ -11,6 +11,7 @@
 #include "logic/entities/CoinModel.h"
 #include "logic/entities/GhostModel.h"
 #include "logic/entities/DoorModel.h"
+#include "logic/entities/NoEntryModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 #include "logic/utils/Score.h"
@@ -34,6 +35,8 @@ namespace logic {
         std::vector<CoinModel*> coins;
         std::vector<GhostModel*> ghosts;
         std::vector<DoorModel*> doors;
+        std::vector<NoEntryModel*> noEntries;
+
 
         int coinsCollected;
         Score score;

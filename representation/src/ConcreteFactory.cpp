@@ -10,6 +10,7 @@
 #include "logic/entities/GhostModel.h"
 #include "representation/views/DoorView.h"
 #include "logic/entities/DoorModel.h"
+#include "logic/entities/NoEntryModel.h"
 
 namespace representation {
     ConcreteFactory::ConcreteFactory(sf::RenderWindow* window, const Camera* camera)
@@ -52,5 +53,11 @@ namespace representation {
         auto model = std::make_unique<logic::DoorModel>(x, y, w, h);
         auto view = std::make_unique<DoorView>(model.get(), window, camera, doorTexture);  // ← USE doorTexture
         return {std::move(model), std::move(view)};
+    }
+
+    logic::EntityCreationResult ConcreteFactory::createNoEntry(float x, float y, float w, float h) {
+        auto model = std::make_unique<logic::NoEntryModel>(x, y, w, h);
+        // No view needed - invisible barrier
+        return {std::move(model), nullptr};
     }
 }

@@ -12,18 +12,14 @@ namespace logic {
     World::~World() {
         scoreSubject.detach(&score);
 
-        // CORRECT ORDER:
-        // 1. Clear raw pointer caches
         pacman = nullptr;
         walls.clear();
         coins.clear();
         ghosts.clear();
         doors.clear();
+        noEntries.clear();
 
-        // 2. Destroy observers (views) BEFORE subjects (entities)
         views.clear();
-
-        // 3. Finally destroy entities
         entities.clear();
     }
 
@@ -157,8 +153,16 @@ namespace logic {
                     }
                 }
 
+                bool noEntryCollision = false;
+                for (NoEntryModel* noEntry : noEntries) {
+                    if (ghost->intersects(*noEntry)) {
+                        noEntryCollision = true;
+                        break;
+                    }
+                }
+
                 // Handle collision
-                if (wallCollision || doorCollision) {
+                if (wallCollision || doorCollision || noEntryCollision) {
                     ghost->setPosition(oldX, oldY);
                     ghost->stopMovement();
                     Direction viableDir = getViableDirectionForGhost(ghost);
@@ -328,6 +332,21 @@ namespace logic {
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case 'N': {  // No Entry (ghosts blocked, PacMan can pass)
+                        if (factory) {
+                            auto result = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
+                            if (result.model->isNoEntry()) {
+                                NoEntryModel* noEntryPtr = static_cast<NoEntryModel*>(result.model.get());
+                                noEntries.push_back(noEntryPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            if (result.view) {
+                                views.push_back(std::move(result.view));
+                            }
                         }
                         break;
                     }
@@ -504,6 +523,20 @@ namespace logic {
             }
 
             if (!hitObstacle) {
+                for (const NoEntryModel* noEntry : noEntries) {
+                    float neLeft = noEntry->getX() - noEntry->getWidth() / 2.0f;
+                    float neRight = noEntry->getX() + noEntry->getWidth() / 2.0f;
+                    float neTop = noEntry->getY() - noEntry->getHeight() / 2.0f;
+                    float neBottom = noEntry->getY() + noEntry->getHeight() / 2.0f;
+
+                    if (!(right < neLeft || left > neRight || bottom < neTop || top > neBottom)) {
+                        hitObstacle = true;  // NoEntry always blocks ghosts
+                        break;
+                    }
+                }
+            }
+
+            if (!hitObstacle) {
                 viableDirections.push_back(dir);
             }
         }
@@ -588,6 +621,20 @@ namespace logic {
             }
 
             if (!hitObstacle) {
+                for (const NoEntryModel* noEntry : noEntries) {
+                    float neLeft = noEntry->getX() - noEntry->getWidth() / 2.0f;
+                    float neRight = noEntry->getX() + noEntry->getWidth() / 2.0f;
+                    float neTop = noEntry->getY() - noEntry->getHeight() / 2.0f;
+                    float neBottom = noEntry->getY() + noEntry->getHeight() / 2.0f;
+
+                    if (!(right < neLeft || left > neRight || bottom < neTop || top > neBottom)) {
+                        hitObstacle = true;  // NoEntry always blocks ghosts
+                        break;
+                    }
+                }
+            }
+
+            if (!hitObstacle) {
                 viableDirections.push_back(dir);
             }
         }
@@ -596,21 +643,16 @@ namespace logic {
     }
 
     void World::clearWorld() {
-        std::cout << "=== CLEARING WORLD ===" << std::endl;
-        std::cout << "BEFORE clear - doors: " << doors.size() << ", entities: " << entities.size() << std::endl;
-
         walls.clear();
         ghosts.clear();
         doors.clear();
         coins.clear();
+        noEntries.clear();  // ← ADD
         pacman = nullptr;
 
         views.clear();
         entities.clear();
 
         coinsCollected = 0;
-
-        std::cout << "AFTER clear - doors: " << doors.size() << ", entities: " << entities.size() << std::endl;
-        std::cout << "===================\n" << std::endl;
     }
 }

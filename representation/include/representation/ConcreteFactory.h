@@ -21,6 +21,7 @@ namespace representation {
         logic::EntityCreationResult createCoin(float x, float y, float w, float h) override;
         logic::EntityCreationResult createGhost(float x, float y, float w, float h, logic::GhostType type, float spawnDelay) override;
         logic::EntityCreationResult createDoor(float x, float y, float w, float h) override;
+        logic::EntityCreationResult createNoEntry(float x, float y, float w, float h) override;
     };
 }
 
