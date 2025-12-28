@@ -10,6 +10,7 @@
 #include "logic/entities/PacManModel.h"
 #include "logic/entities/CoinModel.h"
 #include "logic/entities/GhostModel.h"
+#include "logic/entities/DoorModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 #include "logic/utils/Score.h"
@@ -32,6 +33,7 @@ namespace logic {
         std::vector<WallModel*> walls;
         std::vector<CoinModel*> coins;
         std::vector<GhostModel*> ghosts;
+        std::vector<DoorModel*> doors;
 
         int coinsCollected;
         Score score;
@@ -58,6 +60,8 @@ namespace logic {
         bool isDirectionValid(Direction direction) const;
         Direction getViableDirectionForGhost(GhostModel* ghost) const;
         std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;  // ← ADD
+
+        void clearWorld();
 
 
         int getCoinsCollected() const { return coinsCollected; }

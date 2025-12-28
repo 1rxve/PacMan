@@ -10,6 +10,10 @@ namespace logic {
         std::vector<Observer*> observers;
 
     public:
+        virtual ~Subject() {  // ← ADD VIRTUAL DESTRUCTOR
+            observers.clear();
+        }
+
         void attach(Observer* observer);
         void detach(Observer* observer);
         void notify();

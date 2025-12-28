@@ -11,6 +11,7 @@ namespace representation {
         sf::RenderWindow* window;
         const Camera* camera;
         std::shared_ptr<sf::Texture> sharedTexture;
+        std::shared_ptr<sf::Texture> doorTexture;
 
     public:
         ConcreteFactory(sf::RenderWindow* window, const Camera* camera);
@@ -19,6 +20,7 @@ namespace representation {
         logic::EntityCreationResult createPacMan(float x, float y, float w, float h, float speed) override;
         logic::EntityCreationResult createCoin(float x, float y, float w, float h) override;
         logic::EntityCreationResult createGhost(float x, float y, float w, float h, logic::GhostType type, float spawnDelay) override;
+        logic::EntityCreationResult createDoor(float x, float y, float w, float h) override;
     };
 }
 

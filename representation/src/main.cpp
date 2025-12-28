@@ -6,7 +6,7 @@
 int main() {
     const std::string MAP_FILE = "resources/maps/map";
 
-    // Get map dimensions voor window size
+    // Get map1 dimensions voor window size
     auto [mapWidth, mapHeight] = logic::World::getMapDimensions(MAP_FILE);
 
     if (mapWidth == 0 || mapHeight == 0) {

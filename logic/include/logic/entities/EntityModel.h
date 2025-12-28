@@ -44,6 +44,7 @@ namespace logic {
         virtual bool isWall() const { return false; }
         virtual bool isCoin() const { return false; }
         virtual bool isGhost() const { return false; }
+        virtual bool isDoor() const { return false; }
     };
 }
 #endif //PACMANGAME_ENTITYMODEL_H

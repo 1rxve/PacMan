@@ -6,16 +6,25 @@
 #include "logic/entities/GhostModel.h"
 #include "logic/utils/Random.h"
 #include <vector>
+#include "logic/entities/DoorModel.h"
 
 namespace logic {
     World::~World() {
         scoreSubject.detach(&score);
-        views.clear();
-        entities.clear();
+
+        // CORRECT ORDER:
+        // 1. Clear raw pointer caches
         pacman = nullptr;
         walls.clear();
         coins.clear();
         ghosts.clear();
+        doors.clear();
+
+        // 2. Destroy observers (views) BEFORE subjects (entities)
+        views.clear();
+
+        // 3. Finally destroy entities
+        entities.clear();
     }
 
     void World::update(float deltaTime) {
@@ -52,12 +61,23 @@ namespace logic {
                     pm->setPosition(WORLD_LEFT + TUNNEL_THRESHOLD, newY);
                 }
 
-                // Wall collision
+                // Check BOTH wall AND door collision together
                 bool collided = false;
+
                 for (WallModel* wall : walls) {
                     if (pm->intersects(*wall)) {
                         collided = true;
                         break;
+                    }
+                }
+
+                // NEW: Door collision for PacMan (always blocked)
+                if (!collided) {
+                    for (DoorModel* door : doors) {
+                        if (pm->intersects(*door)) {
+                            collided = true;
+                            break;
+                        }
                     }
                 }
 
@@ -66,7 +86,7 @@ namespace logic {
                     pm->stopMovement();
                 }
 
-                // Coin collision
+                // Coin collision (unchanged)
                 for (CoinModel* coin : coins) {
                     if (!coin->isCollected() && pm->intersects(*coin)) {
                         coin->collect();
@@ -87,7 +107,7 @@ namespace logic {
                     ghost->setDirection(viableDir);
                 }
 
-                // ← ADD: Check if ghost needs direction decision
+                // Check if ghost needs direction decision
                 if (ghost->getState() == GhostState::CHASING &&
                     ghost->getCurrentDirection() != Direction::NONE) {
 
@@ -106,20 +126,35 @@ namespace logic {
                 ghost->update(deltaTime);
 
                 // Check wall collision
-                bool collided = false;
+                bool wallCollision = false;
                 for (WallModel* wall : walls) {
                     if (ghost->intersects(*wall)) {
-                        collided = true;
+                        wallCollision = true;
                         break;
                     }
                 }
 
-                if (collided) {
-                    // Rollback to old position
+                // Check door collision (separate from wall collision)
+                bool doorCollision = false;
+                for (DoorModel* door : doors) {
+                    if (ghost->intersects(*door)) {
+                        if (!door->canPass(ghost)) {
+                            doorCollision = true;
+                            break;
+                        } else {
+                            // Register exit ONLY if ghost is moving AWAY from spawn
+                            // Check if ghost is leaving (moving down from spawn)
+                            if (ghost->getY() > door->getY()) {
+                                door->registerExit(ghost);
+                            }
+                        }
+                    }
+                }
+
+                // Handle collision
+                if (wallCollision || doorCollision) {
                     ghost->setPosition(oldX, oldY);
                     ghost->stopMovement();
-
-                    // Pick new viable direction immediately
                     Direction viableDir = getViableDirectionForGhost(ghost);
                     ghost->setDirection(viableDir);
                 }
@@ -141,8 +176,11 @@ namespace logic {
     void World::loadMap(const std::string &filename) {
         std::ifstream file(filename);
         if (!file.is_open()) {
+            std::cerr << "ERROR: Cannot open map file: " << filename << std::endl;
             return;
         }
+
+        clearWorld();
 
         std::vector<std::string> mapLines;
         std::string line;
@@ -155,8 +193,8 @@ namespace logic {
             return;
         }
 
-        int height = mapLines.size();
-        int width = mapLines[0].length();
+        int height = static_cast<int>(mapLines.size());
+        int width = static_cast<int>(mapLines[0].length());
 
         float cellWidth = 2.0f / width;
         float cellHeight = 2.0f / height;
@@ -182,6 +220,19 @@ namespace logic {
                         break;
                     }
 
+                    case 'D': {
+                        if (factory) {
+                            auto result = factory->createDoor(normalizedX, normalizedY, cellWidth, cellHeight);
+                            if (result.model->isDoor()) {
+                                DoorModel* doorPtr = static_cast<DoorModel*>(result.model.get());
+                                doors.push_back(doorPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
                     case 'C': {
                         if (factory) {
                             auto result = factory->createPacMan(normalizedX, normalizedY,
@@ -190,21 +241,20 @@ namespace logic {
                                 pacman = static_cast<PacManModel*>(result.model.get());
                                 pacman->setCellDimensions(cellWidth, cellHeight);
                             }
-
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }
                         break;
                     }
 
-                    case 'R': {  // RED ghost
+                    case 'R': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
                                                                GhostType::RED, 0.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
-                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -213,14 +263,14 @@ namespace logic {
                         break;
                     }
 
-                    case 'P': {  // PINK ghost (in spawn box)
+                    case 'P': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
                                                                GhostType::PINK, 0.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
-                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -229,14 +279,14 @@ namespace logic {
                         break;
                     }
 
-                    case 'B': {  // BLUE ghost (in spawn box)
+                    case 'B': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
                                                                GhostType::BLUE, 5.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
-                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -245,14 +295,14 @@ namespace logic {
                         break;
                     }
 
-                    case 'O': {  // ORANGE ghost (in spawn box)
+                    case 'O': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
                                                                GhostType::ORANGE, 10.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
-                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -275,7 +325,7 @@ namespace logic {
                         break;
                     }
 
-                    case ' ':
+                    case '*':  // ← VOEG TOE: sterretjes = leeg
                         break;
 
                     default:
@@ -402,7 +452,9 @@ namespace logic {
             float top = testY - height / 2.0f;
             float bottom = testY + height / 2.0f;
 
-            bool hitWall = false;
+            bool hitObstacle = false;
+
+            // Check walls
             for (const WallModel* wall : walls) {
                 float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
                 float wallRight = wall->getX() + wall->getWidth() / 2.0f;
@@ -410,12 +462,30 @@ namespace logic {
                 float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
 
                 if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
-                    hitWall = true;
+                    hitObstacle = true;
                     break;
                 }
             }
 
-            if (!hitWall) {
+            // ← NEW: Check doors
+            if (!hitObstacle) {
+                for (const DoorModel* door : doors) {
+                    float doorLeft = door->getX() - door->getWidth() / 2.0f;
+                    float doorRight = door->getX() + door->getWidth() / 2.0f;
+                    float doorTop = door->getY() - door->getHeight() / 2.0f;
+                    float doorBottom = door->getY() + door->getHeight() / 2.0f;
+
+                    if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
+                        // Would intersect door - check if ghost can pass
+                        if (!door->canPass(ghost)) {
+                            hitObstacle = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!hitObstacle) {
                 viableDirections.push_back(dir);
             }
         }
@@ -466,7 +536,9 @@ namespace logic {
             float top = testY - height / 2.0f;
             float bottom = testY + height / 2.0f;
 
-            bool hitWall = false;
+            bool hitObstacle = false;
+
+            // Check walls
             for (const WallModel* wall : walls) {
                 float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
                 float wallRight = wall->getX() + wall->getWidth() / 2.0f;
@@ -474,16 +546,53 @@ namespace logic {
                 float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
 
                 if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
-                    hitWall = true;
+                    hitObstacle = true;
                     break;
                 }
             }
 
-            if (!hitWall) {
+            // ← NEW: Check doors
+            if (!hitObstacle) {
+                for (const DoorModel* door : doors) {
+                    float doorLeft = door->getX() - door->getWidth() / 2.0f;
+                    float doorRight = door->getX() + door->getWidth() / 2.0f;
+                    float doorTop = door->getY() - door->getHeight() / 2.0f;
+                    float doorBottom = door->getY() + door->getHeight() / 2.0f;
+
+                    if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
+                        // Would intersect door - check if ghost can pass
+                        if (!door->canPass(ghost)) {
+                            hitObstacle = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!hitObstacle) {
                 viableDirections.push_back(dir);
             }
         }
 
         return viableDirections;
+    }
+
+    void World::clearWorld() {
+        std::cout << "=== CLEARING WORLD ===" << std::endl;
+        std::cout << "BEFORE clear - doors: " << doors.size() << ", entities: " << entities.size() << std::endl;
+
+        walls.clear();
+        ghosts.clear();
+        doors.clear();
+        coins.clear();
+        pacman = nullptr;
+
+        views.clear();
+        entities.clear();
+
+        coinsCollected = 0;
+
+        std::cout << "AFTER clear - doors: " << doors.size() << ", entities: " << entities.size() << std::endl;
+        std::cout << "===================\n" << std::endl;
     }
 }
