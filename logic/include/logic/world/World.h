@@ -57,6 +57,8 @@ namespace logic {
 
         bool isDirectionValid(Direction direction) const;
         Direction getViableDirectionForGhost(GhostModel* ghost) const;
+        std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;  // ← ADD
+
 
         int getCoinsCollected() const { return coinsCollected; }
         int getTotalCoins() const { return static_cast<int>(coins.size()); }

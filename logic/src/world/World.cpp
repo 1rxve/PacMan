@@ -87,6 +87,17 @@ namespace logic {
                     ghost->setDirection(viableDir);
                 }
 
+                // ← ADD: Check if ghost needs direction decision
+                if (ghost->getState() == GhostState::CHASING &&
+                    ghost->getCurrentDirection() != Direction::NONE) {
+
+                    std::vector<Direction> viableDirections = getViableDirectionsForGhost(ghost);
+
+                    if (ghost->needsDirectionDecision(viableDirections)) {
+                        ghost->makeDirectionDecision(viableDirections);
+                    }
+                }
+
                 // Store old position
                 float oldX = ghost->getX();
                 float oldY = ghost->getY();
@@ -106,7 +117,11 @@ namespace logic {
                 if (collided) {
                     // Rollback to old position
                     ghost->setPosition(oldX, oldY);
-                    ghost->stopMovement();  // ← ADD - Stop trying to move into wall
+                    ghost->stopMovement();
+
+                    // Pick new viable direction immediately
+                    Direction viableDir = getViableDirectionForGhost(ghost);
+                    ghost->setDirection(viableDir);
                 }
             }
             else {
@@ -413,5 +428,62 @@ namespace logic {
         // Pick random viable direction
         int randomIndex = Random::getInstance().getInt(0, static_cast<int>(viableDirections.size()) - 1);
         return viableDirections[randomIndex];
+    }
+
+    std::vector<Direction> World::getViableDirectionsForGhost(GhostModel* ghost) const {
+        if (!ghost) return {};
+
+        const float TEST_DISTANCE = 0.1f;
+        std::vector<Direction> viableDirections;
+
+        // Test all 4 directions
+        for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
+            float testX = ghost->getX();
+            float testY = ghost->getY();
+
+            switch (dir) {
+                case Direction::LEFT:
+                    testX -= TEST_DISTANCE;
+                    break;
+                case Direction::RIGHT:
+                    testX += TEST_DISTANCE;
+                    break;
+                case Direction::UP:
+                    testY -= TEST_DISTANCE;
+                    break;
+                case Direction::DOWN:
+                    testY += TEST_DISTANCE;
+                    break;
+                case Direction::NONE:
+                    break;
+            }
+
+            float width = ghost->getWidth();
+            float height = ghost->getHeight();
+
+            float left = testX - width / 2.0f;
+            float right = testX + width / 2.0f;
+            float top = testY - height / 2.0f;
+            float bottom = testY + height / 2.0f;
+
+            bool hitWall = false;
+            for (const WallModel* wall : walls) {
+                float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
+                float wallRight = wall->getX() + wall->getWidth() / 2.0f;
+                float wallTop = wall->getY() - wall->getHeight() / 2.0f;
+                float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
+
+                if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
+                    hitWall = true;
+                    break;
+                }
+            }
+
+            if (!hitWall) {
+                viableDirections.push_back(dir);
+            }
+        }
+
+        return viableDirections;
     }
 }

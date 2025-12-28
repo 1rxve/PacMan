@@ -2,6 +2,7 @@
 #include "logic/utils/Random.h"
 #include <cmath>
 #include <vector>  // ← ADD
+#include <algorithm>
 
 namespace logic {
     GhostModel::GhostModel(float x, float y, float width, float height,
@@ -90,5 +91,84 @@ namespace logic {
 
     void GhostModel::stopMovement() {  // ← ADD
         currentDirection = Direction::NONE;
+    }
+
+    Direction GhostModel::getReverseDirection(Direction dir) const {
+        switch (dir) {
+            case Direction::UP: return Direction::DOWN;
+            case Direction::DOWN: return Direction::UP;
+            case Direction::LEFT: return Direction::RIGHT;
+            case Direction::RIGHT: return Direction::LEFT;
+            case Direction::NONE: return Direction::NONE;
+        }
+        return Direction::NONE;
+    }
+
+    // ← ADD: Check if ghost needs to make decision
+    bool GhostModel::needsDirectionDecision(const std::vector<Direction>& viableDirections) const {
+        // Ghost needs decision if:
+        // 1. Has 2+ viable options (excluding backwards)
+        // 2. Current direction is blocked
+
+        Direction reverse = getReverseDirection(currentDirection);
+
+        // Count options excluding backwards
+        int optionCount = 0;
+        bool currentStillViable = false;
+
+        for (Direction dir : viableDirections) {
+            if (dir == reverse) continue;  // Skip backwards
+            optionCount++;
+            if (dir == currentDirection) {
+                currentStillViable = true;
+            }
+        }
+
+        // Need decision if: 2+ options OR current blocked
+        return (optionCount >= 2) || (!currentStillViable && optionCount > 0);
+    }
+
+    // ← ADD: Make direction decision based on AI type
+    void GhostModel::makeDirectionDecision(const std::vector<Direction>& viableDirections) {
+        if (viableDirections.empty()) {
+            currentDirection = Direction::NONE;
+            return;
+        }
+
+        Direction reverse = getReverseDirection(currentDirection);
+
+        // Filter out backwards direction
+        std::vector<Direction> validOptions;
+        for (Direction dir : viableDirections) {
+            if (dir != reverse) {
+                validOptions.push_back(dir);
+            }
+        }
+
+        if (validOptions.empty()) {
+            // No options - shouldn't happen but safety
+            currentDirection = Direction::NONE;
+            return;
+        }
+
+        // RED GHOST AI: 50/50 locked random
+        if (type == GhostType::RED) {
+            float roll = Random::getInstance().getFloat(0.0f, 1.0f);
+
+            if (roll < 0.5f) {
+                // Try to keep current direction
+                auto it = std::find(validOptions.begin(), validOptions.end(), currentDirection);
+                if (it != validOptions.end()) {
+                    // Current direction still viable - keep it
+                    return;  // Don't change currentDirection
+                }
+            }
+
+            // Pick random from valid options
+            int randomIndex = Random::getInstance().getInt(0, static_cast<int>(validOptions.size()) - 1);
+            currentDirection = validOptions[randomIndex];
+        }
+
+        // TODO: Other ghost types (PINK, BLUE, ORANGE) later
     }
 }

@@ -2,6 +2,7 @@
 #define PACMANGAME_GHOSTMODEL_H
 
 #include "EntityModel.h"
+#include <vector>
 
 namespace logic {
     enum class GhostType {
@@ -32,6 +33,8 @@ namespace logic {
         float cellWidth;   // ← ADD
         float cellHeight;  // ← ADD
 
+        Direction getReverseDirection(Direction dir) const;
+
     public:
         GhostModel(float x, float y, float width, float height,
                    GhostType type, float spawnDelay);
@@ -45,6 +48,9 @@ namespace logic {
         void setCellDimensions(float cellW, float cellH);
         void setDirection(Direction dir);
         void stopMovement();
+
+        bool needsDirectionDecision(const std::vector<Direction>& viableDirections) const;
+        void makeDirectionDecision(const std::vector<Direction>& viableDirections);
 
         bool isGhost() const override { return true; }
     };
