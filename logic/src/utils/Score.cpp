@@ -74,7 +74,7 @@ namespace logic {
     }
 
     std::string Score::getHighScoresFilePath() {
-        return "highscores.txt";
+        return "resources/highscores/highscores.txt";
     }
 
     std::vector<Score::HighScoreEntry> Score::loadHighScores() {
