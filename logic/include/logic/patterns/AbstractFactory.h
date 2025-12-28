@@ -4,6 +4,7 @@
 
 #include <memory>
 #include "logic/entities/EntityModel.h"
+#include "logic/entities/GhostModel.h"
 #include "logic/patterns/Observer.h"
 
 namespace logic {
@@ -19,6 +20,7 @@ namespace logic {
         virtual EntityCreationResult createWall(float x, float y, float w, float h) = 0;
         virtual EntityCreationResult createPacMan(float x, float y, float w, float h, float speed) = 0;
         virtual EntityCreationResult createCoin(float x, float y, float w, float h) = 0;
+        virtual EntityCreationResult createGhost(float x, float y, float w, float h, GhostType type, float spawnDelay) = 0;
     };
 }
 

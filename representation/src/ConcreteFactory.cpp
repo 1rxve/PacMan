@@ -2,9 +2,11 @@
 #include "representation/views/WallView.h"
 #include "representation/views/PacManView.h"
 #include "representation/views/CoinView.h"
+#include "representation/views/GhostView.h"
 #include "logic/entities/WallModel.h"
 #include "logic/entities/PacManModel.h"
 #include "logic/entities/CoinModel.h"
+#include "logic/entities/GhostModel.h"
 
 namespace representation {
     ConcreteFactory::ConcreteFactory(sf::RenderWindow* window, const Camera* camera)
@@ -29,6 +31,12 @@ namespace representation {
     logic::EntityCreationResult ConcreteFactory::createCoin(float x, float y, float w, float h) {
         auto model = std::make_unique<logic::CoinModel>(x, y, w, h);
         auto view = std::make_unique<CoinView>(model.get(), window, camera, sharedTexture);
+        return {std::move(model), std::move(view)};
+    }
+
+    logic::EntityCreationResult ConcreteFactory::createGhost(float x, float y, float w, float h, logic::GhostType type, float spawnDelay) {
+        auto model = std::make_unique<logic::GhostModel>(x, y, w, h, type, spawnDelay);
+        auto view = std::make_unique<GhostView>(model.get(), window, camera, sharedTexture);
         return {std::move(model), std::move(view)};
     }
 }

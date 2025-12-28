@@ -12,6 +12,7 @@ namespace logic {
         pacman = nullptr;
         walls.clear();
         coins.clear();
+        ghosts.clear();
     }
 
     void World::update(float deltaTime) {
@@ -140,6 +141,66 @@ namespace logic {
                                 pacman->setCellDimensions(cellWidth, cellHeight);
                             }
 
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case 'R': {  // RED ghost (outside spawn box)
+                        if (factory) {
+                            auto result = factory->createGhost(normalizedX, normalizedY,
+                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               GhostType::RED, 0.0f);  // 0 sec delay
+                            if (result.model->isGhost()) {
+                                GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghosts.push_back(ghostPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case 'P': {  // PINK ghost (in spawn box)
+                        if (factory) {
+                            auto result = factory->createGhost(normalizedX, normalizedY,
+                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               GhostType::PINK, 0.0f);  // 0 sec delay
+                            if (result.model->isGhost()) {
+                                GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghosts.push_back(ghostPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case 'B': {  // BLUE ghost (in spawn box)
+                        if (factory) {
+                            auto result = factory->createGhost(normalizedX, normalizedY,
+                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               GhostType::BLUE, 5.0f);  // 5 sec delay
+                            if (result.model->isGhost()) {
+                                GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghosts.push_back(ghostPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
+                        }
+                        break;
+                    }
+
+                    case 'O': {  // ORANGE ghost (in spawn box)
+                        if (factory) {
+                            auto result = factory->createGhost(normalizedX, normalizedY,
+                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               GhostType::ORANGE, 10.0f);  // 10 sec delay
+                            if (result.model->isGhost()) {
+                                GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghosts.push_back(ghostPtr);
+                            }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }

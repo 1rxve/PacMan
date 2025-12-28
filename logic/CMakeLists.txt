@@ -16,7 +16,7 @@ set(LOGIC_SOURCES
         src/utils/Random.cpp
         src/entities/CoinModel.cpp
         src/utils/Score.cpp
-        include/logic/utils/Score.h
+        src/entities/GhostModel.cpp
 )
 
 # Header files (IDE support)
@@ -31,8 +31,8 @@ set(LOGIC_HEADERS
         include/logic/utils/Stopwatch.h
         include/logic/utils/Random.h
         include/logic/entities/CoinModel.h
-        src/utils/Score.cpp
         include/logic/utils/Score.h
+        include/logic/entities/GhostModel.h
 )
 
 # Create library

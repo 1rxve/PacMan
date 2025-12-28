@@ -9,6 +9,7 @@
 #include "logic/entities/EntityModel.h"
 #include "logic/entities/PacManModel.h"
 #include "logic/entities/CoinModel.h"
+#include "logic/entities/GhostModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 #include "logic/utils/Score.h"
@@ -30,6 +31,7 @@ namespace logic {
         PacManModel* pacman;
         std::vector<WallModel*> walls;
         std::vector<CoinModel*> coins;
+        std::vector<GhostModel*> ghosts;
 
         int coinsCollected;
         Score score;
