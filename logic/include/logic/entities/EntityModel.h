@@ -4,6 +4,15 @@
 #include "logic/patterns/Subject.h"
 
 namespace logic {
+
+    enum class Direction {
+        NONE,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
+
     class EntityModel : public Subject {
     protected:
         float x;

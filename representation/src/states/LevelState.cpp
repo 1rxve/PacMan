@@ -79,7 +79,7 @@ namespace representation {
         int totalCoins = world->getTotalCoins();
 
         // WIN: All coins collected
-        if (coinsCollected >= 5) {
+        if (coinsCollected >= totalCoins) {
             int finalScore = world->getScore();
 
             // Check if score qualifies for top 5

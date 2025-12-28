@@ -26,6 +26,12 @@ namespace logic {
         float spawnTimer;
         float speed;
 
+        Direction currentDirection;  // ← ADD
+
+        // Grid info voor intersection detection
+        float cellWidth;   // ← ADD
+        float cellHeight;  // ← ADD
+
     public:
         GhostModel(float x, float y, float width, float height,
                    GhostType type, float spawnDelay);
@@ -34,6 +40,11 @@ namespace logic {
 
         GhostType getType() const { return type; }
         GhostState getState() const { return state; }
+        Direction getCurrentDirection() const { return currentDirection; }  // ← ADD
+
+        void setCellDimensions(float cellW, float cellH);
+        void setDirection(Direction dir);
+        void stopMovement();
 
         bool isGhost() const override { return true; }
     };

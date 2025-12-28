@@ -3,6 +3,9 @@
 #include "logic/entities/WallModel.h"
 #include "logic/entities/PacManModel.h"
 #include "logic/entities/CoinModel.h"
+#include "logic/entities/GhostModel.h"
+#include "logic/utils/Random.h"
+#include <vector>
 
 namespace logic {
     World::~World() {
@@ -73,8 +76,40 @@ namespace logic {
                         scoreSubject.notify();
                     }
                 }
+            }
+            else if (entity->isGhost()) {
+                GhostModel* ghost = static_cast<GhostModel*>(entity.get());
 
-            } else {
+                // If ghost just entered CHASING and has no direction, pick one
+                if (ghost->getState() == GhostState::CHASING &&
+                    ghost->getCurrentDirection() == Direction::NONE) {
+                    Direction viableDir = getViableDirectionForGhost(ghost);
+                    ghost->setDirection(viableDir);
+                }
+
+                // Store old position
+                float oldX = ghost->getX();
+                float oldY = ghost->getY();
+
+                // Update ghost (will move)
+                ghost->update(deltaTime);
+
+                // Check wall collision
+                bool collided = false;
+                for (WallModel* wall : walls) {
+                    if (ghost->intersects(*wall)) {
+                        collided = true;
+                        break;
+                    }
+                }
+
+                if (collided) {
+                    // Rollback to old position
+                    ghost->setPosition(oldX, oldY);
+                    ghost->stopMovement();  // ← ADD - Stop trying to move into wall
+                }
+            }
+            else {
                 entity->update(deltaTime);
             }
         }
@@ -147,13 +182,14 @@ namespace logic {
                         break;
                     }
 
-                    case 'R': {  // RED ghost (outside spawn box)
+                    case 'R': {  // RED ghost
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
-                                                               GhostType::RED, 0.0f);  // 0 sec delay
+                                                               GhostType::RED, 0.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -166,9 +202,10 @@ namespace logic {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
-                                                               GhostType::PINK, 0.0f);  // 0 sec delay
+                                                               GhostType::PINK, 0.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -181,9 +218,10 @@ namespace logic {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
-                                                               GhostType::BLUE, 5.0f);  // 5 sec delay
+                                                               GhostType::BLUE, 5.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -196,9 +234,10 @@ namespace logic {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
-                                                               GhostType::ORANGE, 10.0f);  // 10 sec delay
+                                                               GhostType::ORANGE, 10.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                ghostPtr->setCellDimensions(cellWidth, cellHeight);  // ← ADD THIS LINE
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -309,5 +348,70 @@ namespace logic {
         }
 
         return true;
+    }
+
+    Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
+        if (!ghost) return Direction::NONE;
+
+        const float TEST_DISTANCE = 0.1f;
+
+        std::vector<Direction> viableDirections;
+
+        // Test all 4 directions
+        for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
+            float testX = ghost->getX();
+            float testY = ghost->getY();
+
+            switch (dir) {
+                case Direction::LEFT:
+                    testX -= TEST_DISTANCE;
+                    break;
+                case Direction::RIGHT:
+                    testX += TEST_DISTANCE;
+                    break;
+                case Direction::UP:
+                    testY -= TEST_DISTANCE;
+                    break;
+                case Direction::DOWN:
+                    testY += TEST_DISTANCE;
+                    break;
+                case Direction::NONE:
+                    break;
+            }
+
+            float width = ghost->getWidth();
+            float height = ghost->getHeight();
+
+            float left = testX - width / 2.0f;
+            float right = testX + width / 2.0f;
+            float top = testY - height / 2.0f;
+            float bottom = testY + height / 2.0f;
+
+            bool hitWall = false;
+            for (const WallModel* wall : walls) {
+                float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
+                float wallRight = wall->getX() + wall->getWidth() / 2.0f;
+                float wallTop = wall->getY() - wall->getHeight() / 2.0f;
+                float wallBottom = wall->getY() + wall->getHeight() / 2.0f;
+
+                if (!(right < wallLeft || left > wallRight || bottom < wallTop || top > wallBottom)) {
+                    hitWall = true;
+                    break;
+                }
+            }
+
+            if (!hitWall) {
+                viableDirections.push_back(dir);
+            }
+        }
+
+        // If no viable directions, return NONE
+        if (viableDirections.empty()) {
+            return Direction::NONE;
+        }
+
+        // Pick random viable direction
+        int randomIndex = Random::getInstance().getInt(0, static_cast<int>(viableDirections.size()) - 1);
+        return viableDirections[randomIndex];
     }
 }

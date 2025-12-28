@@ -56,6 +56,7 @@ namespace logic {
         static std::pair<int, int> getMapDimensions(const std::string& filename);
 
         bool isDirectionValid(Direction direction) const;
+        Direction getViableDirectionForGhost(GhostModel* ghost) const;
 
         int getCoinsCollected() const { return coinsCollected; }
         int getTotalCoins() const { return static_cast<int>(coins.size()); }
