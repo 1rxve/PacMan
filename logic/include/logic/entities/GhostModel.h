@@ -33,6 +33,8 @@ namespace logic {
         float cellWidth;   // ← ADD
         float cellHeight;  // ← ADD
 
+        bool hasExitedSpawn;
+
         Direction getReverseDirection(Direction dir) const;
 
     public:
@@ -44,6 +46,9 @@ namespace logic {
         GhostType getType() const { return type; }
         GhostState getState() const { return state; }
         Direction getCurrentDirection() const { return currentDirection; }  // ← ADD
+
+        bool hasExited() const { return hasExitedSpawn; }  // ← ADD GETTER
+        void markAsExited() { hasExitedSpawn = true; }
 
         void setCellDimensions(float cellW, float cellH);
         void setDirection(Direction dir);

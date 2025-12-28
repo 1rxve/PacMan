@@ -103,8 +103,14 @@ namespace logic {
                 // If ghost just entered CHASING and has no direction, pick one
                 if (ghost->getState() == GhostState::CHASING &&
                     ghost->getCurrentDirection() == Direction::NONE) {
-                    Direction viableDir = getViableDirectionForGhost(ghost);
-                    ghost->setDirection(viableDir);
+
+                    // RED ghost always starts going LEFT
+                    if (ghost->getType() == GhostType::RED) {
+                        ghost->setDirection(Direction::LEFT);
+                    } else {
+                        Direction viableDir = getViableDirectionForGhost(ghost);
+                        ghost->setDirection(viableDir);
+                    }
                 }
 
                 // Check if ghost needs direction decision
@@ -134,19 +140,19 @@ namespace logic {
                     }
                 }
 
-                // Check door collision (separate from wall collision)
+                // Check door collision
                 bool doorCollision = false;
                 for (DoorModel* door : doors) {
                     if (ghost->intersects(*door)) {
-                        if (!door->canPass(ghost)) {
+                        if (ghost->hasExited()) {
+                            // Ghost already outside - door is a WALL
                             doorCollision = true;
                             break;
                         } else {
-                            // Register exit ONLY if ghost is moving AWAY from spawn
-                            // Check if ghost is leaving (moving down from spawn)
-                            if (ghost->getY() > door->getY()) {
-                                door->registerExit(ghost);
-                            }
+                            // Ghost still inside spawn - door is PASSABLE
+                            // Mark as exited so next time it's a wall
+                            ghost->markAsExited();
+                            // No collision this frame (ghost passes through)
                         }
                     }
                 }
@@ -247,7 +253,7 @@ namespace logic {
                         break;
                     }
 
-                    case 'R': {
+                    case 'R': {  // RED ghost
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
                                                                cellWidth * 0.9f, cellHeight * 0.9f,
@@ -255,6 +261,7 @@ namespace logic {
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
+                                ghostPtr->markAsExited();  // ← ADD: RED spawns outside, already exited
                                 ghosts.push_back(ghostPtr);
                             }
                             entities.push_back(std::move(result.model));
@@ -412,6 +419,17 @@ namespace logic {
             }
         }
 
+        for (const DoorModel* door : doors) {
+            float doorLeft = door->getX() - door->getWidth() / 2.0f;
+            float doorRight = door->getX() + door->getWidth() / 2.0f;
+            float doorTop = door->getY() - door->getHeight() / 2.0f;
+            float doorBottom = door->getY() + door->getHeight() / 2.0f;
+
+            if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
+                return false;  // Door blocks PacMan
+            }
+        }
+
         return true;
     }
 
@@ -467,7 +485,7 @@ namespace logic {
                 }
             }
 
-            // ← NEW: Check doors
+            // Check doors
             if (!hitObstacle) {
                 for (const DoorModel* door : doors) {
                     float doorLeft = door->getX() - door->getWidth() / 2.0f;
@@ -476,8 +494,8 @@ namespace logic {
                     float doorBottom = door->getY() + door->getHeight() / 2.0f;
 
                     if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
-                        // Would intersect door - check if ghost can pass
-                        if (!door->canPass(ghost)) {
+                        // Would intersect door
+                        if (ghost->hasExited()) {  // ← CHANGE: use flag instead of canPass()
                             hitObstacle = true;
                             break;
                         }
@@ -551,7 +569,7 @@ namespace logic {
                 }
             }
 
-            // ← NEW: Check doors
+            // Check doors
             if (!hitObstacle) {
                 for (const DoorModel* door : doors) {
                     float doorLeft = door->getX() - door->getWidth() / 2.0f;
@@ -560,8 +578,8 @@ namespace logic {
                     float doorBottom = door->getY() + door->getHeight() / 2.0f;
 
                     if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
-                        // Would intersect door - check if ghost can pass
-                        if (!door->canPass(ghost)) {
+                        // Would intersect door
+                        if (ghost->hasExited()) {  // ← CHANGE: use flag instead of canPass()
                             hitObstacle = true;
                             break;
                         }

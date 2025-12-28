@@ -12,7 +12,7 @@ namespace representation {
         std::shared_ptr<sf::Texture> texture;
         sf::Sprite sprite;
 
-        bool showDebugVisualization = true;
+        bool showDebugVisualization = false;
 
     public:
         DoorView(logic::DoorModel* model, sf::RenderWindow* window,

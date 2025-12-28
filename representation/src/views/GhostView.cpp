@@ -7,7 +7,7 @@ namespace representation {
             : EntityView(model, window, camera),
               ghostModel(model),
               texture(sharedTexture),
-              showDebugVisualization(true) {  // ← ADD (zet op false voor release)
+              showDebugVisualization(false) {  // ← ADD (zet op false voor release)
 
         sprite.setTexture(*texture);
         sprite.setTextureRect(sf::IntRect(0, 0, 50, 50));

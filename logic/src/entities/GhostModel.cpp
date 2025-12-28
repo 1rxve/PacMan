@@ -15,7 +15,8 @@ namespace logic {
               speed(0.5f),
               currentDirection(Direction::NONE),
               cellWidth(0.0f),
-              cellHeight(0.0f) {
+              cellHeight(0.0f),
+              hasExitedSpawn(false) {
     }
 
     void GhostModel::update(float deltaTime) {
