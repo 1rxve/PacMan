@@ -19,14 +19,14 @@ namespace representation {
         sf::Text instructionText;
         sf::Text nameText;
         sf::Text cursorText;
+        sf::Text pressEnterText;
+        sf::Text whenDoneText;
         bool fontLoaded;
 
         float blinkTimer;
         bool cursorVisible;
 
         void updateNameDisplay();
-        void incrementLetter();
-        void decrementLetter();
         void saveAndContinue();
 
     public:

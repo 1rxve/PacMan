@@ -10,7 +10,7 @@ namespace representation {
             : State(win, fac, cam, sm),
               finalScore(finalScore),
               mapFile(mapFile),
-              playerName("AAA"),
+              playerName("   "),  // ← 3 spaties (leeg)
               currentLetterIndex(0),
               fontLoaded(false),
               blinkTimer(0.0f),
@@ -44,11 +44,10 @@ namespace representation {
             scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
             scoreText.setPosition(window->getSize().x / 2.0f, 250);
 
-            // Name entry
+            // Name entry (will be drawn as boxes in render)
             nameText.setFont(font);
             nameText.setCharacterSize(80);
             nameText.setFillColor(sf::Color::Cyan);
-            nameText.setPosition(window->getSize().x / 2.0f - 120, 350);
 
             // Cursor (underscore under current letter)
             cursorText.setFont(font);
@@ -58,44 +57,45 @@ namespace representation {
 
             // Instructions
             instructionText.setFont(font);
-            instructionText.setString("Type your name (3 letters)\nENTER: Confirm  BACKSPACE: Delete");            instructionText.setCharacterSize(24);
-            instructionText.setFillColor(sf::Color::White);
+            instructionText.setString("ENTER NAME");  // ← CHANGE
+            instructionText.setCharacterSize(32);  // ← Slightly bigger
+            instructionText.setFillColor(sf::Color::Cyan);  // ← Cyan instead of white
 
             sf::FloatRect instrBounds = instructionText.getLocalBounds();
             instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
-            instructionText.setPosition(window->getSize().x / 2.0f, 550);
+            instructionText.setPosition(window->getSize().x / 2.0f, 300);
+
+            pressEnterText.setFont(font);
+            pressEnterText.setString("PRESS \"ENTER\"");
+            pressEnterText.setCharacterSize(24);
+            pressEnterText.setFillColor(sf::Color::White);
+
+            sf::FloatRect pressEnterBounds = pressEnterText.getLocalBounds();
+            pressEnterText.setOrigin(pressEnterBounds.width / 2.0f, pressEnterBounds.height / 2.0f);
+            pressEnterText.setPosition(window->getSize().x / 2.0f, 800);
+
+            // "WHEN YOU ARE DONE" text
+            whenDoneText.setFont(font);
+            whenDoneText.setString("WHEN YOU ARE DONE");
+            whenDoneText.setCharacterSize(24);
+            whenDoneText.setFillColor(sf::Color::White);
+
+            sf::FloatRect whenDoneBounds = whenDoneText.getLocalBounds();
+            whenDoneText.setOrigin(whenDoneBounds.width / 2.0f, whenDoneBounds.height / 2.0f);
+            whenDoneText.setPosition(window->getSize().x / 2.0f, 840);
 
             updateNameDisplay();
         }
     }
 
     void NameEntryState::updateNameDisplay() {
-        nameText.setString(playerName);
+        // Just update cursor position
+        float letterWidth = 80.0f;
+        float spacing = 20.0f;
+        float startX = window->getSize().x / 2.0f - (3 * letterWidth + 2 * spacing) / 2.0f;
 
-        // Position cursor under current letter
-        float letterWidth = 80.0f * 0.6f;  // Approximate monospace width
-        float cursorX = window->getSize().x / 2.0f - 120 + currentLetterIndex * letterWidth;
-        cursorText.setPosition(cursorX, 420);
-    }
-
-    void NameEntryState::incrementLetter() {
-        char& currentChar = playerName[currentLetterIndex];
-        if (currentChar == 'Z') {
-            currentChar = 'A';
-        } else {
-            currentChar++;
-        }
-        updateNameDisplay();
-    }
-
-    void NameEntryState::decrementLetter() {
-        char& currentChar = playerName[currentLetterIndex];
-        if (currentChar == 'A') {
-            currentChar = 'Z';
-        } else {
-            currentChar--;
-        }
-        updateNameDisplay();
+        float cursorX = startX + currentLetterIndex * (letterWidth + spacing) + letterWidth / 2.0f;
+        cursorText.setPosition(cursorX - 10, 410);
     }
 
     void NameEntryState::saveAndContinue() {
@@ -143,74 +143,104 @@ namespace representation {
         if (fontLoaded) {
             window->draw(titleText);
             window->draw(scoreText);
-            window->draw(nameText);
+            window->draw(instructionText);
 
-            if (cursorVisible) {
-                window->draw(cursorText);
+            // Draw 3 letters WITHOUT boxes
+            float letterWidth = 80.0f;
+            float spacing = 20.0f;
+            float startX = window->getSize().x / 2.0f - (3 * letterWidth + 2 * spacing) / 2.0f;
+            float startY = 500.0f;
+
+            for (int i = 0; i < 3; i++) {
+                float letterX = startX + i * (letterWidth + spacing);
+
+                // Draw letter (or space)
+                sf::Text letterText;
+                letterText.setFont(font);
+
+                if (playerName[i] != ' ') {
+                    letterText.setString(std::string(1, playerName[i]));
+                } else {
+                    letterText.setString("_");  // Show underscore for empty
+                }
+
+                letterText.setCharacterSize(80);
+                letterText.setFillColor(sf::Color::White);
+
+                sf::FloatRect letterBounds = letterText.getLocalBounds();
+                letterText.setOrigin(letterBounds.width / 2.0f, letterBounds.height / 2.0f);
+                letterText.setPosition(letterX + letterWidth / 2.0f, startY);
+
+                window->draw(letterText);
             }
 
-            window->draw(instructionText);
+            // NO CURSOR DRAWN - REMOVED
+
+            window->draw(pressEnterText);
+            window->draw(whenDoneText);
         }
     }
 
     void NameEntryState::handleEvent(const sf::Event& event) {
         if (event.type == sf::Event::TextEntered) {
-            // Handle typed characters
             char typed = static_cast<char>(event.text.unicode);
 
-            // Only accept A-Z (uppercase)
+            // Convert lowercase to uppercase
             if (typed >= 'a' && typed <= 'z') {
-                typed = typed - 'a' + 'A';  // Convert to uppercase
+                typed = typed - 'a' + 'A';
             }
 
+            // Only accept A-Z
             if (typed >= 'A' && typed <= 'Z') {
                 playerName[currentLetterIndex] = typed;
 
-                // Auto-advance to next letter (max 2)
+                // Auto-advance to next empty box (if not at end)
                 if (currentLetterIndex < 2) {
                     currentLetterIndex++;
                 }
 
                 updateNameDisplay();
             }
+
+            return;
         }
 
         if (event.type != sf::Event::KeyPressed) {
             return;
         }
 
-        // Backspace
+        // Backspace - delete current letter and move back
         if (event.key.code == sf::Keyboard::Backspace) {
+            // Clear current letter
+            playerName[currentLetterIndex] = ' ';
+
+            // Move back if not at start
             if (currentLetterIndex > 0) {
                 currentLetterIndex--;
-                playerName[currentLetterIndex] = 'A';
-                updateNameDisplay();
             }
-        }
-            // Left arrow
-        else if (event.key.code == sf::Keyboard::Left) {
-            currentLetterIndex--;
-            if (currentLetterIndex < 0) {
-                currentLetterIndex = 0;
-            }
+
             updateNameDisplay();
         }
-            // Right arrow
-        else if (event.key.code == sf::Keyboard::Right) {
-            currentLetterIndex++;
-            if (currentLetterIndex > 2) {
-                currentLetterIndex = 2;
+            // Enter - save and continue (only if at least 1 letter entered)
+        else if (event.key.code == sf::Keyboard::Enter) {
+            // Check if at least one letter is entered
+            bool hasLetter = false;
+            for (int i = 0; i < 3; i++) {
+                if (playerName[i] != ' ') {
+                    hasLetter = true;
+                    break;
+                }
             }
-            updateNameDisplay();
-        }
-            // Enter/Space to confirm
-        else if (event.key.code == sf::Keyboard::Enter ||
-                 event.key.code == sf::Keyboard::Space) {
-            saveAndContinue();
-        }
-            // Escape to skip
-        else if (event.key.code == sf::Keyboard::Escape) {
-            saveAndContinue();
+
+            if (hasLetter) {
+                // Replace trailing spaces with 'A' for valid name
+                for (int i = 0; i < 3; i++) {
+                    if (playerName[i] == ' ') {
+                        playerName[i] = 'A';
+                    }
+                }
+                saveAndContinue();
+            }
         }
     }
 }
