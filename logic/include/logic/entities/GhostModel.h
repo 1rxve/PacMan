@@ -16,7 +16,8 @@ namespace logic {
         SPAWNING,
         CHASING,
         FEAR,
-        EATEN
+        EATEN,
+        EXITING_SPAWN
     };
 
     class GhostModel : public EntityModel {
@@ -34,6 +35,11 @@ namespace logic {
         float cellHeight;
 
         bool hasExitedSpawn;
+
+        float eatenRespawnX;  // ← ADD
+        float eatenRespawnY;
+
+        int exitStepCounter;
 
         Direction getReverseDirection(Direction dir) const;
 
@@ -63,6 +69,13 @@ namespace logic {
 
         void getEaten();
         bool isEaten() const { return state == GhostState::EATEN; }
+
+        void setEatenRespawnPosition(float x, float y);
+
+        float getEatenRespawnX() const { return eatenRespawnX; }  // ← ADD
+        float getEatenRespawnY() const { return eatenRespawnY; }
+
+        void startExitingSpawn();
 
         bool isGhost() const override { return true; }
     };

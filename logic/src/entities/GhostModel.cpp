@@ -17,7 +17,10 @@ namespace logic {
               currentDirection(Direction::NONE),
               cellWidth(0.0f),
               cellHeight(0.0f),
-              hasExitedSpawn(false) {
+              hasExitedSpawn(false),
+              eatenRespawnX(x),
+              eatenRespawnY(y),
+              exitStepCounter(0) {
     }
 
     void GhostModel::update(float deltaTime) {
@@ -27,11 +30,39 @@ namespace logic {
 
             if (spawnTimer >= spawnDelay) {
                 state = GhostState::CHASING;
-
-                // BLIJF Direction::NONE - World zal viable direction kiezen
-                // (We kunnen hier niet checken - ghost heeft geen toegang tot walls)
             }
 
+            notify();
+            return;
+        }
+
+        /// EXITING_SPAWN state - collision-driven exit
+        if (state == GhostState::EXITING_SPAWN) {
+            float moveDistance = speed * deltaTime;
+            float newX = x;
+            float newY = y;
+
+            // Move in current direction (World will handle collision)
+            switch (currentDirection) {
+                case Direction::UP:
+                    newY -= moveDistance;
+                    break;
+                case Direction::LEFT:
+                    newX -= moveDistance;
+                    exitStepCounter++;  // Track LEFT movement frames
+
+                    // After moving LEFT for a bit, enable normal AI
+                    if (exitStepCounter > 10) {
+                        state = GhostState::CHASING;
+                        hasExitedSpawn = true;
+                        exitStepCounter = 0;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            setPosition(newX, newY);
             notify();
             return;
         }
@@ -205,5 +236,18 @@ namespace logic {
         speed = 1.0f;  // Faster return to spawn
 
         std::cout << "Ghost entered EATEN state" << std::endl;
+    }
+
+    void GhostModel::setEatenRespawnPosition(float x, float y) {
+        eatenRespawnX = x;
+        eatenRespawnY = y;
+    }
+
+    void GhostModel::startExitingSpawn() {
+        state = GhostState::EXITING_SPAWN;
+        speed = 0.5f;
+        currentDirection = Direction::UP;
+        spawnTimer = 0.0f;  // ← CHANGE: use timer instead of counter
+        hasExitedSpawn = false;
     }
 }

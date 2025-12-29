@@ -132,23 +132,12 @@ namespace logic {
 
                     // Eat ghost during fear mode
                     if (ghost->getState() == GhostState::FEAR && pm->intersects(*ghost)) {
-                        ghost->getEaten();
-
-                        // Find ghost spawn position
-                        for (size_t i = 0; i < ghosts.size(); i++) {
-                            if (ghosts[i] == ghost && i < ghostSpawnPositions.size()) {
-                                float spawnX = ghostSpawnPositions[i].first;
-                                float spawnY = ghostSpawnPositions[i].second;
-
-                                ghost->setPosition(spawnX, spawnY);
-                                ghost->exitFearMode();  // Back to chasing
-                                ghost->stopMovement();  // Reset direction
-                                break;
-                            }
-                        }
+                        // Teleport to eaten respawn position (inside spawn box)
+                        ghost->setPosition(ghost->getEatenRespawnX(), ghost->getEatenRespawnY());
+                        ghost->startExitingSpawn();  // ← CHANGE: new method (next step)
 
                         // TODO: Add bonus points via Score system
-                        std::cout << "GHOST EATEN! +200 points (bonus points TODO)" << std::endl;
+                        std::cout << "GHOST EATEN! Starting exit sequence" << std::endl;
                     }
                 }
 
@@ -211,7 +200,12 @@ namespace logic {
                 bool doorCollision = false;
                 for (DoorModel* door : doors) {
                     if (ghost->intersects(*door)) {
-                        if (ghost->hasExited()) {
+                        // ← ADD: Allow EXITING_SPAWN ghosts through door
+                        if (ghost->getState() == GhostState::EXITING_SPAWN) {
+                            // Ghost exiting - don't block, mark as exited when through
+                            ghost->markAsExited();
+                        }
+                        else if (ghost->hasExited()) {
                             doorCollision = true;
                             break;
                         } else {
@@ -230,9 +224,24 @@ namespace logic {
 
                 if (wallCollision || doorCollision || noEntryCollision) {
                     ghost->setPosition(oldX, oldY);
-                    ghost->stopMovement();
-                    Direction viableDir = getViableDirectionForGhost(ghost);
-                    ghost->setDirection(viableDir);
+
+                    // ← ADD: Special handling for EXITING_SPAWN
+                    if (ghost->getState() == GhostState::EXITING_SPAWN) {
+                        // Hit wall while going UP → switch to LEFT
+                        if (ghost->getCurrentDirection() == Direction::UP) {
+                            ghost->setDirection(Direction::LEFT);
+                        }
+                            // Hit wall while going LEFT → should not happen, but safety
+                        else {
+                            ghost->stopMovement();
+                        }
+                    }
+                    else {
+                        // Normal collision handling
+                        ghost->stopMovement();
+                        Direction viableDir = getViableDirectionForGhost(ghost);
+                        ghost->setDirection(viableDir);
+                    }
                 }
             }
             else {
@@ -339,8 +348,12 @@ namespace logic {
                                 ghostPtr->markAsExited();
                                 ghosts.push_back(ghostPtr);
 
-                                // ← ADD THIS LINE
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
+
+                                // ← ADD: Set eaten respawn to center of spawn box (row 9, col 9)
+                                float eatenSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
+                                float eatenSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
+                                ghostPtr->setEatenRespawnPosition(eatenSpawnX, eatenSpawnY);
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
