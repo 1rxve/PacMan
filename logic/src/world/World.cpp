@@ -129,6 +129,27 @@ namespace logic {
                         handlePacManDeath();
                         return;  // Stop update immediately
                     }
+
+                    // Eat ghost during fear mode
+                    if (ghost->getState() == GhostState::FEAR && pm->intersects(*ghost)) {
+                        ghost->getEaten();
+
+                        // Find ghost spawn position
+                        for (size_t i = 0; i < ghosts.size(); i++) {
+                            if (ghosts[i] == ghost && i < ghostSpawnPositions.size()) {
+                                float spawnX = ghostSpawnPositions[i].first;
+                                float spawnY = ghostSpawnPositions[i].second;
+
+                                ghost->setPosition(spawnX, spawnY);
+                                ghost->exitFearMode();  // Back to chasing
+                                ghost->stopMovement();  // Reset direction
+                                break;
+                            }
+                        }
+
+                        // TODO: Add bonus points via Score system
+                        std::cout << "GHOST EATEN! +200 points (bonus points TODO)" << std::endl;
+                    }
                 }
 
                 // Coin collision

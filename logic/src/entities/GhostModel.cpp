@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>  // ← ADD
 #include <algorithm>
+#include <iostream>
 
 namespace logic {
     GhostModel::GhostModel(float x, float y, float width, float height,
@@ -193,9 +194,16 @@ namespace logic {
     }
 
     void GhostModel::exitFearMode() {
-        if (state == GhostState::FEAR) {
+        if (state == GhostState::FEAR || state == GhostState::EATEN) {  // ← ADD EATEN check
             state = GhostState::CHASING;
             speed = 0.5f;  // Normal speed
         }
+    }
+
+    void GhostModel::getEaten() {
+        state = GhostState::EATEN;
+        speed = 1.0f;  // Faster return to spawn
+
+        std::cout << "Ghost entered EATEN state" << std::endl;
     }
 }

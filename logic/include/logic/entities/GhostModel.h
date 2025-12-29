@@ -61,6 +61,9 @@ namespace logic {
         void exitFearMode();
         bool isFeared() const { return state == GhostState::FEAR; }
 
+        void getEaten();
+        bool isEaten() const { return state == GhostState::EATEN; }
+
         bool isGhost() const override { return true; }
     };
 }

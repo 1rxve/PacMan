@@ -17,8 +17,13 @@ namespace representation {
         int spriteX = 0;
         int spriteY = 0;
 
+        // ← ADD: Check if eaten - use eyes sprite
+        if (ghostModel->isEaten()) {
+            spriteX = 300;   // Eyes sprite column
+            spriteY = 250;   // Eyes sprite row (adjust if needed)
+        }
         // ← ADD: Check if feared - use blue sprite
-        if (ghostModel->isFeared()) {
+        else if (ghostModel->isFeared()) {
             spriteX = 0;  // Blue ghost sprite column
             spriteY = 550;
         } else {
