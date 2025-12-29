@@ -47,7 +47,7 @@ namespace representation {
         // Sprite rendering
         sprite.setOrigin(19.0f, 22.0f);  // Adjust as needed
         sprite.setPosition(pixelCenterX, pixelCenterY);
-        sprite.setScale(1.0f, 1.0f);
+        sprite.setScale(1.15f, 1.15f);
         window->draw(sprite);
 
         // DEBUG VISUALISATIE (EXACT ZOALS PACMAN) ←←←←

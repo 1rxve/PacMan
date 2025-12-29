@@ -9,7 +9,9 @@ namespace logic {
               currentDirection(Direction::NONE),
               nextDirection(Direction::NONE),
               cellWidth(0.0f),
-              cellHeight(0.0f) {
+              cellHeight(0.0f),
+              isDying(false),
+              deathTimer(0.0f) {
     }
 
     void PacManModel::update(float deltaTime) {
@@ -98,5 +100,36 @@ namespace logic {
     void PacManModel::setCellDimensions(float cellW, float cellH) {
         cellWidth = cellW;
         cellHeight = cellH;
+    }
+
+    void PacManModel::startDeath() {
+        isDying = true;
+        deathTimer = 0.0f;
+        currentDirection = Direction::NONE;
+        nextDirection = Direction::NONE;
+    }
+
+    void PacManModel::updateDeath(float deltaTime) {
+        if (!isDying) return;
+
+        deathTimer += deltaTime;
+
+        const float DEATH_ANIMATION_DURATION = 2.0f;
+
+        if (deathTimer >= DEATH_ANIMATION_DURATION) {
+            isDying = false;
+            deathTimer = 0.0f;
+        }
+
+        notify();
+    }
+
+    void PacManModel::respawn(float spawnX, float spawnY) {
+        setPosition(spawnX, spawnY);
+        isDying = false;
+        deathTimer = 0.0f;
+        currentDirection = Direction::NONE;
+        nextDirection = Direction::NONE;
+        notify();
     }
 }

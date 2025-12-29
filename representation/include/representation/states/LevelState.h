@@ -16,7 +16,11 @@ namespace representation {
         sf::Font font;
         sf::Text scoreText;
         sf::Text livesText;
+        sf::Text readyText;
         bool fontLoaded;
+
+        bool isCountingDown;     // ← ADD
+        float countdownTimer;
 
     public:
         LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,

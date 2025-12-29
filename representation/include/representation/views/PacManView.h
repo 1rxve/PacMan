@@ -28,6 +28,8 @@ namespace representation {
 
         bool showDebugVisualization = false;
 
+        void renderDeathAnimation();
+
     public:
         PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera,
                    std::shared_ptr<sf::Texture> sharedTexture);  // ← SHARED_PTR parameter

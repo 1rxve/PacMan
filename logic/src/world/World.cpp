@@ -9,6 +9,16 @@
 #include "logic/entities/DoorModel.h"
 
 namespace logic {
+    World::World()
+            : factory(nullptr),
+              pacman(nullptr),
+              coinsCollected(0),
+              pacmanSpawnX(0.0f),
+              pacmanSpawnY(0.0f),
+              hasJustRespawned(false) {}  // ← ADD
+
+
+
     World::~World() {
         scoreSubject.detach(&score);
 
@@ -25,6 +35,21 @@ namespace logic {
 
     void World::update(float deltaTime) {
         score.update(deltaTime);
+
+        // Check if PacMan is dying - pause all gameplay
+        if (pacman && pacman->getIsDying()) {
+            pacman->updateDeath(deltaTime);
+
+            if (!pacman->getIsDying()) {
+                resetAfterDeath();
+            }
+
+            // Update views to keep rendering during death
+            for (const auto &entity: entities) {
+                entity->notify();
+            }
+            return;
+        }
 
         for (const auto &entity: entities) {
             if (entity->isPacMan()) {
@@ -57,7 +82,6 @@ namespace logic {
                     pm->setPosition(WORLD_LEFT + TUNNEL_THRESHOLD, newY);
                 }
 
-                // Check BOTH wall AND door collision together
                 bool collided = false;
 
                 for (WallModel* wall : walls) {
@@ -67,7 +91,6 @@ namespace logic {
                     }
                 }
 
-                // NEW: Door collision for PacMan (always blocked)
                 if (!collided) {
                     for (DoorModel* door : doors) {
                         if (pm->intersects(*door)) {
@@ -82,7 +105,15 @@ namespace logic {
                     pm->stopMovement();
                 }
 
-                // Coin collision (unchanged)
+                // Ghost collision check
+                for (GhostModel* ghost : ghosts) {
+                    if (ghost->getState() == GhostState::CHASING && pm->intersects(*ghost)) {
+                        handlePacManDeath();
+                        return;  // Stop update immediately
+                    }
+                }
+
+                // Coin collision
                 for (CoinModel* coin : coins) {
                     if (!coin->isCollected() && pm->intersects(*coin)) {
                         coin->collect();
@@ -96,11 +127,9 @@ namespace logic {
             else if (entity->isGhost()) {
                 GhostModel* ghost = static_cast<GhostModel*>(entity.get());
 
-                // If ghost just entered CHASING and has no direction, pick one
                 if (ghost->getState() == GhostState::CHASING &&
                     ghost->getCurrentDirection() == Direction::NONE) {
 
-                    // RED ghost always starts going LEFT
                     if (ghost->getType() == GhostType::RED) {
                         ghost->setDirection(Direction::LEFT);
                     } else {
@@ -109,7 +138,6 @@ namespace logic {
                     }
                 }
 
-                // Check if ghost needs direction decision
                 if (ghost->getState() == GhostState::CHASING &&
                     ghost->getCurrentDirection() != Direction::NONE) {
 
@@ -120,14 +148,11 @@ namespace logic {
                     }
                 }
 
-                // Store old position
                 float oldX = ghost->getX();
                 float oldY = ghost->getY();
 
-                // Update ghost (will move)
                 ghost->update(deltaTime);
 
-                // Check wall collision
                 bool wallCollision = false;
                 for (WallModel* wall : walls) {
                     if (ghost->intersects(*wall)) {
@@ -136,19 +161,14 @@ namespace logic {
                     }
                 }
 
-                // Check door collision
                 bool doorCollision = false;
                 for (DoorModel* door : doors) {
                     if (ghost->intersects(*door)) {
                         if (ghost->hasExited()) {
-                            // Ghost already outside - door is a WALL
                             doorCollision = true;
                             break;
                         } else {
-                            // Ghost still inside spawn - door is PASSABLE
-                            // Mark as exited so next time it's a wall
                             ghost->markAsExited();
-                            // No collision this frame (ghost passes through)
                         }
                     }
                 }
@@ -161,7 +181,6 @@ namespace logic {
                     }
                 }
 
-                // Handle collision
                 if (wallCollision || doorCollision || noEntryCollision) {
                     ghost->setPosition(oldX, oldY);
                     ghost->stopMovement();
@@ -251,22 +270,30 @@ namespace logic {
                                 pacman = static_cast<PacManModel*>(result.model.get());
                                 pacman->setCellDimensions(cellWidth, cellHeight);
                             }
+
+                            // ← ADD THESE 2 LINES
+                            pacmanSpawnX = normalizedX;
+                            pacmanSpawnY = normalizedY;
+
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
                         }
                         break;
                     }
 
-                    case 'R': {  // RED ghost
+                    case 'R': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
-                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               cellWidth * 0.85f, cellHeight * 0.85f,
                                                                GhostType::RED, 0.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
-                                ghostPtr->markAsExited();  // ← ADD: RED spawns outside, already exited
+                                ghostPtr->markAsExited();
                                 ghosts.push_back(ghostPtr);
+
+                                // ← ADD THIS LINE
+                                ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
@@ -283,6 +310,9 @@ namespace logic {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
+
+                                // ← ADD THIS LINE
+                                ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
@@ -299,6 +329,9 @@ namespace logic {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
+
+                                // ← ADD THIS LINE
+                                ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
@@ -315,6 +348,9 @@ namespace logic {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
+
+                                // ← ADD THIS LINE
+                                ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
                             views.push_back(std::move(result.view));
@@ -647,12 +683,44 @@ namespace logic {
         ghosts.clear();
         doors.clear();
         coins.clear();
-        noEntries.clear();  // ← ADD
+        noEntries.clear();
         pacman = nullptr;
 
         views.clear();
         entities.clear();
 
         coinsCollected = 0;
+
+        ghostSpawnPositions.clear();
+        // pacmanSpawnX/Y blijven behouden (niet resetten)
+    }
+
+    void World::handlePacManDeath() {
+        if (!pacman) return;
+
+        pacman->startDeath();
+        pacman->loseLife();
+    }
+
+    void World::resetAfterDeath() {
+        if (!pacman) return;
+
+        pacman->respawn(pacmanSpawnX, pacmanSpawnY);
+
+        for (size_t i = 0; i < ghosts.size() && i < ghostSpawnPositions.size(); i++) {
+            GhostModel* ghost = ghosts[i];
+            float spawnX = ghostSpawnPositions[i].first;
+            float spawnY = ghostSpawnPositions[i].second;
+
+            ghost->setPosition(spawnX, spawnY);
+            ghost->stopMovement();
+        }
+        hasJustRespawned = true;
+    }
+
+    void World::notifyViewsOnly() {
+        for (const auto &entity: entities) {
+            entity->notify();
+        }
     }
 }

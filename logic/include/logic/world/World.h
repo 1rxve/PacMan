@@ -42,9 +42,18 @@ namespace logic {
         Score score;
         Subject scoreSubject;
 
+        float pacmanSpawnX;
+        float pacmanSpawnY;
+        std::vector<std::pair<float, float>> ghostSpawnPositions;
+
+        bool hasJustRespawned;
+
+        void handlePacManDeath();
+        void resetAfterDeath();
+
 
     public:
-        World() : factory(nullptr), pacman(nullptr), coinsCollected(0) {}
+        World();
 
         ~World();
 
@@ -65,6 +74,11 @@ namespace logic {
         std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;  // ← ADD
 
         void clearWorld();
+
+        void notifyViewsOnly();
+
+        bool justRespawned() const { return hasJustRespawned; }  // ← ADD
+        void clearRespawnFlag() { hasJustRespawned = false; }
 
 
         int getCoinsCollected() const { return coinsCollected; }

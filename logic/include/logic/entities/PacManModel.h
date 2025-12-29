@@ -17,6 +17,10 @@ namespace logic {
         float cellWidth;
         float cellHeight;
 
+        // ← ADD THESE 2 LINES
+        bool isDying;
+        float deathTimer;
+
     public:
         PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
@@ -41,6 +45,12 @@ namespace logic {
         void stopMovement();
 
         void setCellDimensions(float cellW, float cellH);
+
+        bool getIsDying() const { return isDying; }
+        float getDeathTimer() const { return deathTimer; }
+        void startDeath();
+        void updateDeath(float deltaTime);
+        void respawn(float spawnX, float spawnY);
 
         bool isPacMan() const override { return true; }
 

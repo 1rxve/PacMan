@@ -16,7 +16,28 @@ namespace representation {
     }
 
     void PacManView::draw() {
+        if (pacManModel->getIsDying()) {
+            renderDeathAnimation();
+            return;
+        }
+
         logic::Direction currentDir = pacManModel->getCurrentDirection();
+
+        // Reset to full circle when stationary (including after respawn)
+        if (currentDir == logic::Direction::NONE) {
+            sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));  // Full circle sprite
+            sprite.setOrigin(29.5f, 22.0f);
+            sprite.setScale(1.15f, 1.15f);
+
+            float centerX = pacManModel->getX();
+            float centerY = pacManModel->getY();
+            float pixelCenterX = camera->normalizedToPixelX(centerX);
+            float pixelCenterY = camera->normalizedToPixelY(centerY);
+
+            sprite.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(sprite);
+            return;
+        }
 
         if (currentDir != logic::Direction::NONE) {
             float deltaTime = animationClock.restart().asSeconds();
@@ -74,7 +95,7 @@ namespace representation {
         // Sprite rendering met GECORRIGEERDE origin
         sprite.setOrigin(29.5f, 22.0f);  // Handmatig bepaald voor correcte centering
         sprite.setPosition(pixelCenterX, pixelCenterY);
-        sprite.setScale(1.0f, 1.0f);
+        sprite.setScale(1.15f, 1.15f);
         window->draw(sprite);
 
         // DEBUG VISUALISATIE (optioneel)
@@ -95,5 +116,40 @@ namespace representation {
             debugCircle.setPosition(pixelCenterX, pixelCenterY);
             window->draw(debugCircle);
         }
+    }
+
+    void PacManView::renderDeathAnimation() {
+        float deathTimer = pacManModel->getDeathTimer();
+        const float DEATH_ANIMATION_DURATION = 2.0f;
+
+        int totalFrames = 11;
+        int frameIndex = static_cast<int>((deathTimer / DEATH_ANIMATION_DURATION) * totalFrames);
+
+        if (frameIndex >= totalFrames) {
+            return;
+        }
+
+        int deathSpriteX = 350;
+        int deathSpriteY = 0 + (frameIndex * 50);
+
+        sprite.setTextureRect(sf::IntRect(deathSpriteX, deathSpriteY, 50, 50));
+
+        float centerX = pacManModel->getX();
+        float centerY = pacManModel->getY();
+
+        float pixelCenterX = camera->normalizedToPixelX(centerX);
+        float pixelCenterY = camera->normalizedToPixelY(centerY);
+
+        // Different origin for last frame
+        if (frameIndex == 10) {
+            sprite.setOrigin(20.0f, 27.0f);
+        } else {
+            sprite.setOrigin(20.0f, 20.0f);
+        }
+
+        sprite.setPosition(pixelCenterX, pixelCenterY);
+        sprite.setScale(1.15f, 1.15f);
+
+        window->draw(sprite);
     }
 }

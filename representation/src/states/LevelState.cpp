@@ -59,9 +59,44 @@ namespace representation {
         }
 
         world->getScoreSubject()->attach(world->getScoreObject());
+
+        isCountingDown = true;
+        countdownTimer = 1.0f;
+
+        // ← ADD: Setup "READY!" text
+        if (fontLoaded) {
+            readyText.setFont(font);
+            readyText.setString("READY!");
+            readyText.setCharacterSize(35);
+            readyText.setFillColor(sf::Color::Yellow);
+
+            sf::FloatRect bounds = readyText.getLocalBounds();
+            readyText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+            readyText.setPosition(window->getSize().x / 2.0f, window->getSize().y / 2.0f - 7);
+        }
     }
 
     void LevelState::update(float deltaTime) {
+        // Countdown logic
+        if (isCountingDown) {
+            countdownTimer -= deltaTime;
+
+            if (countdownTimer <= 0.0f) {
+                isCountingDown = false;
+                world->clearRespawnFlag();  // ← ADD
+            }
+
+            world->notifyViewsOnly();
+            return;
+        }
+
+        // ← ADD: Check if just respawned (before world update)
+        if (world->justRespawned()) {
+            isCountingDown = true;
+            countdownTimer = 1.0f;
+            return;
+        }
+
         world->update(deltaTime);
 
         // Update UI text
@@ -116,6 +151,11 @@ namespace representation {
     }
 
     void LevelState::render() {
+        // Draw "READY!" during countdown
+        if (isCountingDown && fontLoaded) {
+            window->draw(readyText);
+        }
+
         // Draw UI overlay
         if (fontLoaded) {
             window->draw(scoreText);
