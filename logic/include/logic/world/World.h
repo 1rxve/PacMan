@@ -25,7 +25,12 @@ namespace logic {
     class World {
     private:
         std::vector<std::unique_ptr<EntityModel> > entities;
-        std::vector<std::unique_ptr<Observer>> views;
+        std::vector<std::unique_ptr<Observer>> wallViews;
+        std::vector<std::unique_ptr<Observer>> coinViews;
+        std::vector<std::unique_ptr<Observer>> fruitViews;
+        std::vector<std::unique_ptr<Observer>> doorViews;
+        std::vector<std::unique_ptr<Observer>> ghostViews;
+        std::unique_ptr<Observer> pacmanView;
         AbstractFactory* factory;
 
         // Non-owning references to entities for performance optimization.
@@ -84,6 +89,8 @@ namespace logic {
         void clearWorld();
 
         void notifyViewsOnly();
+
+        void renderInOrder();
 
         bool justRespawned() const { return hasJustRespawned; }  // ← ADD
         void clearRespawnFlag() { hasJustRespawned = false; }

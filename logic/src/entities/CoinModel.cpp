@@ -8,7 +8,6 @@ namespace logic {
 
     void CoinModel::update(float /*deltaTime*/) {
         // Coins don't move, alleen notify voor rendering
-        notify();
     }
 
     bool CoinModel::isCollected() const {

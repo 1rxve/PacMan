@@ -86,7 +86,7 @@ namespace representation {
                 world->clearRespawnFlag();  // ← ADD
             }
 
-            world->notifyViewsOnly();
+            world->renderInOrder();
             return;
         }
 

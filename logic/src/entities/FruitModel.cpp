@@ -8,7 +8,7 @@ namespace logic {
 
     void FruitModel::update(float deltaTime) {
         // Fruits don't move, only notify for rendering
-        notify();
+
     }
 
     bool FruitModel::isCollected() const {

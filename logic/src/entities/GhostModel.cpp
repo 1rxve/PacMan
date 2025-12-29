@@ -32,7 +32,7 @@ namespace logic {
                 state = GhostState::CHASING;
             }
 
-            notify();
+
             return;
         }
 
@@ -63,7 +63,6 @@ namespace logic {
             }
 
             setPosition(newX, newY);
-            notify();
             return;
         }
 
@@ -105,11 +104,9 @@ namespace logic {
             }
 
             setPosition(newX, newY);
-            notify();
             return;
         }
 
-        notify();
     }
 
     void GhostModel::setCellDimensions(float cellW, float cellH) {

@@ -31,7 +31,14 @@ namespace logic {
         doors.clear();
         noEntries.clear();
 
-        views.clear();
+        // ← REPLACE
+        wallViews.clear();
+        coinViews.clear();
+        fruitViews.clear();
+        doorViews.clear();
+        ghostViews.clear();
+        pacmanView.reset();
+
         entities.clear();
     }
 
@@ -62,10 +69,7 @@ namespace logic {
                 resetAfterDeath();
             }
 
-            // Update views to keep rendering during death
-            for (const auto &entity: entities) {
-                entity->notify();
-            }
+            renderInOrder();
             return;
         }
 
@@ -248,6 +252,7 @@ namespace logic {
                 entity->update(deltaTime);
             }
         }
+        renderInOrder();
     }
 
     void World::setFactory(AbstractFactory* factory) {
@@ -300,8 +305,7 @@ namespace logic {
                                 walls.push_back(wallPtr);
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
-                        }
+                            wallViews.push_back(std::move(result.view));                         }
                         break;
                     }
 
@@ -313,7 +317,7 @@ namespace logic {
                                 doors.push_back(doorPtr);
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            doorViews.push_back(std::move(result.view));  // ← CHANGE
                         }
                         break;
                     }
@@ -332,7 +336,7 @@ namespace logic {
                             pacmanSpawnY = normalizedY;
 
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            pacmanView = std::move(result.view);  // ← CHANGE (unique_ptr, geen push_back)
                         }
                         break;
                     }
@@ -356,7 +360,7 @@ namespace logic {
                                 ghostPtr->setEatenRespawnPosition(eatenSpawnX, eatenSpawnY);
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            ghostViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -375,7 +379,7 @@ namespace logic {
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            ghostViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -394,7 +398,7 @@ namespace logic {
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            ghostViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -413,7 +417,7 @@ namespace logic {
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            ghostViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -427,7 +431,7 @@ namespace logic {
                                 coins.push_back(coinPtr);
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            coinViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -440,9 +444,6 @@ namespace logic {
                                 noEntries.push_back(noEntryPtr);
                             }
                             entities.push_back(std::move(result.model));
-                            if (result.view) {
-                                views.push_back(std::move(result.view));
-                            }
                         }
                         break;
                     }
@@ -456,7 +457,7 @@ namespace logic {
                                 fruits.push_back(fruitPtr);
                             }
                             entities.push_back(std::move(result.model));
-                            views.push_back(std::move(result.view));
+                            fruitViews.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -761,7 +762,14 @@ namespace logic {
         fruits.clear();
         pacman = nullptr;
 
-        views.clear();
+        // ← REPLACE
+        wallViews.clear();
+        coinViews.clear();
+        fruitViews.clear();
+        doorViews.clear();
+        ghostViews.clear();
+        pacmanView.reset();
+
         entities.clear();
 
         coinsCollected = 0;
@@ -795,6 +803,27 @@ namespace logic {
     void World::notifyViewsOnly() {
         for (const auto &entity: entities) {
             entity->notify();
+        }
+    }
+
+    void World::renderInOrder() {
+        for (auto& view : doorViews) {     // ← MOVE TO FIRST
+            view->onNotify();
+        }
+        for (auto& view : wallViews) {
+            view->onNotify();
+        }
+        for (auto& view : coinViews) {
+            view->onNotify();
+        }
+        for (auto& view : fruitViews) {
+            view->onNotify();
+        }
+        for (auto& view : ghostViews) {
+            view->onNotify();
+        }
+        if (pacmanView) {
+            pacmanView->onNotify();
         }
     }
 

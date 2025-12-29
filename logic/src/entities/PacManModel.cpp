@@ -54,7 +54,6 @@ namespace logic {
         }
 
         setPosition(newX, newY);
-        notify();
     }
 
     int PacManModel::getLives() const {
@@ -121,7 +120,6 @@ namespace logic {
             deathTimer = 0.0f;
         }
 
-        notify();
     }
 
     void PacManModel::respawn(float spawnX, float spawnY) {
@@ -130,6 +128,5 @@ namespace logic {
         deathTimer = 0.0f;
         currentDirection = Direction::NONE;
         nextDirection = Direction::NONE;
-        notify();
     }
 }

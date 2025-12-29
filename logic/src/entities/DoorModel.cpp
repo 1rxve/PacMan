@@ -10,7 +10,7 @@ namespace logic {
     }
 
     void DoorModel::update(float /*deltaTime*/) {
-        notify();
+
     }
 
     bool DoorModel::canPass(const EntityModel* entity) const {
