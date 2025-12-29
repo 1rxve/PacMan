@@ -23,6 +23,7 @@ namespace logic {
         virtual EntityCreationResult createGhost(float x, float y, float w, float h, GhostType type, float spawnDelay) = 0;
         virtual EntityCreationResult createDoor(float x, float y, float w, float h) = 0;
         virtual EntityCreationResult createNoEntry(float x, float y, float w, float h) = 0;
+        virtual EntityCreationResult createFruit(float x, float y, float w, float h) = 0;
     };
 }
 

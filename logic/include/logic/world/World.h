@@ -15,6 +15,7 @@
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 #include "logic/utils/Score.h"
+#include "logic/entities/FruitModel.h"
 
 namespace logic {
     class PacManModel;
@@ -36,6 +37,7 @@ namespace logic {
         std::vector<GhostModel*> ghosts;
         std::vector<DoorModel*> doors;
         std::vector<NoEntryModel*> noEntries;
+        std::vector<FruitModel*> fruits;
 
 
         int coinsCollected;

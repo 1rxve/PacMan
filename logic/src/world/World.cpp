@@ -123,6 +123,15 @@ namespace logic {
                         scoreSubject.notify();
                     }
                 }
+
+                for (FruitModel* fruit : fruits) {
+                    if (!fruit->isCollected() && pm->intersects(*fruit)) {
+                        fruit->collect();
+
+                        // TODO: Trigger fear mode (next phase)
+                        std::cout << "FRUIT COLLECTED! Fear mode will be implemented next." << std::endl;
+                    }
+                }
             }
             else if (entity->isGhost()) {
                 GhostModel* ghost = static_cast<GhostModel*>(entity.get());
@@ -383,6 +392,20 @@ namespace logic {
                             if (result.view) {
                                 views.push_back(std::move(result.view));
                             }
+                        }
+                        break;
+                    }
+
+                    case 'F': {  // Fruit
+                        if (factory) {
+                            auto result = factory->createFruit(normalizedX, normalizedY,
+                                                               cellWidth * 0.3f, cellHeight * 0.3f);
+                            if (result.model->isFruit()) {
+                                FruitModel* fruitPtr = static_cast<FruitModel*>(result.model.get());
+                                fruits.push_back(fruitPtr);
+                            }
+                            entities.push_back(std::move(result.model));
+                            views.push_back(std::move(result.view));
                         }
                         break;
                     }
@@ -684,6 +707,7 @@ namespace logic {
         doors.clear();
         coins.clear();
         noEntries.clear();
+        fruits.clear();
         pacman = nullptr;
 
         views.clear();
@@ -692,7 +716,6 @@ namespace logic {
         coinsCollected = 0;
 
         ghostSpawnPositions.clear();
-        // pacmanSpawnX/Y blijven behouden (niet resetten)
     }
 
     void World::handlePacManDeath() {

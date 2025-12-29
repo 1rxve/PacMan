@@ -22,6 +22,7 @@ namespace representation {
         logic::EntityCreationResult createGhost(float x, float y, float w, float h, logic::GhostType type, float spawnDelay) override;
         logic::EntityCreationResult createDoor(float x, float y, float w, float h) override;
         logic::EntityCreationResult createNoEntry(float x, float y, float w, float h) override;
+        logic::EntityCreationResult createFruit(float x, float y, float w, float h) override;
     };
 }
 

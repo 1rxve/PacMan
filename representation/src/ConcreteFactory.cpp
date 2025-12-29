@@ -11,6 +11,8 @@
 #include "representation/views/DoorView.h"
 #include "logic/entities/DoorModel.h"
 #include "logic/entities/NoEntryModel.h"
+#include "representation/views/FruitView.h"
+#include "logic/entities/FruitModel.h"
 
 namespace representation {
     ConcreteFactory::ConcreteFactory(sf::RenderWindow* window, const Camera* camera)
@@ -59,5 +61,11 @@ namespace representation {
         auto model = std::make_unique<logic::NoEntryModel>(x, y, w, h);
         // No view needed - invisible barrier
         return {std::move(model), nullptr};
+    }
+
+    logic::EntityCreationResult ConcreteFactory::createFruit(float x, float y, float w, float h) {
+        auto model = std::make_unique<logic::FruitModel>(x, y, w, h);
+        auto view = std::make_unique<FruitView>(model.get(), window, camera, sharedTexture);
+        return {std::move(model), std::move(view)};
     }
 }

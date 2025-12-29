@@ -21,6 +21,8 @@ set(LOGIC_SOURCES
         include/logic/entities/DoorModel.h
         src/entities/NoEntryModel.cpp
         include/logic/entities/NoEntryModel.h
+        src/entities/FruitModel.cpp
+        include/logic/entities/FruitModel.h
 )
 
 # Header files (IDE support)
@@ -41,6 +43,8 @@ set(LOGIC_HEADERS
         include/logic/entities/DoorModel.h
         src/entities/NoEntryModel.cpp
         include/logic/entities/NoEntryModel.h
+        src/entities/FruitModel.cpp
+        include/logic/entities/FruitModel.h
 )
 
 # Create library
