@@ -15,7 +15,9 @@ namespace logic {
               coinsCollected(0),
               pacmanSpawnX(0.0f),
               pacmanSpawnY(0.0f),
-              hasJustRespawned(false) {}  // ← ADD
+              hasJustRespawned(false),
+              fearModeActive(false),     // ← ADD
+              fearModeTimer(0.0f) {}
 
 
 
@@ -35,6 +37,22 @@ namespace logic {
 
     void World::update(float deltaTime) {
         score.update(deltaTime);
+
+        // Fear mode timer
+        if (fearModeActive) {
+            fearModeTimer -= deltaTime;
+
+            if (fearModeTimer <= 0.0f) {
+                fearModeActive = false;
+
+                // Exit fear mode for all ghosts
+                for (GhostModel* ghost : ghosts) {
+                    ghost->exitFearMode();
+                }
+
+                std::cout << "FEAR MODE ENDED!" << std::endl;
+            }
+        }
 
         // Check if PacMan is dying - pause all gameplay
         if (pacman && pacman->getIsDying()) {
@@ -124,19 +142,18 @@ namespace logic {
                     }
                 }
 
+                // Fruit collision
                 for (FruitModel* fruit : fruits) {
                     if (!fruit->isCollected() && pm->intersects(*fruit)) {
                         fruit->collect();
-
-                        // TODO: Trigger fear mode (next phase)
-                        std::cout << "FRUIT COLLECTED! Fear mode will be implemented next." << std::endl;
+                        activateFearMode();
                     }
                 }
             }
             else if (entity->isGhost()) {
                 GhostModel* ghost = static_cast<GhostModel*>(entity.get());
 
-                if (ghost->getState() == GhostState::CHASING &&
+                if ((ghost->getState() == GhostState::CHASING || ghost->getState() == GhostState::FEAR) &&
                     ghost->getCurrentDirection() == Direction::NONE) {
 
                     if (ghost->getType() == GhostType::RED) {
@@ -147,7 +164,7 @@ namespace logic {
                     }
                 }
 
-                if (ghost->getState() == GhostState::CHASING &&
+                if ((ghost->getState() == GhostState::CHASING || ghost->getState() == GhostState::FEAR) &&
                     ghost->getCurrentDirection() != Direction::NONE) {
 
                     std::vector<Direction> viableDirections = getViableDirectionsForGhost(ghost);
@@ -745,5 +762,17 @@ namespace logic {
         for (const auto &entity: entities) {
             entity->notify();
         }
+    }
+
+    void World::activateFearMode() {
+        fearModeActive = true;
+        fearModeTimer = FEAR_MODE_DURATION;
+
+        // Put all ghosts in fear mode
+        for (GhostModel* ghost : ghosts) {
+            ghost->enterFearMode();
+        }
+
+        std::cout << "FEAR MODE ACTIVATED! Duration: " << FEAR_MODE_DURATION << " seconds" << std::endl;
     }
 }

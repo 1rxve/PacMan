@@ -27,11 +27,11 @@ namespace logic {
         float spawnTimer;
         float speed;
 
-        Direction currentDirection;  // ← ADD
+        Direction currentDirection;
 
         // Grid info voor intersection detection
-        float cellWidth;   // ← ADD
-        float cellHeight;  // ← ADD
+        float cellWidth;
+        float cellHeight;
 
         bool hasExitedSpawn;
 
@@ -45,9 +45,9 @@ namespace logic {
 
         GhostType getType() const { return type; }
         GhostState getState() const { return state; }
-        Direction getCurrentDirection() const { return currentDirection; }  // ← ADD
+        Direction getCurrentDirection() const { return currentDirection; }
 
-        bool hasExited() const { return hasExitedSpawn; }  // ← ADD GETTER
+        bool hasExited() const { return hasExitedSpawn; }
         void markAsExited() { hasExitedSpawn = true; }
 
         void setCellDimensions(float cellW, float cellH);
@@ -56,6 +56,10 @@ namespace logic {
 
         bool needsDirectionDecision(const std::vector<Direction>& viableDirections) const;
         void makeDirectionDecision(const std::vector<Direction>& viableDirections);
+
+        void enterFearMode();
+        void exitFearMode();
+        bool isFeared() const { return state == GhostState::FEAR; }
 
         bool isGhost() const override { return true; }
     };

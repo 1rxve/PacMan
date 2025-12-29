@@ -14,25 +14,32 @@ namespace representation {
     }
 
     void GhostView::draw() {
-        logic::GhostType type = ghostModel->getType();
-
-        // Sprite selection code...
         int spriteX = 0;
-        int spriteY = 0;  // Second row 45
+        int spriteY = 0;
 
-        switch (type) {
-            case logic::GhostType::RED:
-                spriteX = 0;
-                break;
-            case logic::GhostType::PINK:
-                spriteX = 50;
-                break;
-            case logic::GhostType::BLUE:
-                spriteX = 100;
-                break;
-            case logic::GhostType::ORANGE:
-                spriteX = 150;
-                break;
+        // ← ADD: Check if feared - use blue sprite
+        if (ghostModel->isFeared()) {
+            spriteX = 0;  // Blue ghost sprite column
+            spriteY = 550;
+        } else {
+            // Normal colored sprites
+            logic::GhostType type = ghostModel->getType();
+
+            switch (type) {
+                case logic::GhostType::RED:
+                    spriteX = 0;
+                    break;
+                case logic::GhostType::PINK:
+                    spriteX = 50;
+                    break;
+                case logic::GhostType::BLUE:
+                    spriteX = 100;
+                    break;
+                case logic::GhostType::ORANGE:
+                    spriteX = 150;
+                    break;
+            }
+            spriteY = 0;
         }
 
         sprite.setTextureRect(sf::IntRect(spriteX, spriteY, 50, 50));

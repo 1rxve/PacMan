@@ -50,8 +50,14 @@ namespace logic {
 
         bool hasJustRespawned;
 
+        bool fearModeActive;      // ← ADD
+        float fearModeTimer;      // ← ADD
+        static constexpr float FEAR_MODE_DURATION = 7.0f;
+
         void handlePacManDeath();
         void resetAfterDeath();
+
+        void activateFearMode();
 
 
     public:

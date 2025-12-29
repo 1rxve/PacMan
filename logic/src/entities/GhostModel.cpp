@@ -35,8 +35,8 @@ namespace logic {
             return;
         }
 
-        // CHASING state - basic movement
-        if (state == GhostState::CHASING) {
+        // CHASING OR FEAR state - basic movement
+        if (state == GhostState::CHASING || state == GhostState::FEAR) {
             float moveDistance = speed * deltaTime;
             float newX = x;
             float newY = y;
@@ -152,6 +152,15 @@ namespace logic {
             return;
         }
 
+        // ← ADD: FEAR MODE - Flee behavior (maximize distance)
+        // Note: Requires PacMan position - will be passed in next step
+        // For now, just pick random direction (temporary)
+        if (state == GhostState::FEAR) {
+            int randomIndex = Random::getInstance().getInt(0, static_cast<int>(validOptions.size()) - 1);
+            currentDirection = validOptions[randomIndex];
+            return;
+        }
+
         // RED GHOST AI: 50/50 locked random
         if (type == GhostType::RED) {
             float roll = Random::getInstance().getFloat(0.0f, 1.0f);
@@ -171,5 +180,22 @@ namespace logic {
         }
 
         // TODO: Other ghost types (PINK, BLUE, ORANGE) later
+    }
+
+    void GhostModel::enterFearMode() {
+        if (state == GhostState::CHASING) {
+            state = GhostState::FEAR;
+            speed = 0.25f;  // Slower speed (half of normal 0.5f)
+
+            // Reverse direction when entering fear
+            currentDirection = getReverseDirection(currentDirection);
+        }
+    }
+
+    void GhostModel::exitFearMode() {
+        if (state == GhostState::FEAR) {
+            state = GhostState::CHASING;
+            speed = 0.5f;  // Normal speed
+        }
     }
 }
