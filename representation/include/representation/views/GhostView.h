@@ -14,6 +14,9 @@ namespace representation {
 
         bool showDebugVisualization;  // ← ADD
 
+        float animationTimer;
+        int frameIndex;
+
     public:
         GhostView(logic::GhostModel* model, sf::RenderWindow* window,
                   const Camera* camera, std::shared_ptr<sf::Texture> sharedTexture);
