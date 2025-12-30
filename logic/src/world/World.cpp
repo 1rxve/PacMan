@@ -184,7 +184,9 @@ namespace logic {
                     std::vector<Direction> viableDirections = getViableDirectionsForGhost(ghost);
 
                     if (ghost->needsDirectionDecision(viableDirections)) {
-                        ghost->makeDirectionDecision(viableDirections);
+                        float pacmanX = pacman ? pacman->getX() : 0.0f;
+                        float pacmanY = pacman ? pacman->getY() : 0.0f;
+                        ghost->makeDirectionDecision(viableDirections, pacmanX, pacmanY);
                     }
                 }
 
@@ -221,21 +223,35 @@ namespace logic {
                 bool noEntryCollision = false;
                 for (NoEntryModel* noEntry : noEntries) {
                     if (ghost->intersects(*noEntry)) {
-                        noEntryCollision = true;
-                        break;
+                        // Check if this barrier blocks this ghost type
+                        if (noEntry->blocksGhostType(ghost->getType())) {
+                            std::cout << "Ghost type " << (int)ghost->getType()
+                                      << " blocked by NoEntry" << std::endl;
+
+                            noEntryCollision = true;
+                            break;
+                        }
                     }
                 }
 
                 if (wallCollision || doorCollision || noEntryCollision) {
                     ghost->setPosition(oldX, oldY);
 
-                    // ← ADD: Special handling for EXITING_SPAWN
                     if (ghost->getState() == GhostState::EXITING_SPAWN) {
-                        // Hit wall while going UP → switch to LEFT
-                        if (ghost->getCurrentDirection() == Direction::UP) {
+                        std::cout << "ORANGE EXITING collision - dir: "
+                                  << (int)ghost->getCurrentDirection()
+                                  << " wall:" << wallCollision
+                                  << " door:" << doorCollision
+                                  << " noEntry:" << noEntryCollision << std::endl;
+                        // ORANGE: LEFT hit barrier → UP
+                        if (ghost->getType() == GhostType::ORANGE &&
+                            ghost->getCurrentDirection() == Direction::LEFT) {
+                            ghost->setDirection(Direction::UP);
+                        }
+                            // Any ghost: UP hit wall → LEFT
+                        else if (ghost->getCurrentDirection() == Direction::UP) {
                             ghost->setDirection(Direction::LEFT);
                         }
-                            // Hit wall while going LEFT → should not happen, but safety
                         else {
                             ghost->stopMovement();
                         }
@@ -387,15 +403,28 @@ namespace logic {
                     case 'B': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
-                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               cellWidth * 0.85f, cellHeight * 0.85f,
                                                                GhostType::BLUE, 5.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
-
-                                // ← ADD THIS LINE
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
+
+                                // ← ADD: Spawn invisible ORANGE-only barrier at BLUE position
+                                auto barrierResult = factory->createNoEntry(normalizedX, normalizedY,
+                                                                            cellWidth, cellHeight);
+                                if (barrierResult.model->isNoEntry()) {
+                                    NoEntryModel* barrier = static_cast<NoEntryModel*>(barrierResult.model.get());
+
+                                    // Configure: ONLY block ORANGE
+                                    barrier->clearBlockedGhostTypes();  // ← NOW PUBLIC
+                                    barrier->addBlockedGhostType(GhostType::ORANGE);
+
+                                    noEntries.push_back(barrier);
+                                }
+                                entities.push_back(std::move(barrierResult.model));
+                                // No view needed - invisible barrier
                             }
                             entities.push_back(std::move(result.model));
                             ghostViews.push_back(std::move(result.view));
@@ -406,15 +435,19 @@ namespace logic {
                     case 'O': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
-                                                               cellWidth * 0.9f, cellHeight * 0.9f,
+                                                               cellWidth * 0.85f, cellHeight * 0.85f,
                                                                GhostType::ORANGE, 10.0f);
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
 
-                                // ← ADD THIS LINE
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
+
+                                // Set eaten respawn to CENTER of spawn (Col 9)
+                                float centerSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
+                                float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
+                                ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
                             }
                             entities.push_back(std::move(result.model));
                             ghostViews.push_back(std::move(result.view));
@@ -796,7 +829,22 @@ namespace logic {
 
             ghost->setPosition(spawnX, spawnY);
             ghost->stopMovement();
+
+            // ← ADD: Reset ghost state based on type
+            if (ghost->getType() == GhostType::RED) {
+                // RED spawns outside - direct to CHASING
+                ghost->resetToSpawn(0.0f);  // Will immediately go to CHASING
+            } else {
+                // ORANGE/PINK/BLUE spawn inside - wait + exit
+                float delay = 0.0f;
+                if (ghost->getType() == GhostType::ORANGE) delay = 10.0f;
+                if (ghost->getType() == GhostType::BLUE) delay = 5.0f;
+                if (ghost->getType() == GhostType::PINK) delay = 0.0f;
+
+                ghost->resetToSpawn(delay);
+            }
         }
+
         hasJustRespawned = true;
     }
 

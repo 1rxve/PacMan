@@ -1,7 +1,7 @@
 #include "logic/entities/GhostModel.h"
 #include "logic/utils/Random.h"
 #include <cmath>
-#include <vector>  // ← ADD
+#include <vector>
 #include <algorithm>
 #include <iostream>
 
@@ -32,9 +32,17 @@ namespace logic {
             spawnTimer += deltaTime;
 
             if (spawnTimer >= spawnDelay) {
-                state = GhostState::CHASING;
+                // RED initial spawn - already outside, marked as exited
+                if (type == GhostType::RED && hasExitedSpawn) {
+                    state = GhostState::CHASING;
+                    std::cout << "RED initial spawn -> CHASING (already outside)" << std::endl;
+                }
+                    // All other cases - start exit sequence (including RED after eaten)
+                else {
+                    startExitingSpawn();
+                    std::cout << "Ghost type " << (int)type << " -> EXITING_SPAWN" << std::endl;
+                }
             }
-
 
             return;
         }
@@ -43,13 +51,12 @@ namespace logic {
         if (state == GhostState::RESPAWNING) {
             respawnFlickerTimer += deltaTime;
 
-            const float FLICKER_DURATION = 0.3f;  // 0.3s per flicker
+            const float FLICKER_DURATION = 0.3f;
 
             if (respawnFlickerTimer >= FLICKER_DURATION) {
                 respawnFlickerTimer = 0.0f;
                 respawnFlickerCount++;
 
-                // After 3 flickers (6 state changes: eyes->normal->eyes->normal->eyes->normal)
                 if (respawnFlickerCount >= 6) {
                     startExitingSpawn();
                     std::cout << "Flicker complete - starting exit" << std::endl;
@@ -59,30 +66,75 @@ namespace logic {
             return;
         }
 
-        /// EXITING_SPAWN state - collision-driven exit
+        // EXITING_SPAWN state - per-ghost hardcoded exit routes
         if (state == GhostState::EXITING_SPAWN) {
             float moveDistance = speed * deltaTime;
             float newX = x;
             float newY = y;
 
-            // Move in current direction (World will handle collision)
-            switch (currentDirection) {
-                case Direction::UP:
-                    newY -= moveDistance;
-                    break;
-                case Direction::LEFT:
-                    newX -= moveDistance;
-                    exitStepCounter++;  // Track LEFT movement frames
+            // RED: Direct UP exit (spawns in center, no LEFT needed)
+            if (type == GhostType::RED) {
+                if (currentDirection == Direction::NONE) {
+                    currentDirection = Direction::UP;  // ← CHANGE: Start UP, not LEFT
+                    std::cout << "RED starting UP exit" << std::endl;
+                }
 
-                    // After moving LEFT for a bit, enable normal AI
+                // Count UP frames
+                if (currentDirection == Direction::UP) {
+                    exitStepCounter++;
+
+                    // After moving UP through door, switch to LEFT
+                    if (exitStepCounter > 15) {
+                        currentDirection = Direction::LEFT;
+                        exitStepCounter = 0;
+                    }
+                }
+
+                // Count LEFT frames after exiting
+                if (currentDirection == Direction::LEFT) {
+                    exitStepCounter++;
+
                     if (exitStepCounter > 10) {
                         state = GhostState::CHASING;
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
+                        std::cout << "RED exit complete -> CHASING" << std::endl;
                     }
-                    break;
-                default:
-                    break;
+                }
+            }
+
+            // ORANGE: Collision-driven (LEFT until barrier, then UP)
+            if (type == GhostType::ORANGE) {
+                if (currentDirection == Direction::NONE) {
+                    currentDirection = Direction::LEFT;
+                    std::cout << "ORANGE starting LEFT" << std::endl;
+                }
+
+                // Count LEFT frames after switching from UP
+                if (currentDirection == Direction::LEFT && exitStepCounter > 0) {
+                    exitStepCounter++;
+
+                    if (exitStepCounter > 10) {
+                        state = GhostState::CHASING;
+                        hasExitedSpawn = true;
+                        exitStepCounter = 0;
+                        std::cout << "ORANGE exit complete -> CHASING" << std::endl;
+                    }
+                }
+
+                // Mark when switched to UP
+                if (currentDirection == Direction::UP && exitStepCounter == 0) {
+                    exitStepCounter = 1;
+                }
+            }
+
+            // Apply movement
+            switch (currentDirection) {
+                case Direction::LEFT:  newX -= moveDistance; break;
+                case Direction::RIGHT: newX += moveDistance; break;
+                case Direction::UP:    newY -= moveDistance; break;
+                case Direction::DOWN:  newY += moveDistance; break;
+                case Direction::NONE:  break;
             }
 
             setPosition(newX, newY);
@@ -112,7 +164,7 @@ namespace logic {
                     break;
             }
 
-            // CENTER-LOCKING (keep this - het helpt)
+            // CENTER-LOCKING
             if (cellWidth > 0.0f && cellHeight > 0.0f) {
                 if (currentDirection == Direction::LEFT || currentDirection == Direction::RIGHT) {
                     float gridY = std::floor((newY + 1.0f) / cellHeight);
@@ -129,7 +181,6 @@ namespace logic {
             setPosition(newX, newY);
             return;
         }
-
     }
 
     void GhostModel::setCellDimensions(float cellW, float cellH) {
@@ -137,12 +188,11 @@ namespace logic {
         cellHeight = cellH;
     }
 
-    // ← ADD PUBLIC METHOD
     void GhostModel::setDirection(Direction dir) {
         currentDirection = dir;
     }
 
-    void GhostModel::stopMovement() {  // ← ADD
+    void GhostModel::stopMovement() {
         currentDirection = Direction::NONE;
     }
 
@@ -157,32 +207,25 @@ namespace logic {
         return Direction::NONE;
     }
 
-    // ← ADD: Check if ghost needs to make decision
     bool GhostModel::needsDirectionDecision(const std::vector<Direction>& viableDirections) const {
-        // Ghost needs decision if:
-        // 1. Has 2+ viable options (excluding backwards)
-        // 2. Current direction is blocked
-
         Direction reverse = getReverseDirection(currentDirection);
 
-        // Count options excluding backwards
         int optionCount = 0;
         bool currentStillViable = false;
 
         for (Direction dir : viableDirections) {
-            if (dir == reverse) continue;  // Skip backwards
+            if (dir == reverse) continue;
             optionCount++;
             if (dir == currentDirection) {
                 currentStillViable = true;
             }
         }
 
-        // Need decision if: 2+ options OR current blocked
         return (optionCount >= 2) || (!currentStillViable && optionCount > 0);
     }
 
-    // ← ADD: Make direction decision based on AI type
-    void GhostModel::makeDirectionDecision(const std::vector<Direction>& viableDirections) {
+    void GhostModel::makeDirectionDecision(const std::vector<Direction>& viableDirections,
+                                           float targetX, float targetY) {
         if (viableDirections.empty()) {
             currentDirection = Direction::NONE;
             return;
@@ -199,17 +242,39 @@ namespace logic {
         }
 
         if (validOptions.empty()) {
-            // No options - shouldn't happen but safety
             currentDirection = Direction::NONE;
             return;
         }
 
-        // ← ADD: FEAR MODE - Flee behavior (maximize distance)
-        // Note: Requires PacMan position - will be passed in next step
-        // For now, just pick random direction (temporary)
+        // FEAR MODE - Flee behavior (maximize distance)
         if (state == GhostState::FEAR) {
-            int randomIndex = Random::getInstance().getInt(0, static_cast<int>(validOptions.size()) - 1);
-            currentDirection = validOptions[randomIndex];
+            Direction bestDirection = Direction::NONE;
+            float maxDistance = -1.0f;
+
+            for (Direction dir : validOptions) {
+                float testX = x;
+                float testY = y;
+
+                switch (dir) {
+                    case Direction::LEFT:  testX -= cellWidth; break;
+                    case Direction::RIGHT: testX += cellWidth; break;
+                    case Direction::UP:    testY -= cellHeight; break;
+                    case Direction::DOWN:  testY += cellHeight; break;
+                    case Direction::NONE:  break;
+                }
+
+                float distance = std::abs(testX - targetX) + std::abs(testY - targetY);
+
+                const float EPSILON = 0.01f;
+                bool isTie = std::abs(distance - maxDistance) < EPSILON;
+
+                if (distance > maxDistance || (isTie && dir == currentDirection)) {
+                    maxDistance = distance;
+                    bestDirection = dir;
+                }
+            }
+
+            currentDirection = bestDirection;
             return;
         }
 
@@ -218,48 +283,74 @@ namespace logic {
             float roll = Random::getInstance().getFloat(0.0f, 1.0f);
 
             if (roll < 0.5f) {
-                // Try to keep current direction
                 auto it = std::find(validOptions.begin(), validOptions.end(), currentDirection);
                 if (it != validOptions.end()) {
-                    // Current direction still viable - keep it
-                    return;  // Don't change currentDirection
+                    return;
                 }
             }
 
-            // Pick random from valid options
             int randomIndex = Random::getInstance().getInt(0, static_cast<int>(validOptions.size()) - 1);
             currentDirection = validOptions[randomIndex];
+            return;
         }
 
-        // TODO: Other ghost types (PINK, BLUE, ORANGE) later
+        // ORANGE GHOST AI: Direct chase (minimize distance to PacMan)
+        if (type == GhostType::ORANGE) {
+            Direction bestDirection = Direction::NONE;
+            float minDistance = 999999.0f;
+
+            for (Direction dir : validOptions) {
+                float testX = x;
+                float testY = y;
+
+                switch (dir) {
+                    case Direction::LEFT:  testX -= cellWidth; break;
+                    case Direction::RIGHT: testX += cellWidth; break;
+                    case Direction::UP:    testY -= cellHeight; break;
+                    case Direction::DOWN:  testY += cellHeight; break;
+                    case Direction::NONE:  break;
+                }
+
+                float distance = std::abs(testX - targetX) + std::abs(testY - targetY);
+
+                const float EPSILON = 0.01f;
+                bool isTie = std::abs(distance - minDistance) < EPSILON;
+
+                if (distance < minDistance || (isTie && dir == currentDirection)) {
+                    minDistance = distance;
+                    bestDirection = dir;
+                }
+            }
+
+            currentDirection = bestDirection;
+            return;
+        }
+
+        // TODO: PINK and BLUE ghost AI
     }
 
     void GhostModel::enterFearMode() {
         if (state == GhostState::CHASING) {
             state = GhostState::FEAR;
-            speed = 0.25f;  // Slower speed (half of normal 0.5f)
-
-            // Reverse direction when entering fear
+            speed = 0.25f;
             currentDirection = getReverseDirection(currentDirection);
         }
     }
 
     void GhostModel::exitFearMode() {
-        if (state == GhostState::FEAR || state == GhostState::EATEN) {  // ← ADD EATEN check
+        if (state == GhostState::FEAR || state == GhostState::EATEN) {
             state = GhostState::CHASING;
-            speed = 0.5f;  // Normal speed
+            speed = 0.5f;
         }
     }
 
     void GhostModel::getEaten() {
-        // Teleport to spawn immediately
         setPosition(eatenRespawnX, eatenRespawnY);
 
         state = GhostState::RESPAWNING;
-        speed = 0.5f;  // Normal speed after respawn
+        speed = 0.5f;
         hasExitedSpawn = false;
 
-        // Reset flicker counter
         respawnFlickerTimer = 0.0f;
         respawnFlickerCount = 0;
 
@@ -274,8 +365,21 @@ namespace logic {
     void GhostModel::startExitingSpawn() {
         state = GhostState::EXITING_SPAWN;
         speed = 0.5f;
-        currentDirection = Direction::UP;
-        spawnTimer = 0.0f;  // ← CHANGE: use timer instead of counter
+        currentDirection = Direction::NONE;
+        exitStepCounter = 0;
         hasExitedSpawn = false;
+
+        std::cout << "Ghost type " << (int)type << " starting exit sequence" << std::endl;
+    }
+
+    void GhostModel::resetToSpawn(float delay) {
+        state = GhostState::SPAWNING;
+        spawnTimer = 0.0f;
+        spawnDelay = delay;
+        currentDirection = Direction::NONE;
+        exitStepCounter = 0;
+        hasExitedSpawn = false;
+
+        std::cout << "Ghost type " << (int)type << " reset to SPAWNING with delay " << delay << std::endl;
     }
 }
