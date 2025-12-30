@@ -67,8 +67,9 @@ namespace logic {
         void stopMovement();
 
         bool needsDirectionDecision(const std::vector<Direction>& viableDirections) const;
-        void makeDirectionDecision(const std::vector<Direction>& viableDirections,float targetX, float targetY);
-
+        void makeDirectionDecision(const std::vector<Direction>& viableDirections,
+                                   float targetX, float targetY,
+                                   Direction pacmanDirection);
         void enterFearMode();
         void exitFearMode();
 

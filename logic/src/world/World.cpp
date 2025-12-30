@@ -186,7 +186,8 @@ namespace logic {
                     if (ghost->needsDirectionDecision(viableDirections)) {
                         float pacmanX = pacman ? pacman->getX() : 0.0f;
                         float pacmanY = pacman ? pacman->getY() : 0.0f;
-                        ghost->makeDirectionDecision(viableDirections, pacmanX, pacmanY);
+                        Direction pacmanDir = pacman ? pacman->getCurrentDirection() : Direction::NONE;
+                        ghost->makeDirectionDecision(viableDirections, pacmanX, pacmanY, pacmanDir);
                     }
                 }
 
@@ -384,15 +385,19 @@ namespace logic {
                     case 'P': {
                         if (factory) {
                             auto result = factory->createGhost(normalizedX, normalizedY,
-                                                               cellWidth * 0.9f, cellHeight * 0.9f,
-                                                               GhostType::PINK, 0.0f);
+                                                               cellWidth * 0.85f, cellHeight * 0.85f,
+                                                               GhostType::PINK, 0.0f);  // 0 second delay
                             if (result.model->isGhost()) {
                                 GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
                                 ghostPtr->setCellDimensions(cellWidth, cellHeight);
                                 ghosts.push_back(ghostPtr);
 
-                                // ← ADD THIS LINE
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
+
+                                // Set eaten respawn to CENTER of spawn (Col 9)
+                                float centerSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
+                                float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
+                                ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
                             }
                             entities.push_back(std::move(result.model));
                             ghostViews.push_back(std::move(result.view));

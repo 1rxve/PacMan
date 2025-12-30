@@ -103,6 +103,37 @@ namespace logic {
                 }
             }
 
+            // PINK: Direct UP exit (spawns in center like RED)
+            if (type == GhostType::PINK) {
+                if (currentDirection == Direction::NONE) {
+                    currentDirection = Direction::UP;
+                    std::cout << "PINK starting UP exit" << std::endl;
+                }
+
+                // Count UP frames
+                if (currentDirection == Direction::UP) {
+                    exitStepCounter++;
+
+                    // After moving UP through door, switch to LEFT
+                    if (exitStepCounter > 15) {
+                        currentDirection = Direction::LEFT;
+                        exitStepCounter = 0;
+                    }
+                }
+
+                // Count LEFT frames after exiting
+                if (currentDirection == Direction::LEFT) {
+                    exitStepCounter++;
+
+                    if (exitStepCounter > 10) {
+                        state = GhostState::CHASING;
+                        hasExitedSpawn = true;
+                        exitStepCounter = 0;
+                        std::cout << "PINK exit complete -> CHASING" << std::endl;
+                    }
+                }
+            }
+
             // ORANGE: Collision-driven (LEFT until barrier, then UP)
             if (type == GhostType::ORANGE) {
                 if (currentDirection == Direction::NONE) {
@@ -225,7 +256,7 @@ namespace logic {
     }
 
     void GhostModel::makeDirectionDecision(const std::vector<Direction>& viableDirections,
-                                           float targetX, float targetY) {
+                                           float targetX, float targetY, Direction pacmanDirection) {
         if (viableDirections.empty()) {
             currentDirection = Direction::NONE;
             return;
@@ -326,7 +357,64 @@ namespace logic {
             return;
         }
 
-        // TODO: PINK and BLUE ghost AI
+        // PINK GHOST AI: Predictive chase (4 tiles ahead of PacMan)
+        if (type == GhostType::PINK) {
+            // Calculate target position 4 tiles ahead of PacMan's direction
+            float predictedX = targetX;
+            float predictedY = targetY;
+
+            // Predict 4 tiles ahead based on PacMan's facing direction
+            switch (pacmanDirection) {
+                case Direction::UP:
+                    predictedY -= 4 * cellHeight;
+                    break;
+                case Direction::DOWN:
+                    predictedY += 4 * cellHeight;
+                    break;
+                case Direction::LEFT:
+                    predictedX -= 4 * cellWidth;
+                    break;
+                case Direction::RIGHT:
+                    predictedX += 4 * cellWidth;
+                    break;
+                case Direction::NONE:
+                    // PacMan not moving - target current position
+                    break;
+            }
+
+            // Minimize distance to predicted position
+            Direction bestDirection = Direction::NONE;
+            float minDistance = 999999.0f;
+
+            for (Direction dir : validOptions) {
+                float testX = x;
+                float testY = y;
+
+                switch (dir) {
+                    case Direction::LEFT:  testX -= cellWidth; break;
+                    case Direction::RIGHT: testX += cellWidth; break;
+                    case Direction::UP:    testY -= cellHeight; break;
+                    case Direction::DOWN:  testY += cellHeight; break;
+                    case Direction::NONE:  break;
+                }
+
+                // Manhattan distance to PREDICTED position
+                float distance = std::abs(testX - predictedX) + std::abs(testY - predictedY);
+
+                const float EPSILON = 0.01f;
+                bool isTie = std::abs(distance - minDistance) < EPSILON;
+
+                if (distance < minDistance || (isTie && dir == currentDirection)) {
+                    minDistance = distance;
+                    bestDirection = dir;
+                }
+            }
+
+            currentDirection = bestDirection;
+            return;
+        }
+
+        // TODO: BLUE ghost AI
     }
 
     void GhostModel::enterFearMode() {
