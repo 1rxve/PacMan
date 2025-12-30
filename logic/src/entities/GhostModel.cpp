@@ -31,6 +31,11 @@ namespace logic {
         if (state == GhostState::SPAWNING) {
             spawnTimer += deltaTime;
 
+            // ← ADD: Debug voor BLUE
+            if (type == GhostType::BLUE) {
+                std::cout << "BLUE SPAWNING - timer: " << spawnTimer << "/" << spawnDelay << std::endl;
+            }
+
             if (spawnTimer >= spawnDelay) {
                 // RED initial spawn - already outside, marked as exited
                 if (type == GhostType::RED && hasExitedSpawn) {
@@ -130,6 +135,42 @@ namespace logic {
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
                         std::cout << "PINK exit complete -> CHASING" << std::endl;
+                    }
+                }
+            }
+
+            // BLUE: RIGHT → UP → RIGHT exit
+            if (type == GhostType::BLUE) {
+                if (currentDirection == Direction::NONE) {
+                    currentDirection = Direction::RIGHT;
+                    std::cout << "BLUE starting RIGHT exit" << std::endl;
+                }
+
+                // Phase 1: RIGHT until collision
+                if (currentDirection == Direction::RIGHT && exitStepCounter == 0) {
+                    // Collision handler will switch to UP
+                }
+
+                // Phase 2: UP through door
+                if (currentDirection == Direction::UP) {
+                    exitStepCounter++;
+
+                    // After moving UP through door, switch to RIGHT
+                    if (exitStepCounter > 15) {
+                        currentDirection = Direction::RIGHT;
+                        exitStepCounter = 0;
+                    }
+                }
+
+                // Phase 3: RIGHT until free
+                if (currentDirection == Direction::RIGHT && exitStepCounter > 0) {
+                    exitStepCounter++;
+
+                    if (exitStepCounter > 10) {
+                        state = GhostState::CHASING;
+                        hasExitedSpawn = true;
+                        exitStepCounter = 0;
+                        std::cout << "BLUE exit complete -> CHASING" << std::endl;
                     }
                 }
             }
@@ -414,7 +455,62 @@ namespace logic {
             return;
         }
 
-        // TODO: BLUE ghost AI
+        // BLUE GHOST AI: Same as PINK (predictive chase)
+        if (type == GhostType::BLUE) {
+            // Calculate target position 4 tiles ahead of PacMan's direction
+            float predictedX = targetX;
+            float predictedY = targetY;
+
+            // Predict 4 tiles ahead based on PacMan's facing direction
+            switch (pacmanDirection) {
+                case Direction::UP:
+                    predictedY -= 4 * cellHeight;
+                    break;
+                case Direction::DOWN:
+                    predictedY += 4 * cellHeight;
+                    break;
+                case Direction::LEFT:
+                    predictedX -= 4 * cellWidth;
+                    break;
+                case Direction::RIGHT:
+                    predictedX += 4 * cellWidth;
+                    break;
+                case Direction::NONE:
+                    // PacMan not moving - target current position
+                    break;
+            }
+
+            // Minimize distance to predicted position
+            Direction bestDirection = Direction::NONE;
+            float minDistance = 999999.0f;
+
+            for (Direction dir : validOptions) {
+                float testX = x;
+                float testY = y;
+
+                switch (dir) {
+                    case Direction::LEFT:  testX -= cellWidth; break;
+                    case Direction::RIGHT: testX += cellWidth; break;
+                    case Direction::UP:    testY -= cellHeight; break;
+                    case Direction::DOWN:  testY += cellHeight; break;
+                    case Direction::NONE:  break;
+                }
+
+                // Manhattan distance to PREDICTED position
+                float distance = std::abs(testX - predictedX) + std::abs(testY - predictedY);
+
+                const float EPSILON = 0.01f;
+                bool isTie = std::abs(distance - minDistance) < EPSILON;
+
+                if (distance < minDistance || (isTie && dir == currentDirection)) {
+                    minDistance = distance;
+                    bestDirection = dir;
+                }
+            }
+
+            currentDirection = bestDirection;
+            return;
+        }
     }
 
     void GhostModel::enterFearMode() {

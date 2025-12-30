@@ -227,10 +227,14 @@ namespace logic {
                         // Check if this barrier blocks this ghost type
                         if (noEntry->blocksGhostType(ghost->getType())) {
                             std::cout << "Ghost type " << (int)ghost->getType()
-                                      << " blocked by NoEntry" << std::endl;
-
+                                      << " BLOCKED by NoEntry at ("
+                                      << noEntry->getX() << ", " << noEntry->getY() << ")" << std::endl;
                             noEntryCollision = true;
                             break;
+                        } else {
+                            std::cout << "Ghost type " << (int)ghost->getType()
+                                      << " PASSES THROUGH NoEntry at ("
+                                      << noEntry->getX() << ", " << noEntry->getY() << ")" << std::endl;
                         }
                     }
                 }
@@ -239,19 +243,28 @@ namespace logic {
                     ghost->setPosition(oldX, oldY);
 
                     if (ghost->getState() == GhostState::EXITING_SPAWN) {
-                        std::cout << "ORANGE EXITING collision - dir: "
-                                  << (int)ghost->getCurrentDirection()
-                                  << " wall:" << wallCollision
-                                  << " door:" << doorCollision
-                                  << " noEntry:" << noEntryCollision << std::endl;
                         // ORANGE: LEFT hit barrier → UP
                         if (ghost->getType() == GhostType::ORANGE &&
                             ghost->getCurrentDirection() == Direction::LEFT) {
                             ghost->setDirection(Direction::UP);
+                            std::cout << "ORANGE hit barrier - switching to UP" << std::endl;
                         }
-                            // Any ghost: UP hit wall → LEFT
+                            // BLUE: RIGHT hit barrier → UP
+                        else if (ghost->getType() == GhostType::BLUE &&
+                                 ghost->getCurrentDirection() == Direction::RIGHT) {
+                            ghost->setDirection(Direction::UP);
+                            std::cout << "BLUE hit barrier - switching to UP" << std::endl;
+                        }
+                            // Any ghost: UP hit wall → LEFT or RIGHT
                         else if (ghost->getCurrentDirection() == Direction::UP) {
-                            ghost->setDirection(Direction::LEFT);
+                            // BLUE goes RIGHT after exiting, others go LEFT
+                            if (ghost->getType() == GhostType::BLUE) {
+                                ghost->setDirection(Direction::RIGHT);
+                                std::cout << "BLUE hit wall - switching to RIGHT" << std::endl;
+                            } else {
+                                ghost->setDirection(Direction::LEFT);
+                                std::cout << "Ghost hit wall - switching to LEFT" << std::endl;
+                            }
                         }
                         else {
                             ghost->stopMovement();
@@ -453,6 +466,21 @@ namespace logic {
                                 float centerSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
                                 float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                                 ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
+
+                                // ← ADD: Spawn invisible BLUE-only barrier at ORANGE position
+                                auto barrierResult = factory->createNoEntry(normalizedX, normalizedY,
+                                                                            cellWidth, cellHeight);
+                                if (barrierResult.model->isNoEntry()) {
+                                    NoEntryModel* barrier = static_cast<NoEntryModel*>(barrierResult.model.get());
+
+                                    // Configure: ONLY block BLUE
+                                    barrier->clearBlockedGhostTypes();
+                                    barrier->addBlockedGhostType(GhostType::BLUE);
+
+                                    noEntries.push_back(barrier);
+                                }
+                                entities.push_back(std::move(barrierResult.model));
+                                // No view needed - invisible barrier
                             }
                             entities.push_back(std::move(result.model));
                             ghostViews.push_back(std::move(result.view));
