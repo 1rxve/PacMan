@@ -57,7 +57,10 @@ namespace logic {
 
         bool fearModeActive;      // ← ADD
         float fearModeTimer;      // ← ADD
-        static constexpr float FEAR_MODE_DURATION = 7.0f;
+
+        int currentLevel;           // ← ADD
+        float baseGhostSpeed;       // ← ADD
+        float baseFearDuration;
 
         void handlePacManDeath();
         void resetAfterDeath();
@@ -102,6 +105,9 @@ namespace logic {
         int getScore() const { return score.getScore(); }
         Score* getScoreObject() { return &score; }
         Subject* getScoreSubject() { return &scoreSubject; }
+
+        int getCurrentLevel() const { return currentLevel; }
+        void nextLevel();
     };
 }
 

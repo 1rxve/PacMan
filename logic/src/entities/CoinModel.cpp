@@ -18,4 +18,8 @@ namespace logic {
         collected = true;
         // Coin verdwijnt - view zal dit detecteren
     }
+
+    void CoinModel::uncollect() {
+        collected = false;
+    }
 }

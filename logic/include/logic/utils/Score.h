@@ -51,6 +51,7 @@ namespace logic {
         static std::vector<HighScoreEntry> loadHighScores();
         static std::string getHighScoresFilePath();
         static bool isHighScore(int score);
+        static bool isTopScore(int score);
 
     };
 }

@@ -17,7 +17,10 @@ namespace logic {
               pacmanSpawnY(0.0f),
               hasJustRespawned(false),
               fearModeActive(false),     // ← ADD
-              fearModeTimer(0.0f) {}
+              fearModeTimer(0.0f),
+              currentLevel(1),              // ← ADD
+              baseGhostSpeed(0.5f),         // ← ADD
+              baseFearDuration(7.0f) {}
 
 
 
@@ -910,13 +913,75 @@ namespace logic {
 
     void World::activateFearMode() {
         fearModeActive = true;
-        fearModeTimer = FEAR_MODE_DURATION;
+        fearModeTimer = baseFearDuration;
 
         // Put all ghosts in fear mode
         for (GhostModel* ghost : ghosts) {
             ghost->enterFearMode();
         }
 
-        std::cout << "FEAR MODE ACTIVATED! Duration: " << FEAR_MODE_DURATION << " seconds" << std::endl;
+    }
+
+    void World::nextLevel() {
+        currentLevel++;
+
+        // Respawn coins
+        for (CoinModel* coin : coins) {
+            coin->uncollect();
+            coin->notify();
+        }
+
+        // Respawn fruits
+        for (FruitModel* fruit : fruits) {
+            fruit->uncollect();
+            fruit->notify();
+        }
+
+        // Reset collected count
+        coinsCollected = 0;
+
+        // Reset PacMan
+        if (pacman) {
+            pacman->setPosition(pacmanSpawnX, pacmanSpawnY);
+            pacman->stopMovement();
+            pacman->notify();
+        }
+
+        // Reset ghosts
+        for (size_t i = 0; i < ghosts.size() && i < ghostSpawnPositions.size(); i++) {
+            GhostModel* ghost = ghosts[i];
+            float spawnX = ghostSpawnPositions[i].first;
+            float spawnY = ghostSpawnPositions[i].second;
+
+            ghost->setPosition(spawnX, spawnY);
+
+            // Reset to SPAWNING with original delays
+            if (ghost->getType() == GhostType::RED) {
+                ghost->resetToSpawn(0.0f);
+            } else if (ghost->getType() == GhostType::PINK) {
+                ghost->resetToSpawn(0.0f);
+            } else if (ghost->getType() == GhostType::BLUE) {
+                ghost->resetToSpawn(5.0f);
+            } else if (ghost->getType() == GhostType::ORANGE) {
+                ghost->resetToSpawn(10.0f);
+            }
+
+            // Increase ghost speed
+            float newSpeed = baseGhostSpeed + (currentLevel - 1) * 0.01f;
+            std::cout << "About to set speed for ghost type " << (int)ghost->getType() << " to " << newSpeed << std::endl;  // ← ADD
+
+            ghost->setSpeed(newSpeed);
+
+            std::cout << "Ghost type " << (int)ghost->getType()
+                      << " speed=" << ghost->getSpeed()
+                      << " target=" << ghost->getTargetSpeed() << std::endl;
+        }
+
+        // Decrease fear duration
+        baseFearDuration = std::max(3.0f, 7.0f - (currentLevel - 1) * 0.5f);
+
+        std::cout << "=== LEVEL " << currentLevel << " ===" << std::endl;
+        std::cout << "Ghost speed: " << (baseGhostSpeed + (currentLevel - 1) * 0.1f) << std::endl;
+        std::cout << "Fear duration: " << baseFearDuration << std::endl;
     }
 }

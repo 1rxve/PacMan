@@ -14,7 +14,8 @@ namespace representation {
               currentLetterIndex(0),
               fontLoaded(false),
               blinkTimer(0.0f),
-              cursorVisible(true) {
+              cursorVisible(true),
+              isNewHighScore(logic::Score::isTopScore(finalScore)) {
 
         // Load font
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
@@ -26,7 +27,11 @@ namespace representation {
         if (fontLoaded) {
             // Title
             titleText.setFont(font);
-            titleText.setString("NEW HIGH SCORE!");
+            if (isNewHighScore) {
+                titleText.setString("NEW HIGH SCORE!");  // ← Top 1
+            } else {
+                titleText.setString("HIGH SCORE");  // ← Top 2-5
+            }
             titleText.setCharacterSize(48);
             titleText.setFillColor(sf::Color::Yellow);
 

@@ -14,6 +14,7 @@ namespace logic {
               spawnDelay(spawnDelay),
               spawnTimer(0.0f),
               speed(0.5f),
+              targetSpeed(0.5f),
               currentDirection(Direction::NONE),
               cellWidth(0.0f),
               cellHeight(0.0f),
@@ -27,6 +28,11 @@ namespace logic {
     }
 
     void GhostModel::update(float deltaTime) {
+        static int counter = 0;
+        if (counter++ % 60 == 0 && (state == GhostState::CHASING || state == GhostState::EXITING_SPAWN)) {
+            std::cout << "Ghost " << (int)type << " state=" << (int)state
+                      << " speed=" << speed << " target=" << targetSpeed << std::endl;
+        }
         // SPAWNING state - wacht op delay
         if (state == GhostState::SPAWNING) {
             spawnTimer += deltaTime;
@@ -524,7 +530,7 @@ namespace logic {
     void GhostModel::exitFearMode() {
         if (state == GhostState::FEAR || state == GhostState::EATEN) {
             state = GhostState::CHASING;
-            speed = 0.5f;
+            speed = targetSpeed;
         }
     }
 
@@ -532,7 +538,7 @@ namespace logic {
         setPosition(eatenRespawnX, eatenRespawnY);
 
         state = GhostState::RESPAWNING;
-        speed = 0.5f;
+        speed = targetSpeed;
         hasExitedSpawn = false;
 
         respawnFlickerTimer = 0.0f;
@@ -548,7 +554,7 @@ namespace logic {
 
     void GhostModel::startExitingSpawn() {
         state = GhostState::EXITING_SPAWN;
-        speed = 0.5f;
+        speed = targetSpeed;
         currentDirection = Direction::NONE;
         exitStepCounter = 0;
         hasExitedSpawn = false;
@@ -560,10 +566,16 @@ namespace logic {
         state = GhostState::SPAWNING;
         spawnTimer = 0.0f;
         spawnDelay = delay;
+        speed = targetSpeed;
         currentDirection = Direction::NONE;
         exitStepCounter = 0;
         hasExitedSpawn = false;
 
         std::cout << "Ghost type " << (int)type << " reset to SPAWNING with delay " << delay << std::endl;
+    }
+
+    void GhostModel::setSpeed(float newSpeed) {
+        speed = newSpeed;
+        targetSpeed = newSpeed;
     }
 }

@@ -29,6 +29,8 @@ namespace logic {
         float spawnTimer;
         float speed;
 
+        float targetSpeed;
+
         Direction currentDirection;
 
         // Grid info voor intersection detection
@@ -91,7 +93,12 @@ namespace logic {
 
         void resetToSpawn(float delay);
 
+        void setSpeed(float newSpeed);
+
         bool isGhost() const override { return true; }
+
+        float getSpeed() const { return speed; }
+        float getTargetSpeed() const { return targetSpeed; }
     };
 }
 

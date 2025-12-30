@@ -16,6 +16,8 @@ namespace logic {
         bool isCollected() const;
         void collect();
 
+        void uncollect();
+
         bool isFruit() const override { return true; }
     };
 }

@@ -6,7 +6,7 @@ namespace logic {
               collected(false) {
     }
 
-    void FruitModel::update(float deltaTime) {
+    void FruitModel::update(float /*deltaTime*/) {
         // Fruits don't move, only notify for rendering
 
     }
@@ -17,5 +17,9 @@ namespace logic {
 
     void FruitModel::collect() {
         collected = true;
+    }
+
+    void FruitModel::uncollect() {
+        collected = false;
     }
 }

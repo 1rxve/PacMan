@@ -25,9 +25,9 @@ namespace representation {
         if (fontLoaded) {
             // Title text
             titleText.setFont(font);
-            titleText.setString(won ? "YOU WON!" : "GAME OVER");
+            titleText.setString("GAME OVER");
             titleText.setCharacterSize(64);
-            titleText.setFillColor(won ? sf::Color::Green : sf::Color::Red);
+            titleText.setFillColor(sf::Color::Red);
 
             sf::FloatRect titleBounds = titleText.getLocalBounds();
             titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);

@@ -12,7 +12,6 @@ namespace representation {
 
         std::string playerName;  // 3 letters
         int currentLetterIndex;  // 0, 1, or 2
-
         sf::Font font;
         sf::Text titleText;
         sf::Text scoreText;
@@ -24,8 +23,9 @@ namespace representation {
         bool fontLoaded;
 
         float blinkTimer;
-        bool cursorVisible;
 
+        bool cursorVisible;
+        bool isNewHighScore;
         void updateNameDisplay();
         void saveAndContinue();
 

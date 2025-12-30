@@ -135,4 +135,16 @@ namespace logic {
         // Check of score hoger is dan de laagste in top 5
         return score > scores[4].score;  // scores[4] is de 5de (laagste)
     }
+
+    bool Score::isTopScore(int score) {
+        std::vector<HighScoreEntry> scores = loadHighScores();
+
+        // Empty list = first score = top score
+        if (scores.empty()) {
+            return true;
+        }
+
+        // Check if higher than current #1
+        return score > scores[0].score;
+    }
 }

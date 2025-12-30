@@ -115,37 +115,40 @@ namespace representation {
 
         // WIN: All coins collected
         if (coinsCollected >= totalCoins) {
+
+            // Show brief "LEVEL X" message (optional)
+            std::cout << "Level cleared! Starting level " << world->getCurrentLevel() << std::endl;
+
+            // Trigger countdown
+            isCountingDown = true;
+            countdownTimer = 2.0f;  // 2 second countdown before next level starts
+
+            return;
+        }
+
+        // LOSE: No lives remaining
+        logic::PacManModel* pacman = world->getPacMan();
+        // GAME OVER: No lives remaining
+        if (pacman && pacman->getLives() <= 0) {
             int finalScore = world->getScore();
 
-            // Check if score qualifies for top 5
+            // Check if top 5 high score
             if (logic::Score::isHighScore(finalScore)) {
-                // Show name entry
+                // Name entry → Game Over screen
                 stateManager->pushState(std::make_unique<NameEntryState>(
                         window, factory, camera, stateManager,
                         finalScore,
                         mapFile
                 ));
             } else {
-                // Score not high enough - go directly to victory screen
+                // Directly to Game Over screen
                 stateManager->pushState(std::make_unique<VictoryState>(
                         window, factory, camera, stateManager,
-                        true,
+                        false,  // won = false (game over)
                         finalScore,
                         mapFile
                 ));
             }
-            return;
-        }
-
-        // LOSE: No lives remaining
-        logic::PacManModel* pacman = world->getPacMan();
-        if (pacman && pacman->getLives() <= 0) {
-            stateManager->pushState(std::make_unique<VictoryState>(
-                    window, factory, camera, stateManager,
-                    false,
-                    world->getScore(),
-                    mapFile
-            ));
             return;
         }
     }
@@ -160,6 +163,15 @@ namespace representation {
         if (fontLoaded) {
             window->draw(scoreText);
             window->draw(livesText);
+
+            // ← ADD: Show current level
+            sf::Text levelText;
+            levelText.setFont(font);
+            levelText.setString("LEVEL: " + std::to_string(world->getCurrentLevel()));
+            levelText.setCharacterSize(24);
+            levelText.setFillColor(sf::Color::White);
+            levelText.setPosition(10.0f, 70.0f);
+            window->draw(levelText);
         }
     }
 
@@ -177,6 +189,14 @@ namespace representation {
 
             if (event.key.code == sf::Keyboard::Escape) {
                 window->close();
+                return;
+            }
+
+            if (event.key.code == sf::Keyboard::N) {
+                world->nextLevel();
+                isCountingDown = true;
+                countdownTimer = 2.0f;
+                std::cout << "DEBUG: Skipped to level " << world->getCurrentLevel() << std::endl;
                 return;
             }
 
