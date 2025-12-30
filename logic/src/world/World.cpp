@@ -49,6 +49,10 @@ namespace logic {
         if (fearModeActive) {
             fearModeTimer -= deltaTime;
 
+            for (GhostModel* ghost : ghosts) {
+                ghost->setFearTimer(fearModeTimer);
+            }
+
             if (fearModeTimer <= 0.0f) {
                 fearModeActive = false;
 

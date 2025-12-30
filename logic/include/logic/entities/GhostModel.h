@@ -41,6 +41,8 @@ namespace logic {
 
         int exitStepCounter;
 
+        float fearTimer;
+
         Direction getReverseDirection(Direction dir) const;
 
     public:
@@ -65,6 +67,10 @@ namespace logic {
 
         void enterFearMode();
         void exitFearMode();
+
+        void setFearTimer(float timer) { fearTimer = timer; }  // ← ADD
+        float getFearTimer() const { return fearTimer; }
+
         bool isFeared() const { return state == GhostState::FEAR; }
 
         void getEaten();

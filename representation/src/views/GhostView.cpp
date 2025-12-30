@@ -33,10 +33,21 @@ namespace representation {
         int spriteX = 0;
         int spriteY = 0;
 
-        // FEAR MODE - Blue sprite (overrides everything)
+        // FEAR MODE - Blue sprite with flicker warning
         if (state == logic::GhostState::FEAR) {
-            spriteX = 0;
-            spriteY = 550 + (frameIndex * 50);  // Y=550 or Y=600
+            float fearTimer = ghostModel->getFearTimer();
+            const float FLICKER_THRESHOLD = 1.5f;
+
+            // Flicker between blue and white in last 1.5 seconds
+            if (fearTimer < FLICKER_THRESHOLD && fearTimer > 0.0f) {
+                // Flicker every 0.2 seconds
+                bool showWhite = (static_cast<int>(fearTimer / 0.2f) % 2 == 0);
+                spriteX = showWhite ? 50 : 0;  // X=50 (white) or X=0 (blue)
+            } else {
+                spriteX = 0;  // Always blue when > 1.5s remaining
+            }
+
+            spriteY = 550 + (frameIndex * 50);  // Y=550 or Y=600 (animation)
         }
             // EATEN MODE - Eyes sprite (only during eaten, not during exit)
         else if (state == logic::GhostState::EATEN) {

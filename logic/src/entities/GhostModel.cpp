@@ -20,7 +20,8 @@ namespace logic {
               hasExitedSpawn(false),
               eatenRespawnX(x),
               eatenRespawnY(y),
-              exitStepCounter(0) {
+              exitStepCounter(0),
+              fearTimer(0.0f){
     }
 
     void GhostModel::update(float deltaTime) {
