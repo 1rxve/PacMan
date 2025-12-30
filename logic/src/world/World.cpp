@@ -140,12 +140,8 @@ namespace logic {
 
                     // Eat ghost during fear mode
                     if (ghost->getState() == GhostState::FEAR && pm->intersects(*ghost)) {
-                        // Teleport to eaten respawn position (inside spawn box)
-                        ghost->setPosition(ghost->getEatenRespawnX(), ghost->getEatenRespawnY());
-                        ghost->startExitingSpawn();  // ← CHANGE: new method (next step)
-
-                        // TODO: Add bonus points via Score system
-                        std::cout << "GHOST EATEN! Starting exit sequence" << std::endl;
+                        ghost->getEaten();  // ← Teleports + starts RESPAWNING state
+                        std::cout << "GHOST EATEN! Respawning in spawn" << std::endl;
                     }
                 }
 

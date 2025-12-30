@@ -17,6 +17,7 @@ namespace logic {
         CHASING,
         FEAR,
         EATEN,
+        RESPAWNING,
         EXITING_SPAWN
     };
 
@@ -42,6 +43,9 @@ namespace logic {
         int exitStepCounter;
 
         float fearTimer;
+
+        float respawnFlickerTimer;
+        int respawnFlickerCount;
 
         Direction getReverseDirection(Direction dir) const;
 
@@ -70,6 +74,7 @@ namespace logic {
 
         void setFearTimer(float timer) { fearTimer = timer; }  // ← ADD
         float getFearTimer() const { return fearTimer; }
+        int getRespawnFlickerCount() const { return respawnFlickerCount; }
 
         bool isFeared() const { return state == GhostState::FEAR; }
 

@@ -21,7 +21,9 @@ namespace logic {
               eatenRespawnX(x),
               eatenRespawnY(y),
               exitStepCounter(0),
-              fearTimer(0.0f){
+              fearTimer(0.0f),
+              respawnFlickerTimer(0.0f),
+              respawnFlickerCount(0){
     }
 
     void GhostModel::update(float deltaTime) {
@@ -33,6 +35,26 @@ namespace logic {
                 state = GhostState::CHASING;
             }
 
+
+            return;
+        }
+
+        // RESPAWNING state - flicker effect in spawn
+        if (state == GhostState::RESPAWNING) {
+            respawnFlickerTimer += deltaTime;
+
+            const float FLICKER_DURATION = 0.3f;  // 0.3s per flicker
+
+            if (respawnFlickerTimer >= FLICKER_DURATION) {
+                respawnFlickerTimer = 0.0f;
+                respawnFlickerCount++;
+
+                // After 3 flickers (6 state changes: eyes->normal->eyes->normal->eyes->normal)
+                if (respawnFlickerCount >= 6) {
+                    startExitingSpawn();
+                    std::cout << "Flicker complete - starting exit" << std::endl;
+                }
+            }
 
             return;
         }
@@ -230,10 +252,18 @@ namespace logic {
     }
 
     void GhostModel::getEaten() {
-        state = GhostState::EATEN;
-        speed = 1.0f;  // Faster return to spawn
+        // Teleport to spawn immediately
+        setPosition(eatenRespawnX, eatenRespawnY);
 
-        std::cout << "Ghost entered EATEN state" << std::endl;
+        state = GhostState::RESPAWNING;
+        speed = 0.5f;  // Normal speed after respawn
+        hasExitedSpawn = false;
+
+        // Reset flicker counter
+        respawnFlickerTimer = 0.0f;
+        respawnFlickerCount = 0;
+
+        std::cout << "Ghost eaten - respawning in spawn" << std::endl;
     }
 
     void GhostModel::setEatenRespawnPosition(float x, float y) {

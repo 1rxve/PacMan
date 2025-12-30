@@ -49,10 +49,30 @@ namespace representation {
 
             spriteY = 550 + (frameIndex * 50);  // Y=550 or Y=600 (animation)
         }
-            // EATEN MODE - Eyes sprite (only during eaten, not during exit)
+            // EATEN MODE - Eyes sprite
         else if (state == logic::GhostState::EATEN) {
             spriteX = 300;
             spriteY = 250;
+        }
+            // RESPAWNING - Flicker between eyes and normal sprite
+        else if (state == logic::GhostState::RESPAWNING) {
+            int flickerCount = ghostModel->getRespawnFlickerCount();
+
+            // Even count = eyes, odd count = normal sprite
+            if (flickerCount % 2 == 0) {
+                // Show eyes
+                spriteX = 300;
+                spriteY = 250;
+            } else {
+                // Show normal colored sprite (facing right, frame 0)
+                switch (type) {
+                    case logic::GhostType::RED:    spriteX = 0;   break;
+                    case logic::GhostType::PINK:   spriteX = 50;  break;
+                    case logic::GhostType::BLUE:   spriteX = 100; break;
+                    case logic::GhostType::ORANGE: spriteX = 150; break;
+                }
+                spriteY = 0;  // Right direction, frame 0
+            }
         }
             // NORMAL MODE - Color + direction + animation
         else {
