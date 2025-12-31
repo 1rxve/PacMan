@@ -12,9 +12,11 @@ namespace representation {
         sf::Text instructionText;
         bool fontLoaded;
 
+        State* levelStateBelow;
+
     public:
         PausedState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                    const Camera* cam, StateManager* sm);
+                    const Camera* cam, StateManager* sm, State* levelState);
 
         void update(float deltaTime) override;
         void render() override;

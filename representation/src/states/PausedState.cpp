@@ -4,8 +4,8 @@
 
 namespace representation {
     PausedState::PausedState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                             const Camera* cam, StateManager* sm)
-            : State(win, fac, cam, sm), fontLoaded(false) {
+                             const Camera* cam, StateManager* sm, State* levelState)
+            : State(win, fac, cam, sm), fontLoaded(false), levelStateBelow(levelState) {
 
         // Load font
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
@@ -42,12 +42,17 @@ namespace representation {
     }
 
     void PausedState::render() {
-        // Semi-transparent black overlay
+        // Render frozen level state underneath
+        if (levelStateBelow) {
+            levelStateBelow->render();
+        }
+
+        // Dark semi-transparent overlay (dimmed effect)
         sf::RectangleShape overlay(sf::Vector2f(
                 static_cast<float>(window->getSize().x),
                 static_cast<float>(window->getSize().y)
         ));
-        overlay.setFillColor(sf::Color(0, 0, 0, 180));  // Black with transparency
+        overlay.setFillColor(sf::Color(0, 0, 0, 200));  // Black with transparency
         window->draw(overlay);
 
         if (fontLoaded) {

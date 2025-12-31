@@ -1,4 +1,5 @@
 #include "representation/states/LevelState.h"
+#include "representation/Camera.h"
 #include "representation/states/PausedState.h"
 #include "representation/states/VictoryState.h"
 #include "representation/StateManager.h"
@@ -86,7 +87,7 @@ namespace representation {
                 world->clearRespawnFlag();  // ← ADD
             }
 
-            world->renderInOrder();
+
             return;
         }
 
@@ -157,6 +158,10 @@ namespace representation {
     }
 
     void LevelState::render() {
+
+        // ← ADD THIS: Render all game entities
+        world->renderInOrder();
+
         // Draw "READY!" during countdown
         if (isCountingDown && fontLoaded) {
             window->draw(readyText);
@@ -185,7 +190,7 @@ namespace representation {
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::P) {
                 stateManager->pushState(std::make_unique<PausedState>(
-                        window, factory, camera, stateManager
+                        window, factory, camera, stateManager, this  // ← ADD 'this'
                 ));
                 return;
             }
