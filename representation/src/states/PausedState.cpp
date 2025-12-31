@@ -18,23 +18,40 @@ namespace representation {
         }
 
         if (fontLoaded) {
-            // Paused text
+            // Paused text (larger + centered)
             pausedText.setFont(font);
             pausedText.setString("PAUSED");
-            pausedText.setCharacterSize(80);
+            pausedText.setCharacterSize(120);  // ← Bigger
             pausedText.setFillColor(sf::Color::White);
 
-            float pausedX = window->getSize().x / 2.0f - 120;
-            pausedText.setPosition(pausedX, 200);
+            sf::FloatRect pausedBounds = pausedText.getLocalBounds();
+            pausedText.setOrigin(pausedBounds.width / 2.0f, pausedBounds.height / 2.0f);
+            pausedText.setPosition(window->getSize().x / 2.0f, 250);
 
-            // Instruction text
-            instructionText.setFont(font);
-            instructionText.setString("P = Resume | R = Restart | ESC = Menu");
-            instructionText.setCharacterSize(30);
-            instructionText.setFillColor(sf::Color::White);
+            // Instruction texts (3 separate lines, centered)
+            resumeText.setFont(font);
+            resumeText.setString("P - Resume");
+            resumeText.setCharacterSize(28);
+            resumeText.setFillColor(sf::Color::White);
+            sf::FloatRect resumeBounds = resumeText.getLocalBounds();
+            resumeText.setOrigin(resumeBounds.width / 2.0f, resumeBounds.height / 2.0f);
+            resumeText.setPosition(window->getSize().x / 2.0f, 450);
 
-            float instructionX = window->getSize().x / 2.0f - 130;
-            instructionText.setPosition(instructionX, 350);
+            restartText.setFont(font);
+            restartText.setString("R - Restart");
+            restartText.setCharacterSize(28);
+            restartText.setFillColor(sf::Color::White);
+            sf::FloatRect restartBounds = restartText.getLocalBounds();
+            restartText.setOrigin(restartBounds.width / 2.0f, restartBounds.height / 2.0f);
+            restartText.setPosition(window->getSize().x / 2.0f, 500);
+
+            quitText.setFont(font);
+            quitText.setString("ESC - Quit to Main Menu");
+            quitText.setCharacterSize(28);
+            quitText.setFillColor(sf::Color::White);
+            sf::FloatRect quitBounds = quitText.getLocalBounds();
+            quitText.setOrigin(quitBounds.width / 2.0f, quitBounds.height / 2.0f);
+            quitText.setPosition(window->getSize().x / 2.0f, 550);
         }
 
     }
@@ -59,7 +76,9 @@ namespace representation {
 
         if (fontLoaded) {
             window->draw(pausedText);
-            window->draw(instructionText);
+            window->draw(resumeText);   // ← 3 separate lines
+            window->draw(restartText);
+            window->draw(quitText);
         } else {
             // Fallback: white rectangles
             sf::RectangleShape pausedBox(sf::Vector2f(250, 100));
