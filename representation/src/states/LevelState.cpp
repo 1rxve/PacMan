@@ -32,10 +32,14 @@ namespace representation {
             scoreText.setFillColor(sf::Color::Yellow);
             scoreText.setPosition(10.0f, 10.0f);
 
-            livesText.setFont(font);
-            livesText.setCharacterSize(24);
-            livesText.setFillColor(sf::Color::White);
-            livesText.setPosition(10.0f, 40.0f);
+            // Lives icons - load Pac-Man sprite
+            livesTexture = std::make_shared<sf::Texture>();
+            if (livesTexture->loadFromFile("resources/sprites/pacman_sprites.png")) {
+                livesSprite.setTexture(*livesTexture);
+                livesSprite.setTextureRect(sf::IntRect(840, 0, 50, 50));  // Full circle
+                livesSprite.setOrigin(25.0f, 25.0f);
+                livesSprite.setScale(0.6f, 0.6f);  // Small icons
+            }
         } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
             fontLoaded = true;
 
@@ -44,10 +48,14 @@ namespace representation {
             scoreText.setFillColor(sf::Color::Yellow);
             scoreText.setPosition(10.0f, 10.0f);
 
-            livesText.setFont(font);
-            livesText.setCharacterSize(24);
-            livesText.setFillColor(sf::Color::White);
-            livesText.setPosition(10.0f, 40.0f);
+            // Lives icons - load Pac-Man sprite
+            livesTexture = std::make_shared<sf::Texture>();
+            if (livesTexture->loadFromFile("resources/sprites/pacman_sprites.png")) {
+                livesSprite.setTexture(*livesTexture);
+                livesSprite.setTextureRect(sf::IntRect(840, 0, 50, 50));  // Full circle
+                livesSprite.setOrigin(25.0f, 25.0f);
+                livesSprite.setScale(0.6f, 0.6f);  // Small icons
+            }
         }
 
         // Setup PacMan cell dimensions
@@ -103,11 +111,7 @@ namespace representation {
         // Update UI text
         if (fontLoaded) {
             scoreText.setString("SCORE: " + std::to_string(world->getScore()));
-
-            logic::PacManModel* pacman = world->getPacMan();
-            if (pacman) {
-                livesText.setString("LIVES: " + std::to_string(pacman->getLives()));
-            }
+            // Lives are rendered as icons, no text update needed
         }
 
         // Victory conditions
@@ -170,9 +174,18 @@ namespace representation {
         // Draw UI overlay
         if (fontLoaded) {
             window->draw(scoreText);
-            window->draw(livesText);
 
-            // ← ADD: Show current level
+            // Draw lives as Pac-Man icons
+            logic::PacManModel* pacman = world->getPacMan();
+            if (pacman && livesTexture) {
+                int lives = pacman->getLives();
+                for (int i = 0; i < lives; i++) {
+                    livesSprite.setPosition(20.0f + i * 35.0f, 55.0f);  // Horizontal spacing
+                    window->draw(livesSprite);
+                }
+            }
+
+            // Show current level
             sf::Text levelText;
             levelText.setFont(font);
             levelText.setString("LEVEL: " + std::to_string(world->getCurrentLevel()));

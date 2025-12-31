@@ -15,9 +15,11 @@ namespace representation {
 
         sf::Font font;
         sf::Text scoreText;
-        sf::Text livesText;
         sf::Text readyText;
         bool fontLoaded;
+
+        std::shared_ptr<sf::Texture> livesTexture;  // ← ADD
+        sf::Sprite livesSprite;
 
         bool isCountingDown;     // ← ADD
         float countdownTimer;

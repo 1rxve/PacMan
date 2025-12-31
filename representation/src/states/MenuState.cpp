@@ -22,16 +22,23 @@ namespace representation {
             titleText.setString("PAC-MAN");
             titleText.setCharacterSize(80);
             titleText.setFillColor(sf::Color::Yellow);
-            titleText.setPosition(window->getSize().x / 2.0f - 200, 50);
+
+            // Center using bounds
+            sf::FloatRect titleBounds = titleText.getLocalBounds();
+            titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
+            titleText.setPosition(window->getSize().x / 2.0f, 100);
 
             // High scores title
             highScoresTitle.setFont(font);
             highScoresTitle.setString("HIGH SCORES");
             highScoresTitle.setCharacterSize(40);
             highScoresTitle.setFillColor(sf::Color::Cyan);
-            highScoresTitle.setPosition(window->getSize().x / 2.0f - 150, 200);
 
-            // Top 5 high scores (placeholder data for now)
+            sf::FloatRect hsBounds = highScoresTitle.getLocalBounds();
+            highScoresTitle.setOrigin(hsBounds.width / 2.0f, hsBounds.height / 2.0f);
+            highScoresTitle.setPosition(window->getSize().x / 2.0f, 250);
+
+            // Top 5 high scores (centered)
             auto highScores = logic::Score::loadHighScores();
 
             for (int i = 0; i < 5; i++) {
@@ -49,7 +56,11 @@ namespace representation {
 
                 highScoresText[i].setCharacterSize(30);
                 highScoresText[i].setFillColor(sf::Color::White);
-                highScoresText[i].setPosition(window->getSize().x / 2.0f - 120, 280 + i * 50);
+
+                // Center each score line
+                sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
+                highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
+                highScoresText[i].setPosition(window->getSize().x / 2.0f, 330 + i * 50);
             }
 
             // Instruction text
@@ -57,7 +68,10 @@ namespace representation {
             instructionText.setString("Press SPACE to start");
             instructionText.setCharacterSize(30);
             instructionText.setFillColor(sf::Color::Green);
-            instructionText.setPosition(window->getSize().x / 2.0f - 180, 600);
+
+            sf::FloatRect instrBounds = instructionText.getLocalBounds();
+            instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
+            instructionText.setPosition(window->getSize().x / 2.0f, 650);
         }
 
         needsRefresh = false;
@@ -125,6 +139,11 @@ namespace representation {
                 std::string text = std::to_string(i + 1) + ". --- - 0";
                 highScoresText[i].setString(text);
             }
+
+            // Re-center after text change
+            sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
+            highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
+            highScoresText[i].setPosition(window->getSize().x / 2.0f, 330 + i * 50);
         }
     }
 }
