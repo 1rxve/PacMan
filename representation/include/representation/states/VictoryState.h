@@ -11,12 +11,17 @@ namespace representation {
         int finalScore;
         std::string mapFile;
 
-
         sf::Font font;
         sf::Text titleText;
         sf::Text scoreText;
-        sf::Text instructionText;
+        sf::Text newHighScoreText;
+        sf::Text restartText;
+        sf::Text quitText;
         bool fontLoaded;
+
+        bool isHighScore;              // ← ADD
+        float blinkTimer;              // ← ADD
+        bool newHighScoreVisible;      // ← ADD
 
     public:
         VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac,

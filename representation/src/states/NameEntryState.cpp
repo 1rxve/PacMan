@@ -25,55 +25,49 @@ namespace representation {
         }
 
         if (fontLoaded) {
-            // Title
+            // Title - Yellow like MenuState
             titleText.setFont(font);
             if (isNewHighScore) {
-                titleText.setString("NEW HIGH SCORE!");  // ← Top 1
+                titleText.setString("NEW HIGH SCORE!");
             } else {
-                titleText.setString("HIGH SCORE");  // ← Top 2-5
+                titleText.setString("HIGH SCORE");
             }
-            titleText.setCharacterSize(48);
-            titleText.setFillColor(sf::Color::Yellow);
+            titleText.setCharacterSize(64);  // ← Bigger
+            titleText.setFillColor(sf::Color::Yellow);  // ← Match menu
 
             sf::FloatRect titleBounds = titleText.getLocalBounds();
             titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
             titleText.setPosition(window->getSize().x / 2.0f, 150);
 
-            // Score
+            // Score - White
             scoreText.setFont(font);
             scoreText.setString("SCORE: " + std::to_string(finalScore));
             scoreText.setCharacterSize(32);
-            scoreText.setFillColor(sf::Color::White);
+            scoreText.setFillColor(sf::Color::White);  // ← Keep white
 
             sf::FloatRect scoreBounds = scoreText.getLocalBounds();
             scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
-            scoreText.setPosition(window->getSize().x / 2.0f, 250);
+            scoreText.setPosition(window->getSize().x / 2.0f, 300);
 
-            // Name entry (will be drawn as boxes in render)
+            // Name entry text - White (will be drawn as letters in render)
             nameText.setFont(font);
             nameText.setCharacterSize(80);
-            nameText.setFillColor(sf::Color::Cyan);
+            nameText.setFillColor(sf::Color::White);  // ← CHANGE from Cyan
 
-            // Cursor (underscore under current letter)
-            cursorText.setFont(font);
-            cursorText.setString("_");
-            cursorText.setCharacterSize(80);
-            cursorText.setFillColor(sf::Color::Yellow);
-
-            // Instructions
+            // Instructions - White
             instructionText.setFont(font);
-            instructionText.setString("ENTER NAME");  // ← CHANGE
-            instructionText.setCharacterSize(32);  // ← Slightly bigger
-            instructionText.setFillColor(sf::Color::Cyan);  // ← Cyan instead of white
+            instructionText.setString("ENTER NAME");
+            instructionText.setCharacterSize(32);
+            instructionText.setFillColor(sf::Color::White);  // ← CHANGE from Cyan
 
             sf::FloatRect instrBounds = instructionText.getLocalBounds();
             instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
-            instructionText.setPosition(window->getSize().x / 2.0f, 300);
+            instructionText.setPosition(window->getSize().x / 2.0f, 350);
 
             pressEnterText.setFont(font);
             pressEnterText.setString("PRESS \"ENTER\"");
             pressEnterText.setCharacterSize(24);
-            pressEnterText.setFillColor(sf::Color::White);
+            pressEnterText.setFillColor(sf::Color::Yellow);  // ← CHANGE
 
             sf::FloatRect pressEnterBounds = pressEnterText.getLocalBounds();
             pressEnterText.setOrigin(pressEnterBounds.width / 2.0f, pressEnterBounds.height / 2.0f);
@@ -83,7 +77,7 @@ namespace representation {
             whenDoneText.setFont(font);
             whenDoneText.setString("WHEN YOU ARE DONE");
             whenDoneText.setCharacterSize(24);
-            whenDoneText.setFillColor(sf::Color::White);
+            whenDoneText.setFillColor(sf::Color::Yellow);  // ← CHANGE
 
             sf::FloatRect whenDoneBounds = whenDoneText.getLocalBounds();
             whenDoneText.setOrigin(whenDoneBounds.width / 2.0f, whenDoneBounds.height / 2.0f);

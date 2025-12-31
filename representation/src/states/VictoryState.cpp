@@ -1,5 +1,6 @@
 #include "representation/states/VictoryState.h"
 #include "representation/states/MenuState.h"
+#include "representation/states/LevelState.h"
 #include "representation/StateManager.h"
 #include "logic/utils/Score.h"
 
@@ -12,7 +13,10 @@ namespace representation {
               won(won),
               finalScore(finalScore),
               mapFile(mapFile),
-              fontLoaded(false) {
+              fontLoaded(false),
+              isHighScore(logic::Score::isTopScore(finalScore)),
+              blinkTimer(0.0f),
+              newHighScoreVisible(true) {
 
 
         // Load font
@@ -23,40 +27,68 @@ namespace representation {
         }
 
         if (fontLoaded) {
-            // Title text
+            // Score at top
+            scoreText.setFont(font);
+            scoreText.setString("FINAL SCORE: " + std::to_string(finalScore));
+            scoreText.setCharacterSize(32);
+            scoreText.setFillColor(sf::Color::White);
+
+            sf::FloatRect scoreBounds = scoreText.getLocalBounds();
+            scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
+            scoreText.setPosition(window->getSize().x / 2.0f, 150);
+
+            // "NEW HIGH SCORE" text (small, blinking, below score)
+            if (isHighScore) {
+                newHighScoreText.setFont(font);
+                newHighScoreText.setString("NEW HIGH SCORE");
+                newHighScoreText.setCharacterSize(20);
+                newHighScoreText.setFillColor(sf::Color::Yellow);
+
+                sf::FloatRect nhsBounds = newHighScoreText.getLocalBounds();
+                newHighScoreText.setOrigin(nhsBounds.width / 2.0f, nhsBounds.height / 2.0f);
+                newHighScoreText.setPosition(window->getSize().x / 2.0f, 200);
+            }
+
+            // GAME OVER - huge, red, centered
             titleText.setFont(font);
             titleText.setString("GAME OVER");
-            titleText.setCharacterSize(64);
+            titleText.setCharacterSize(140);
             titleText.setFillColor(sf::Color::Red);
 
             sf::FloatRect titleBounds = titleText.getLocalBounds();
             titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
-            titleText.setPosition(window->getSize().x / 2.0f, 200);
+            titleText.setPosition(window->getSize().x / 2.0f, window->getSize().y / 2.0f - 100);
 
-            // Score text
-            scoreText.setFont(font);
-            scoreText.setString("FINAL SCORE: " + std::to_string(finalScore));
-            scoreText.setCharacterSize(32);
-            scoreText.setFillColor(sf::Color::Yellow);
+            // R - Restart (bottom)
+            restartText.setFont(font);
+            restartText.setString("R - Restart");
+            restartText.setCharacterSize(28);
+            restartText.setFillColor(sf::Color::White);
 
-            sf::FloatRect scoreBounds = scoreText.getLocalBounds();
-            scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
-            scoreText.setPosition(window->getSize().x / 2.0f, 350);
+            sf::FloatRect restartBounds = restartText.getLocalBounds();
+            restartText.setOrigin(restartBounds.width / 2.0f, restartBounds.height / 2.0f);
+            restartText.setPosition(window->getSize().x / 2.0f, window->getSize().y - 200);
 
-            // Instruction text
-            instructionText.setFont(font);
-            instructionText.setString("Press R to restart\nPress ESC to quit");
-            instructionText.setCharacterSize(24);
-            instructionText.setFillColor(sf::Color::White);
+            // ESC - Main Menu (below restart)
+            quitText.setFont(font);
+            quitText.setString("ESC - Main Menu");
 
-            sf::FloatRect instrBounds = instructionText.getLocalBounds();
-            instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
-            instructionText.setPosition(window->getSize().x / 2.0f, 500);
+            sf::FloatRect quitBounds = quitText.getLocalBounds();
+            quitText.setOrigin(quitBounds.width / 2.0f, quitBounds.height / 2.0f);
+            quitText.setPosition(window->getSize().x / 2.0f, window->getSize().y - 150);
         }
     }
 
-    void VictoryState::update(float /*deltaTime*/) {
-        // Nothing to update
+    void VictoryState::update(float deltaTime) {
+        // Blink "NEW HIGH SCORE" text
+        if (isHighScore) {
+            blinkTimer += deltaTime;
+
+            if (blinkTimer >= 0.5f) {
+                newHighScoreVisible = !newHighScoreVisible;
+                blinkTimer = 0.0f;
+            }
+        }
     }
 
     void VictoryState::render() {
@@ -69,9 +101,16 @@ namespace representation {
         window->draw(overlay);
 
         if (fontLoaded) {
-            window->draw(titleText);
-            window->draw(scoreText);
-            window->draw(instructionText);
+            window->draw(scoreText);  // Top
+
+            // Blinking "NEW HIGH SCORE"
+            if (isHighScore && newHighScoreVisible) {
+                window->draw(newHighScoreText);
+            }
+
+            window->draw(titleText);  // Center (GAME OVER)
+            window->draw(restartText);  // Bottom
+            window->draw(quitText);
         } else {
             // Fallback rectangles
             sf::RectangleShape titleBox(sf::Vector2f(400, 100));
@@ -86,17 +125,30 @@ namespace representation {
             return;
         }
 
+        // R = Restart game (fresh LevelState)
         if (event.key.code == sf::Keyboard::R) {
-            // Copy pointer before destroying self
+            // Copy all needed data BEFORE popping
             StateManager* sm = stateManager;
+            sf::RenderWindow* win = window;
+            logic::AbstractFactory* fac = factory;
+            const Camera* cam = camera;
+            std::string map = mapFile;
 
-            sm->popState();  // Pop VictoryState
+            sm->popState();  // Pop VictoryState - 'this' is now DESTROYED
             sm->popState();  // Pop LevelState
+            // DO NOT ACCESS ANY MEMBER VARIABLES AFTER THIS LINE
 
+            // Push fresh LevelState
+            sm->pushState(std::make_unique<LevelState>(
+                    win, fac, cam, sm, map
+            ));
             return;
         }
-        else if (event.key.code == sf::Keyboard::Escape) {
-            window->close();
+
+        // ESC = Main menu
+        if (event.key.code == sf::Keyboard::Escape) {
+            stateManager->popState();  // Pop VictoryState
+            stateManager->popState();  // Pop LevelState, back to MenuState
         }
     }
 }

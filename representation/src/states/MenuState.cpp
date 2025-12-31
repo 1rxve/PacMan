@@ -7,7 +7,8 @@ namespace representation {
     MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac,
                          const Camera* cam, StateManager* sm,
                          const std::string& mapFile)
-            : State(win, fac, cam, sm), mapFile(mapFile), fontLoaded(false) {
+            : State(win, fac, cam, sm), mapFile(mapFile), fontLoaded(false),
+              blinkTimer(0.0f), instructionVisible(true) {
 
         // Load custom font with fallback
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
@@ -17,28 +18,28 @@ namespace representation {
         }
 
         if (fontLoaded) {
-            // Title text
+            // PAC-MAN title - LARGE, no outline
             titleText.setFont(font);
             titleText.setString("PAC-MAN");
-            titleText.setCharacterSize(80);
+            titleText.setCharacterSize(140);
             titleText.setFillColor(sf::Color::Yellow);
+            // NO outline
 
-            // Center using bounds
             sf::FloatRect titleBounds = titleText.getLocalBounds();
             titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
-            titleText.setPosition(window->getSize().x / 2.0f, 100);
+            titleText.setPosition(window->getSize().x / 2.0f, 120);
 
-            // High scores title
+            // HIGH SCORES title - White
             highScoresTitle.setFont(font);
             highScoresTitle.setString("HIGH SCORES");
-            highScoresTitle.setCharacterSize(40);
-            highScoresTitle.setFillColor(sf::Color::Cyan);
+            highScoresTitle.setCharacterSize(32);
+            highScoresTitle.setFillColor(sf::Color::White);
 
             sf::FloatRect hsBounds = highScoresTitle.getLocalBounds();
             highScoresTitle.setOrigin(hsBounds.width / 2.0f, hsBounds.height / 2.0f);
-            highScoresTitle.setPosition(window->getSize().x / 2.0f, 250);
+            highScoresTitle.setPosition(window->getSize().x / 2.0f, 350);  // ← FIX
 
-            // Top 5 high scores (centered)
+            // Top 5 high scores
             auto highScores = logic::Score::loadHighScores();
 
             for (int i = 0; i < 5; i++) {
@@ -54,24 +55,23 @@ namespace representation {
                     highScoresText[i].setString(text);
                 }
 
-                highScoresText[i].setCharacterSize(30);
+                highScoresText[i].setCharacterSize(26);
                 highScoresText[i].setFillColor(sf::Color::White);
 
-                // Center each score line
                 sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
                 highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
-                highScoresText[i].setPosition(window->getSize().x / 2.0f, 330 + i * 50);
+                highScoresText[i].setPosition(window->getSize().x / 2.0f, 450 + i * 50);  // ← FIX
             }
 
             // Instruction text
             instructionText.setFont(font);
             instructionText.setString("Press SPACE to start");
-            instructionText.setCharacterSize(30);
-            instructionText.setFillColor(sf::Color::Green);
+            instructionText.setCharacterSize(28);
+            instructionText.setFillColor(sf::Color::Yellow);
 
             sf::FloatRect instrBounds = instructionText.getLocalBounds();
             instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
-            instructionText.setPosition(window->getSize().x / 2.0f, 650);
+            instructionText.setPosition(window->getSize().x / 2.0f, 800);
         }
 
         needsRefresh = false;
@@ -80,7 +80,15 @@ namespace representation {
     MenuState::~MenuState() {
     }
 
-    void MenuState::update(float /*deltaTime*/) {
+    void MenuState::update(float deltaTime) {  // ← REMOVE /*deltaTime*/
+        // Blink effect for instruction text
+        blinkTimer += deltaTime;
+
+        if (blinkTimer >= 0.5f) {  // Blink every 0.5 seconds (adjust for speed)
+            instructionVisible = !instructionVisible;
+            blinkTimer = 0.0f;
+        }
+
         // Check if we need to refresh high scores (after returning from game)
         if (!needsRefresh) {
             needsRefresh = true;  // Set flag for next time
@@ -100,7 +108,10 @@ namespace representation {
                 window->draw(highScoresText[i]);
             }
 
-            window->draw(instructionText);
+            // Draw blinking instruction text
+            if (instructionVisible) {
+                window->draw(instructionText);
+            }
         } else {
             // Fallback: colored rectangles
             sf::RectangleShape titleBox(sf::Vector2f(300, 100));
@@ -143,7 +154,7 @@ namespace representation {
             // Re-center after text change
             sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
             highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
-            highScoresText[i].setPosition(window->getSize().x / 2.0f, 330 + i * 50);
+            highScoresText[i].setPosition(window->getSize().x / 2.0f, 450 + i * 50);
         }
     }
 }

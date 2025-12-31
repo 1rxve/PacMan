@@ -16,6 +16,9 @@ namespace representation {
         bool fontLoaded;
         bool needsRefresh;
 
+        float blinkTimer;      // ← ADD
+        bool instructionVisible;
+
         void refreshHighScores();
 
     public:
