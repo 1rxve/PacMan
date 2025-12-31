@@ -30,6 +30,12 @@ namespace logic {
 
         void handleCoinCollected();
 
+        void handleGhostEaten();
+
+        void handleFruitEaten();
+
+        void handleLevelCleared();
+
     public:
         Score();
 

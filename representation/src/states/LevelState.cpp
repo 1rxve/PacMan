@@ -116,12 +116,15 @@ namespace representation {
         // WIN: All coins collected
         if (coinsCollected >= totalCoins) {
 
+            world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
+            world->getScoreSubject()->notify();
+
             // Show brief "LEVEL X" message (optional)
             std::cout << "Level cleared! Starting level " << world->getCurrentLevel() << std::endl;
 
             // Trigger countdown
             isCountingDown = true;
-            countdownTimer = 2.0f;  // 2 second countdown before next level starts
+            countdownTimer = 2.0f;
 
             return;
         }

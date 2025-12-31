@@ -21,16 +21,16 @@ namespace logic {
                 handleCoinCollected();
                 break;
             case ScoreEvent::GHOST_EATEN:
-                // TODO: ghost bonus
+                handleGhostEaten();
                 break;
             case ScoreEvent::FRUIT_EATEN:
-                // TODO: fruit bonus
+                handleFruitEaten();
                 break;
             case ScoreEvent::PACMAN_DIED:
                 // TODO: death penalty
                 break;
             case ScoreEvent::LEVEL_CLEARED:
-                // TODO: level bonus
+                handleLevelCleared();
                 break;
         }
     }
@@ -43,6 +43,24 @@ namespace logic {
         timeSinceLastCoin = 0.0f;
 
         std::cout << "Score +=" << coinPoints << " (total: " << score << ")" << std::endl;
+    }
+
+    void Score::handleGhostEaten() {
+        const int GHOST_BONUS = 200;
+        score += GHOST_BONUS;
+        std::cout << "Score +=" << GHOST_BONUS << " (ghost eaten, total: " << score << ")" << std::endl;
+    }
+
+    void Score::handleFruitEaten() {
+        const int FRUIT_BONUS = 100;
+        score += FRUIT_BONUS;
+        std::cout << "Score +=" << FRUIT_BONUS << " (fruit eaten, total: " << score << ")" << std::endl;
+    }
+
+    void Score::handleLevelCleared() {
+        const int LEVEL_BONUS = 500;
+        score += LEVEL_BONUS;
+        std::cout << "Score +=" << LEVEL_BONUS << " (level cleared, total: " << score << ")" << std::endl;
     }
 
     void Score::update(float deltaTime) {

@@ -143,7 +143,11 @@ namespace logic {
 
                     // Eat ghost during fear mode
                     if (ghost->getState() == GhostState::FEAR && pm->intersects(*ghost)) {
-                        ghost->getEaten();  // ← Teleports + starts RESPAWNING state
+                        ghost->getEaten();
+
+                        score.setEvent(ScoreEvent::GHOST_EATEN);
+                        scoreSubject.notify();
+
                         std::cout << "GHOST EATEN! Respawning in spawn" << std::endl;
                     }
                 }
@@ -163,6 +167,10 @@ namespace logic {
                 for (FruitModel* fruit : fruits) {
                     if (!fruit->isCollected() && pm->intersects(*fruit)) {
                         fruit->collect();
+
+                        score.setEvent(ScoreEvent::FRUIT_EATEN);
+                        scoreSubject.notify();
+
                         activateFearMode();
                     }
                 }
