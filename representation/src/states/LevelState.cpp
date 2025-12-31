@@ -190,7 +190,7 @@ namespace representation {
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::P) {
                 stateManager->pushState(std::make_unique<PausedState>(
-                        window, factory, camera, stateManager, this  // ← ADD 'this'
+                        window, factory, camera, stateManager, this, mapFile
                 ));
                 return;
             }

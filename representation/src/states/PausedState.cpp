@@ -1,11 +1,14 @@
 #include "representation/states/PausedState.h"
 #include "representation/StateManager.h"
+#include "representation/states/LevelState.h"
 #include <iostream>
 
 namespace representation {
     PausedState::PausedState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                             const Camera* cam, StateManager* sm, State* levelState)
-            : State(win, fac, cam, sm), fontLoaded(false), levelStateBelow(levelState) {
+                             const Camera* cam, StateManager* sm, State* levelState,
+                             const std::string& mapFile)
+            : State(win, fac, cam, sm), fontLoaded(false), levelStateBelow(levelState),
+              mapFile(mapFile) {
 
         // Load font
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
@@ -26,8 +29,7 @@ namespace representation {
 
             // Instruction text
             instructionText.setFont(font);
-            // In PausedState constructor
-            instructionText.setString("Press P or ESC to resume");
+            instructionText.setString("P = Resume | R = Restart | ESC = Menu");
             instructionText.setCharacterSize(30);
             instructionText.setFillColor(sf::Color::White);
 
@@ -69,10 +71,34 @@ namespace representation {
 
     void PausedState::handleEvent(const sf::Event& event) {
         if (event.type == sf::Event::KeyPressed) {
-            // P or ESC = resume
-            if (event.key.code == sf::Keyboard::P ||
-                event.key.code == sf::Keyboard::Escape) {
-                stateManager->popState();
+            // P = resume game
+            if (event.key.code == sf::Keyboard::P) {
+                stateManager->popState();  // Pop PausedState, back to LevelState
+            }
+
+            // ESC = quit to main menu
+            if (event.key.code == sf::Keyboard::Escape) {
+                stateManager->popState();  // Pop PausedState
+                stateManager->popState();  // Pop LevelState, back to MenuState
+            }
+
+            // R = restart level
+            if (event.key.code == sf::Keyboard::R) {
+                // CRITICAL: Copy all needed data BEFORE popping
+                StateManager* sm = stateManager;
+                sf::RenderWindow* win = window;
+                logic::AbstractFactory* fac = factory;
+                const Camera* cam = camera;
+                std::string map = mapFile;
+
+                sm->popState();  // Pop PausedState - 'this' is now DESTROYED
+                sm->popState();  // Pop old LevelState
+                // DO NOT ACCESS ANY MEMBER VARIABLES AFTER THIS LINE
+
+                // Push fresh LevelState with LOCAL copies
+                sm->pushState(std::make_unique<LevelState>(
+                        win, fac, cam, sm, map
+                ));
             }
         }
     }
