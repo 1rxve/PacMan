@@ -9,10 +9,12 @@ namespace representation {
             : window(win), mapFile(mapFile) {
 
 
-        // Create Camera
+        // Create Camera with sidebar
+        const float SIDEBAR_WIDTH = 250.0f;
         camera = std::make_unique<Camera>(
                 static_cast<float>(window->getSize().x),
-                static_cast<float>(window->getSize().y)
+                static_cast<float>(window->getSize().y),
+                SIDEBAR_WIDTH
         );
 
         // Create Factory

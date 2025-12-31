@@ -14,10 +14,12 @@ int main() {
         return -1;
     }
 
-    // Calculate window size
+    // Calculate window size with LEFT + RIGHT sidebars
     const int CELL_SIZE_PIXELS = 50;
-    int windowWidth = mapWidth * CELL_SIZE_PIXELS;
+    const int SIDEBAR_WIDTH = 250;
+    int gameAreaWidth = mapWidth * CELL_SIZE_PIXELS;
     int windowHeight = mapHeight * CELL_SIZE_PIXELS;
+    int windowWidth = gameAreaWidth + (2 * SIDEBAR_WIDTH);  // ← Both sides
 
     std::cout << "=== Map & Window Info ===" << std::endl;
     std::cout << "Map dimensions: " << mapWidth << " x " << mapHeight << " cells" << std::endl;
