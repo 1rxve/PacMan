@@ -15,7 +15,32 @@ set(REPRESENTATION_SOURCES
         src/main.cpp
         src/Camera.cpp
         src/views/PacManView.cpp
-        include/representation/views/PacManView.h
+        src/views/EntityView.cpp
+        src/views/WallView.cpp
+        src/ConcreteFactory.cpp
+        include/representation/ConcreteFactory.h
+        src/views/CoinView.cpp
+        include/representation/states/State.h
+        src/StateManager.cpp
+        include/representation/StateManager.h
+        src/states/LevelState.cpp
+        include/representation/states/LevelState.h
+        src/Game.cpp
+        include/representation/Game.h
+        src/states/MenuState.cpp
+        include/representation/states/MenuState.h
+        src/states/PausedState.cpp
+        include/representation/states/PausedState.h
+        src/states/VictoryState.cpp
+        include/representation/states/VictoryState.h
+        src/states/NameEntryState.cpp
+        include/representation/states/NameEntryState.h
+        src/views/GhostView.cpp
+        include/representation/views/GhostView.h
+        src/views/DoorView.cpp
+        include/representation/views/DoorView.h
+        src/states/FruitView.cpp
+        include/representation/views/FruitView.h
 )
 
 # Create executable

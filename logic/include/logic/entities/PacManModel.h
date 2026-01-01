@@ -4,27 +4,27 @@
 #include "EntityModel.h"
 
 namespace logic {
-    enum Direction {
-        NONE,
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
-    };
 
     class PacManModel : public EntityModel {
     private:
         float speed;
         int lives;
+
         Direction currentDirection;
         Direction nextDirection;
+
+        // Grid info voor center-locking
+        float cellWidth;
+        float cellHeight;
+
+        // ← ADD THESE 2 LINES
+        bool isDying;
+        float deathTimer;
 
     public:
         PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
-        Direction getCurrentDirection() const;
-
-        void setNextDirection(Direction direction);
+        void update(float deltaTime) override;
 
         int getLives() const;
 
@@ -32,11 +32,29 @@ namespace logic {
 
         float getSpeed() const;
 
+        Direction getCurrentDirection() const;
+
+        Direction getNextDirection() const;  // NIEUW
+
         void setSpeed(float speed);
 
-        void update(float deltaTime) override;
+        void setNextDirection(Direction direction);
+
+        void applyNextDirection();  // NIEUW
+
+        void stopMovement();
+
+        void setCellDimensions(float cellW, float cellH);
+
+        bool getIsDying() const { return isDying; }
+        float getDeathTimer() const { return deathTimer; }
+        void startDeath();
+        void updateDeath(float deltaTime);
+        void respawn(float spawnX, float spawnY);
+
+        bool isPacMan() const override { return true; }
+
     };
 }
-
 
 #endif //PACMANGAME_PACMANMODEL_H

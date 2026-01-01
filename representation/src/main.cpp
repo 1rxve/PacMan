@@ -1,61 +1,42 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "logic/entities/PacManModel.h"
-#include "representation/Camera.h"
 #include "logic/world/World.h"
-#include "representation/views/PacManView.h"  // <-- Nieuw
+#include "representation/Game.h"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "PacMan Game - SFML Test");
+    const std::string MAP_FILE = "resources/maps/map";
+
+    // Get desktop size for dynamic initial sizing
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    float windowScale = 0.8f;  // 80% of screen
+
+    // Calculate window size (maintains 1450x1050 aspect ratio)
+    const float ASPECT_RATIO = 1450.0f / 1050.0f;
+    unsigned int windowHeight = static_cast<unsigned int>(desktop.height * windowScale);
+    unsigned int windowWidth = static_cast<unsigned int>(windowHeight * ASPECT_RATIO);
+
+    // Cap at desktop width if too wide
+    if (windowWidth > desktop.width * windowScale) {
+        windowWidth = static_cast<unsigned int>(desktop.width * windowScale);
+        windowHeight = static_cast<unsigned int>(windowWidth / ASPECT_RATIO);
+    }
+
+    std::cout << "=== Window Info ===" << std::endl;
+    std::cout << "Desktop: " << desktop.width << " x " << desktop.height << std::endl;
+    std::cout << "Window: " << windowWidth << " x " << windowHeight << std::endl;
+    std::cout << "===================" << std::endl;
+
+    // Create NON-RESIZABLE window
+    sf::RenderWindow window(
+            sf::VideoMode(windowWidth, windowHeight),
+            "PacMan Game",
+            sf::Style::Close | sf::Style::Titlebar  // No Resize flag
+    );
     window.setFramerateLimit(60);
 
-    representation::Camera camera(800.0f, 600.0f);
-
-    logic::World world;
-
-    auto pacmanPtr = new logic::PacManModel(0.0f, 0.0f, 0.1f, 0.1f, 0.5f);
-    logic::PacManModel* pacman = pacmanPtr;
-
-    world.addEntity(std::unique_ptr<logic::EntityModel>(pacmanPtr));
-
-    // Maak PacManView
-    representation::PacManView pacmanView(pacman);
-
-    sf::Clock clock;
-
-    while (window.isOpen()) {
-        float dt = clock.restart().asSeconds();
-
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                window.close();
-            }
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-            pacman->setNextDirection(logic::Direction::LEFT);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-            pacman->setNextDirection(logic::Direction::RIGHT);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-            pacman->setNextDirection(logic::Direction::UP);
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-            pacman->setNextDirection(logic::Direction::DOWN);
-        }
-
-        world.update(dt);
-        pacmanView.update(dt);  // Update animatie
-
-        window.clear(sf::Color::Black);
-        pacmanView.draw(window, camera);  // Teken PacMan
-        window.display();
-    }
+    // Create and run game
+    representation::Game game(&window, MAP_FILE);
+    game.run();
 
     return 0;
 }

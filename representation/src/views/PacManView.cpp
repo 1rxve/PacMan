@@ -2,83 +2,154 @@
 #include <iostream>
 
 namespace representation {
-    PacManView::PacManView(logic::PacManModel *model)
-        : model(model), animationTimer(0.0f), frameIndex(0) {
-        if (!texture.loadFromFile("resources/sprites/pacman_sprites.png")) {
-            std::cerr << "ERROR: Could not load pacman sprites!" << std::endl;
-        }
-        sprite.setTexture(texture);
-        sprite.setTextureRect(sf::IntRect(853, 5, 33, 33));
+    PacManView::PacManView(logic::PacManModel* model, sf::RenderWindow* window, const Camera* camera,
+                           std::shared_ptr<sf::Texture> sharedTexture)
+            : EntityView(model, window, camera),
+              pacManModel(model),
+              texture(sharedTexture),  // ← Store shared_ptr
+              animationTimer(0.0f),
+              frameIndex(0) {
+
+        // Gebruik shared texture (NIET opnieuw laden)
+        sprite.setTexture(*texture);
+        sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
     }
 
-    void PacManView::update(float deltaTime) {
-        animationTimer += deltaTime;
+    void PacManView::draw() {
+        if (pacManModel->getIsDying()) {
+            renderDeathAnimation();
+            return;
+        }
 
-        if (animationTimer >= 0.1f) {
-            frameIndex = (frameIndex + 1) % 4;
-            animationTimer = 0.0f;
+        logic::Direction currentDir = pacManModel->getCurrentDirection();
 
-            int currentFrame = frames[frameIndex];
-            SpriteRect rect = {853, 5, 33, 33}; // Default waarde
+        // Reset to full circle when stationary (including after respawn)
+        if (currentDir == logic::Direction::NONE) {
+            sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));  // Full circle sprite
+            sprite.setOrigin(29.5f, 22.0f);
+            sprite.setScale(1.15f, 1.15f);
 
+            float centerX = pacManModel->getX();
+            float centerY = pacManModel->getY();
+            float pixelCenterX = camera->normalizedToPixelX(centerX);
+            float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-            switch (model->getCurrentDirection()) {
-                case logic::Direction::RIGHT:
-                    if (currentFrame == 0) {
-                        rect = {840, 0, 50, 50};
-                    } else if (currentFrame == 1) {
-                        rect = {840, 50, 50, 50};
-                    } else if (currentFrame == 2) {
-                        rect = {840, 100, 50, 50};
-                    }
-                    break;
+            sprite.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(sprite);
+            return;
+        }
 
-                case logic::Direction::LEFT:
-                    if (currentFrame == 0) {
-                        rect = {840, 300, 50, 50};
-                    } else if (currentFrame == 1) {
-                        rect = {840, 350, 50, 50};
-                    } else if (currentFrame == 2) {
-                        rect = {840, 400, 50, 50};
-                    }
-                    break;
+        if (currentDir != logic::Direction::NONE) {
+            float deltaTime = animationClock.restart().asSeconds();
+            animationTimer += deltaTime;
 
-                case logic::Direction::UP:
-                    if (currentFrame == 0) {
-                        rect = {840, 450, 50, 50};
-                    } else if (currentFrame == 1) {
-                        rect = {840, 500, 50, 50};
-                    } else if (currentFrame == 2) {
-                        rect = {840, 550, 50, 50};
-                    }
-                    break;
+            if (animationTimer >= 0.1f) {
+                frameIndex = (frameIndex + 1) % 4;
+                animationTimer = 0.0f;
 
-                case logic::Direction::DOWN:
-                    if (currentFrame == 0) {
-                        rect = {840, 150, 50, 50};
-                    } else if (currentFrame == 1) {
-                        rect = {840, 200, 50, 50};
-                    } else if (currentFrame == 2) {
-                        rect = {840, 250, 50, 50};
-                    }
-                    break;
+                int currentFrame = frames[frameIndex];
+                SpriteRect rect = {840, 0, 50, 50};
 
-                case logic::Direction::NONE:
-                    rect = {840, 0, 50, 50};
-                    break;
+                switch (currentDir) {
+                    case logic::Direction::RIGHT:
+                        if (currentFrame == 0) rect = {840, 0, 50, 50};
+                        else if (currentFrame == 1) rect = {840, 50, 50, 50};
+                        else if (currentFrame == 2) rect = {840, 100, 50, 50};
+                        break;
+
+                    case logic::Direction::LEFT:
+                        if (currentFrame == 0) rect = {840, 300, 50, 50};
+                        else if (currentFrame == 1) rect = {840, 350, 50, 50};
+                        else if (currentFrame == 2) rect = {840, 400, 50, 50};
+                        break;
+
+                    case logic::Direction::UP:
+                        if (currentFrame == 0) rect = {840, 450, 50, 50};
+                        else if (currentFrame == 1) rect = {840, 500, 50, 50};
+                        else if (currentFrame == 2) rect = {840, 550, 50, 50};
+                        break;
+
+                    case logic::Direction::DOWN:
+                        if (currentFrame == 0) rect = {840, 150, 50, 50};
+                        else if (currentFrame == 1) rect = {840, 200, 50, 50};
+                        else if (currentFrame == 2) rect = {840, 250, 50, 50};
+                        break;
+
+                    case logic::Direction::NONE:
+                        break;
+                }
+
+                sprite.setTextureRect(sf::IntRect(rect.x, rect.y, rect.width, rect.height));
             }
+        } else {
+            animationClock.restart();
+        }
 
-            sprite.setTextureRect(sf::IntRect(rect.x, rect.y, rect.width, rect.height));
+        // Rendering
+        float centerX = pacManModel->getX();
+        float centerY = pacManModel->getY();
+
+        float pixelCenterX = camera->normalizedToPixelX(centerX);
+        float pixelCenterY = camera->normalizedToPixelY(centerY);
+
+        // Sprite rendering met GECORRIGEERDE origin
+        sprite.setOrigin(29.5f, 22.0f);  // Handmatig bepaald voor correcte centering
+        sprite.setPosition(pixelCenterX, pixelCenterY);
+        sprite.setScale(1.15f, 1.15f);
+        window->draw(sprite);
+
+        // DEBUG VISUALISATIE (optioneel)
+        if (showDebugVisualization) {
+            // Groen vierkant = sprite texture bounds
+            sf::RectangleShape debugBox(sf::Vector2f(50.0f, 50.0f));
+            debugBox.setFillColor(sf::Color::Transparent);
+            debugBox.setOutlineColor(sf::Color::Green);
+            debugBox.setOutlineThickness(1.0f);
+            debugBox.setOrigin(25.0f, 25.0f);  // Zelfde origin als sprite
+            debugBox.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(debugBox);
+
+            // Rode dot = logische center positie
+            sf::CircleShape debugCircle(3.0f);
+            debugCircle.setFillColor(sf::Color::Red);
+            debugCircle.setOrigin(3.0f, 3.0f);
+            debugCircle.setPosition(pixelCenterX, pixelCenterY);
+            window->draw(debugCircle);
         }
     }
 
-    void PacManView::draw(sf::RenderWindow &window, const Camera &camera) {
-        float pixelX = camera.normalizedToPixelX(model->getX());
-        float pixelY = camera.normalizedToPixelY(model->getY());
+    void PacManView::renderDeathAnimation() {
+        float deathTimer = pacManModel->getDeathTimer();
+        const float DEATH_ANIMATION_DURATION = 2.0f;
 
-        sprite.setPosition(pixelX, pixelY);
-        sprite.setScale(2.0f, 2.0f);
+        int totalFrames = 11;
+        int frameIndex = static_cast<int>((deathTimer / DEATH_ANIMATION_DURATION) * totalFrames);
 
-        window.draw(sprite);
+        if (frameIndex >= totalFrames) {
+            return;
+        }
+
+        int deathSpriteX = 350;
+        int deathSpriteY = 0 + (frameIndex * 50);
+
+        sprite.setTextureRect(sf::IntRect(deathSpriteX, deathSpriteY, 50, 50));
+
+        float centerX = pacManModel->getX();
+        float centerY = pacManModel->getY();
+
+        float pixelCenterX = camera->normalizedToPixelX(centerX);
+        float pixelCenterY = camera->normalizedToPixelY(centerY);
+
+        // Different origin for last frame
+        if (frameIndex == 10) {
+            sprite.setOrigin(20.0f, 27.0f);
+        } else {
+            sprite.setOrigin(20.0f, 20.0f);
+        }
+
+        sprite.setPosition(pixelCenterX, pixelCenterY);
+        sprite.setScale(1.15f, 1.15f);
+
+        window->draw(sprite);
     }
 }

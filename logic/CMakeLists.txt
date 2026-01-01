@@ -9,6 +9,20 @@ set(LOGIC_SOURCES
         src/entities/EntityModel.cpp
         src/entities/PacManModel.cpp
         src/world/World.cpp
+        src/entities/WallModel.cpp
+        src/patterns/Observer.cpp
+        src/patterns/Subject.cpp
+        src/utils/Stopwatch.cpp
+        src/utils/Random.cpp
+        src/entities/CoinModel.cpp
+        src/utils/Score.cpp
+        src/entities/GhostModel.cpp
+        src/entities/DoorModel.cpp
+        include/logic/entities/DoorModel.h
+        src/entities/NoEntryModel.cpp
+        include/logic/entities/NoEntryModel.h
+        src/entities/FruitModel.cpp
+        include/logic/entities/FruitModel.h
 )
 
 # Header files (IDE support)
@@ -16,6 +30,21 @@ set(LOGIC_HEADERS
         include/logic/entities/EntityModel.h
         include/logic/entities/PacManModel.h
         include/logic/world/World.h
+        include/logic/entities/WallModel.h
+        include/logic/patterns/Observer.h
+        include/logic/patterns/Subject.h
+        include/logic/patterns/AbstractFactory.h
+        include/logic/utils/Stopwatch.h
+        include/logic/utils/Random.h
+        include/logic/entities/CoinModel.h
+        include/logic/utils/Score.h
+        include/logic/entities/GhostModel.h
+        src/entities/DoorModel.cpp
+        include/logic/entities/DoorModel.h
+        src/entities/NoEntryModel.cpp
+        include/logic/entities/NoEntryModel.h
+        src/entities/FruitModel.cpp
+        include/logic/entities/FruitModel.h
 )
 
 # Create library

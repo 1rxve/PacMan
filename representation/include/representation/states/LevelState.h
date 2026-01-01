@@ -1,0 +1,43 @@
+#ifndef PACMANGAME_LEVELSTATE_H
+#define PACMANGAME_LEVELSTATE_H
+
+
+#include "State.h"
+#include "logic/world/World.h"
+#include <memory>
+#include <string>
+
+namespace representation {
+    class LevelState : public State {
+    private:
+        std::unique_ptr<logic::World> world;
+        std::string mapFile;
+
+        sf::Font font;
+        sf::Text scoreText;
+        sf::Text readyText;
+        bool fontLoaded;
+
+        std::shared_ptr<sf::Texture> livesTexture;  // ← ADD
+        sf::Sprite livesSprite;
+
+        bool isCountingDown;     // ← ADD
+        float countdownTimer;
+
+        std::string cheatBuffer;
+
+    public:
+        LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
+                   const Camera* cam, StateManager* sm,
+                   const std::string& mapFile);
+
+        ~LevelState();
+
+        void update(float deltaTime) override;
+        void render() override;
+        void handleEvent(const sf::Event& event) override;
+    };
+}
+
+
+#endif //PACMANGAME_LEVELSTATE_H

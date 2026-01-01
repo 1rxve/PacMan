@@ -6,15 +6,17 @@ namespace representation {
     private:
         float windowWidth;
         float windowHeight;
+        float sidebarWidth;  // NEW
 
     public:
-        Camera(float windowWidth, float windowHeight);
+        Camera(float windowWidth, float windowHeight, float sidebarWidth);
 
         float normalizedToPixelX(float normalizedX) const;
-
         float normalizedToPixelY(float normalizedY) const;
+
+        float getSidebarWidth() const { return sidebarWidth; }
+        float getGameAreaWidth() const { return windowWidth - sidebarWidth; }
     };
 }
 
-
-#endif //PACMANGAME_CAMERA_H
+#endif
