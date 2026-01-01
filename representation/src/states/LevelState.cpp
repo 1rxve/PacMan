@@ -15,7 +15,7 @@ namespace representation {
     LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
                            const Camera* cam, StateManager* sm,
                            const std::string& mapFile)
-            : State(win, fac, cam, sm), mapFile(mapFile) {
+            : State(win, fac, cam, sm), mapFile(mapFile), cheatBuffer("") {
 
         // Create World
         world = std::make_unique<logic::World>();
@@ -200,8 +200,51 @@ namespace representation {
         logic::PacManModel* pacman = world->getPacMan();
         if (!pacman) return;
 
+        // ========== CHEAT CODE HANDLING ==========
+        if (event.type == sf::Event::TextEntered) {
+            char typed = static_cast<char>(event.text.unicode);
+
+            // Only accept A-Z letters (case insensitive)
+            if ((typed >= 'a' && typed <= 'z') || (typed >= 'A' && typed <= 'Z')) {
+                // Convert to uppercase
+                if (typed >= 'a' && typed <= 'z') {
+                    typed = typed - 'a' + 'A';
+                }
+
+                cheatBuffer += typed;
+
+                // Keep buffer max 10 chars (prevents memory issues)
+                if (cheatBuffer.length() > 10) {
+                    cheatBuffer = cheatBuffer.substr(1);  // Remove first char
+                }
+
+                // Check for cheat codes
+                if (cheatBuffer.find("GHOST") != std::string::npos) {
+                    world->activateFearMode();
+                    std::cout << "CHEAT: GHOST activated - Fear mode!" << std::endl;
+                    cheatBuffer.clear();  // Clear buffer after activation
+                }
+
+                if (cheatBuffer.find("LEVEL") != std::string::npos) {
+                    // Award level clear bonus BEFORE nextLevel (which resets coins)
+                    world->getScoreSubject()->notify();  // Trigger score update
+                    world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
+                    world->getScoreSubject()->notify();
+
+                    world->nextLevel();
+                    isCountingDown = true;
+                    countdownTimer = 2.0f;
+                    std::cout << "CHEAT: LEVEL activated - Skip to level "
+                              << world->getCurrentLevel() << " (+500 bonus)" << std::endl;
+                    cheatBuffer.clear();
+                }
+            }
+        }
+        // ========================================
+
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::P) {
+                cheatBuffer.clear();  // ← ADD: Clear buffer bij pause
                 stateManager->pushState(std::make_unique<PausedState>(
                         window, factory, camera, stateManager, this, mapFile
                 ));
@@ -209,15 +252,8 @@ namespace representation {
             }
 
             if (event.key.code == sf::Keyboard::Escape) {
+                cheatBuffer.clear();  // ← ADD
                 window->close();
-                return;
-            }
-
-            if (event.key.code == sf::Keyboard::N) {
-                world->nextLevel();
-                isCountingDown = true;
-                countdownTimer = 2.0f;
-                std::cout << "DEBUG: Skipped to level " << world->getCurrentLevel() << std::endl;
                 return;
             }
 

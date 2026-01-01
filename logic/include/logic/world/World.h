@@ -65,8 +65,6 @@ namespace logic {
         void handlePacManDeath();
         void resetAfterDeath();
 
-        void activateFearMode();
-
 
     public:
         World();
@@ -94,6 +92,8 @@ namespace logic {
         void notifyViewsOnly();
 
         void renderInOrder();
+
+        void activateFearMode();
 
         bool justRespawned() const { return hasJustRespawned; }  // ← ADD
         void clearRespawnFlag() { hasJustRespawned = false; }

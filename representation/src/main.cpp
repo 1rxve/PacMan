@@ -6,28 +6,32 @@
 int main() {
     const std::string MAP_FILE = "resources/maps/map";
 
-    // Get map1 dimensions voor window size
-    auto [mapWidth, mapHeight] = logic::World::getMapDimensions(MAP_FILE);
+    // Get desktop size for dynamic initial sizing
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    float windowScale = 0.8f;  // 80% of screen
 
-    if (mapWidth == 0 || mapHeight == 0) {
-        std::cerr << "ERROR: Invalid map dimensions!" << std::endl;
-        return -1;
+    // Calculate window size (maintains 1450x1050 aspect ratio)
+    const float ASPECT_RATIO = 1450.0f / 1050.0f;
+    unsigned int windowHeight = static_cast<unsigned int>(desktop.height * windowScale);
+    unsigned int windowWidth = static_cast<unsigned int>(windowHeight * ASPECT_RATIO);
+
+    // Cap at desktop width if too wide
+    if (windowWidth > desktop.width * windowScale) {
+        windowWidth = static_cast<unsigned int>(desktop.width * windowScale);
+        windowHeight = static_cast<unsigned int>(windowWidth / ASPECT_RATIO);
     }
 
-    // Calculate window size with LEFT + RIGHT sidebars
-    const int CELL_SIZE_PIXELS = 50;
-    const int SIDEBAR_WIDTH = 250;
-    int gameAreaWidth = mapWidth * CELL_SIZE_PIXELS;
-    int windowHeight = mapHeight * CELL_SIZE_PIXELS;
-    int windowWidth = gameAreaWidth + (2 * SIDEBAR_WIDTH);  // ← Both sides
+    std::cout << "=== Window Info ===" << std::endl;
+    std::cout << "Desktop: " << desktop.width << " x " << desktop.height << std::endl;
+    std::cout << "Window: " << windowWidth << " x " << windowHeight << std::endl;
+    std::cout << "===================" << std::endl;
 
-    std::cout << "=== Map & Window Info ===" << std::endl;
-    std::cout << "Map dimensions: " << mapWidth << " x " << mapHeight << " cells" << std::endl;
-    std::cout << "Window size: " << windowWidth << " x " << windowHeight << " pixels" << std::endl;
-    std::cout << "=========================" << std::endl;
-
-    // Create window
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "PacMan Game");
+    // Create NON-RESIZABLE window
+    sf::RenderWindow window(
+            sf::VideoMode(windowWidth, windowHeight),
+            "PacMan Game",
+            sf::Style::Close | sf::Style::Titlebar  // No Resize flag
+    );
     window.setFramerateLimit(60);
 
     // Create and run game

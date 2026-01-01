@@ -24,6 +24,8 @@ namespace representation {
         bool isCountingDown;     // ← ADD
         float countdownTimer;
 
+        std::string cheatBuffer;
+
     public:
         LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
                    const Camera* cam, StateManager* sm,
