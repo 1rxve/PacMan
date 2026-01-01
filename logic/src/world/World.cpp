@@ -207,6 +207,11 @@ namespace logic {
 
                 ghost->update(deltaTime);
 
+                // ← ADD: EATEN ghosts ignore ALL collisions
+                if (ghost->getState() == GhostState::EATEN) {
+                    continue;  // Skip collision detection entirely
+                }
+
                 bool wallCollision = false;
                 for (WallModel* wall : walls) {
                     if (ghost->intersects(*wall)) {
@@ -218,9 +223,14 @@ namespace logic {
                 bool doorCollision = false;
                 for (DoorModel* door : doors) {
                     if (ghost->intersects(*door)) {
-                        // ← ADD: Allow EXITING_SPAWN ghosts through door
+                        // Allow EATEN (eyes) ghosts through door
+                        if (ghost->getState() == GhostState::EATEN) {
+                            // Eyes can pass through door freely
+                            continue;  // Skip collision
+                        }
+
+                        // Allow EXITING_SPAWN ghosts through door
                         if (ghost->getState() == GhostState::EXITING_SPAWN) {
-                            // Ghost exiting - don't block, mark as exited when through
                             ghost->markAsExited();
                         }
                         else if (ghost->hasExited()) {

@@ -58,6 +58,59 @@ namespace logic {
             return;
         }
 
+        // EATEN state - eyes return to spawn
+        if (state == GhostState::EATEN) {
+            std::cout << "EATEN: pos=(" << x << "," << y << ") spawn=("
+                      << eatenRespawnX << "," << eatenRespawnY << ")" << std::endl;
+
+            float moveDistance = speed * deltaTime;
+            float newX = x;
+            float newY = y;
+
+            // Calculate direction toward spawn (orange ghost logic)
+            float dx = eatenRespawnX - x;
+            float dy = eatenRespawnY - y;
+
+            std::cout << "EATEN: dx=" << dx << " dy=" << dy
+                      << " speed=" << speed << " moveDistance=" << moveDistance << std::endl;
+
+            // Check if reached spawn (within small threshold)
+            const float SPAWN_THRESHOLD = 0.05f;
+            if (std::abs(dx) < SPAWN_THRESHOLD && std::abs(dy) < SPAWN_THRESHOLD) {
+                // Arrived at spawn - start respawning
+                setPosition(eatenRespawnX, eatenRespawnY);
+                state = GhostState::RESPAWNING;
+                respawnFlickerTimer = 0.0f;
+                respawnFlickerCount = 0;
+                std::cout << "Ghost reached spawn - starting respawn flicker" << std::endl;
+                return;
+            }
+
+            // Move toward spawn (simple direct movement)
+            if (std::abs(dx) > std::abs(dy)) {
+                // Horizontal movement dominant
+                if (dx > 0) {
+                    currentDirection = Direction::RIGHT;
+                    newX += moveDistance;
+                } else {
+                    currentDirection = Direction::LEFT;
+                    newX -= moveDistance;
+                }
+            } else {
+                // Vertical movement dominant
+                if (dy > 0) {
+                    currentDirection = Direction::DOWN;
+                    newY += moveDistance;
+                } else {
+                    currentDirection = Direction::UP;
+                    newY -= moveDistance;
+                }
+            }
+
+            setPosition(newX, newY);
+            return;
+        }
+
         // RESPAWNING state - flicker effect in spawn
         if (state == GhostState::RESPAWNING) {
             respawnFlickerTimer += deltaTime;
@@ -535,16 +588,12 @@ namespace logic {
     }
 
     void GhostModel::getEaten() {
-        setPosition(eatenRespawnX, eatenRespawnY);
+        // Don't teleport - ghost will move as eyes to spawn
+        state = GhostState::EATEN;
+        speed = 1.0f;  // ← Fast movement as eyes
+        hasExitedSpawn = false;  // Can pass through door again
 
-        state = GhostState::RESPAWNING;
-        speed = targetSpeed;
-        hasExitedSpawn = false;
-
-        respawnFlickerTimer = 0.0f;
-        respawnFlickerCount = 0;
-
-        std::cout << "Ghost eaten - respawning in spawn" << std::endl;
+        std::cout << "Ghost eaten - returning to spawn as eyes" << std::endl;
     }
 
     void GhostModel::setEatenRespawnPosition(float x, float y) {

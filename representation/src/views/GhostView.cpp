@@ -49,7 +49,7 @@ namespace representation {
 
             spriteY = 550 + (frameIndex * 50);  // Y=550 or Y=600 (animation)
         }
-            // EATEN MODE - Eyes sprite
+        // EATEN MODE - Eyes sprite
         else if (state == logic::GhostState::EATEN) {
             spriteX = 300;
             spriteY = 250;

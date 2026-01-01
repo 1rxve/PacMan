@@ -19,8 +19,8 @@ namespace representation {
         float pixelCenterX = camera->normalizedToPixelX(centerX);
         float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-        sprite.setPosition(pixelCenterX, pixelCenterY);
-        sprite.setScale(3.5f, 3.5f);
+        sprite.setPosition(pixelCenterX, pixelCenterY - 3.0f);
+        sprite.setScale(4.5f, 3.5f);
         window->draw(sprite);
 
         // DEBUG VISUALISATIE
