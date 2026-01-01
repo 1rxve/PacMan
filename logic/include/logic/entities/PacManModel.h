@@ -16,8 +16,6 @@ namespace logic {
     private:
         float speed;
         int lives;
-
-
         Direction currentDirection;
         Direction nextDirection;
 
