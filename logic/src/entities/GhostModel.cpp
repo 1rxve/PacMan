@@ -28,30 +28,19 @@ namespace logic {
     }
 
     void GhostModel::update(float deltaTime) {
-        static int counter = 0;
-        if (counter++ % 60 == 0 && (state == GhostState::CHASING || state == GhostState::EXITING_SPAWN)) {
-            std::cout << "Ghost " << (int)type << " state=" << (int)state
-                      << " speed=" << speed << " target=" << targetSpeed << std::endl;
-        }
         // SPAWNING state - wacht op delay
         if (state == GhostState::SPAWNING) {
             spawnTimer += deltaTime;
 
-            // ← ADD: Debug voor BLUE
-            if (type == GhostType::BLUE) {
-                std::cout << "BLUE SPAWNING - timer: " << spawnTimer << "/" << spawnDelay << std::endl;
-            }
 
             if (spawnTimer >= spawnDelay) {
                 // RED initial spawn - already outside, marked as exited
                 if (type == GhostType::RED && hasExitedSpawn) {
                     state = GhostState::CHASING;
-                    std::cout << "RED initial spawn -> CHASING (already outside)" << std::endl;
                 }
                     // All other cases - start exit sequence (including RED after eaten)
                 else {
                     startExitingSpawn();
-                    std::cout << "Ghost type " << (int)type << " -> EXITING_SPAWN" << std::endl;
                 }
             }
 
@@ -60,9 +49,6 @@ namespace logic {
 
         // EATEN state - eyes return to spawn
         if (state == GhostState::EATEN) {
-            std::cout << "EATEN: pos=(" << x << "," << y << ") spawn=("
-                      << eatenRespawnX << "," << eatenRespawnY << ")" << std::endl;
-
             float moveDistance = speed * deltaTime;
             float newX = x;
             float newY = y;
@@ -70,9 +56,6 @@ namespace logic {
             // Calculate direction toward spawn (orange ghost logic)
             float dx = eatenRespawnX - x;
             float dy = eatenRespawnY - y;
-
-            std::cout << "EATEN: dx=" << dx << " dy=" << dy
-                      << " speed=" << speed << " moveDistance=" << moveDistance << std::endl;
 
             // Check if reached spawn (within small threshold)
             const float SPAWN_THRESHOLD = 0.05f;
@@ -82,7 +65,6 @@ namespace logic {
                 state = GhostState::RESPAWNING;
                 respawnFlickerTimer = 0.0f;
                 respawnFlickerCount = 0;
-                std::cout << "Ghost reached spawn - starting respawn flicker" << std::endl;
                 return;
             }
 
@@ -123,7 +105,6 @@ namespace logic {
 
                 if (respawnFlickerCount >= 6) {
                     startExitingSpawn();
-                    std::cout << "Flicker complete - starting exit" << std::endl;
                 }
             }
 
@@ -140,7 +121,6 @@ namespace logic {
             if (type == GhostType::RED) {
                 if (currentDirection == Direction::NONE) {
                     currentDirection = Direction::UP;  // ← CHANGE: Start UP, not LEFT
-                    std::cout << "RED starting UP exit" << std::endl;
                 }
 
                 // Count UP frames
@@ -162,7 +142,6 @@ namespace logic {
                         state = GhostState::CHASING;
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
-                        std::cout << "RED exit complete -> CHASING" << std::endl;
                     }
                 }
             }
@@ -171,7 +150,6 @@ namespace logic {
             if (type == GhostType::PINK) {
                 if (currentDirection == Direction::NONE) {
                     currentDirection = Direction::UP;
-                    std::cout << "PINK starting UP exit" << std::endl;
                 }
 
                 // Count UP frames
@@ -193,7 +171,6 @@ namespace logic {
                         state = GhostState::CHASING;
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
-                        std::cout << "PINK exit complete -> CHASING" << std::endl;
                     }
                 }
             }
@@ -202,7 +179,6 @@ namespace logic {
             if (type == GhostType::BLUE) {
                 if (currentDirection == Direction::NONE) {
                     currentDirection = Direction::RIGHT;
-                    std::cout << "BLUE starting RIGHT exit" << std::endl;
                 }
 
                 // Phase 1: RIGHT until collision
@@ -229,7 +205,6 @@ namespace logic {
                         state = GhostState::CHASING;
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
-                        std::cout << "BLUE exit complete -> CHASING" << std::endl;
                     }
                 }
             }
@@ -238,7 +213,6 @@ namespace logic {
             if (type == GhostType::ORANGE) {
                 if (currentDirection == Direction::NONE) {
                     currentDirection = Direction::LEFT;
-                    std::cout << "ORANGE starting LEFT" << std::endl;
                 }
 
                 // Count LEFT frames after switching from UP
@@ -249,7 +223,6 @@ namespace logic {
                         state = GhostState::CHASING;
                         hasExitedSpawn = true;
                         exitStepCounter = 0;
-                        std::cout << "ORANGE exit complete -> CHASING" << std::endl;
                     }
                 }
 
@@ -593,7 +566,6 @@ namespace logic {
         speed = 1.0f;  // ← Fast movement as eyes
         hasExitedSpawn = false;  // Can pass through door again
 
-        std::cout << "Ghost eaten - returning to spawn as eyes" << std::endl;
     }
 
     void GhostModel::setEatenRespawnPosition(float x, float y) {
@@ -608,7 +580,6 @@ namespace logic {
         exitStepCounter = 0;
         hasExitedSpawn = false;
 
-        std::cout << "Ghost type " << (int)type << " starting exit sequence" << std::endl;
     }
 
     void GhostModel::resetToSpawn(float delay) {
@@ -620,7 +591,6 @@ namespace logic {
         exitStepCounter = 0;
         hasExitedSpawn = false;
 
-        std::cout << "Ghost type " << (int)type << " reset to SPAWNING with delay " << delay << std::endl;
     }
 
     void GhostModel::setSpeed(float newSpeed) {

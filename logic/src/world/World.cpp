@@ -63,8 +63,6 @@ namespace logic {
                 for (GhostModel* ghost : ghosts) {
                     ghost->exitFearMode();
                 }
-
-                std::cout << "FEAR MODE ENDED!" << std::endl;
             }
         }
 
@@ -147,8 +145,6 @@ namespace logic {
 
                         score.setEvent(ScoreEvent::GHOST_EATEN);
                         scoreSubject.notify();
-
-                        std::cout << "GHOST EATEN! Respawning in spawn" << std::endl;
                     }
                 }
 
@@ -244,19 +240,9 @@ namespace logic {
 
                 bool noEntryCollision = false;
                 for (NoEntryModel* noEntry : noEntries) {
-                    if (ghost->intersects(*noEntry)) {
-                        // Check if this barrier blocks this ghost type
-                        if (noEntry->blocksGhostType(ghost->getType())) {
-                            std::cout << "Ghost type " << (int)ghost->getType()
-                                      << " BLOCKED by NoEntry at ("
-                                      << noEntry->getX() << ", " << noEntry->getY() << ")" << std::endl;
-                            noEntryCollision = true;
-                            break;
-                        } else {
-                            std::cout << "Ghost type " << (int)ghost->getType()
-                                      << " PASSES THROUGH NoEntry at ("
-                                      << noEntry->getX() << ", " << noEntry->getY() << ")" << std::endl;
-                        }
+                    if (ghost->intersects(*noEntry) && noEntry->blocksGhostType(ghost->getType())) {
+                        noEntryCollision = true;
+                        break;
                     }
                 }
 
@@ -268,23 +254,19 @@ namespace logic {
                         if (ghost->getType() == GhostType::ORANGE &&
                             ghost->getCurrentDirection() == Direction::LEFT) {
                             ghost->setDirection(Direction::UP);
-                            std::cout << "ORANGE hit barrier - switching to UP" << std::endl;
                         }
                             // BLUE: RIGHT hit barrier → UP
                         else if (ghost->getType() == GhostType::BLUE &&
                                  ghost->getCurrentDirection() == Direction::RIGHT) {
                             ghost->setDirection(Direction::UP);
-                            std::cout << "BLUE hit barrier - switching to UP" << std::endl;
                         }
                             // Any ghost: UP hit wall → LEFT or RIGHT
                         else if (ghost->getCurrentDirection() == Direction::UP) {
                             // BLUE goes RIGHT after exiting, others go LEFT
                             if (ghost->getType() == GhostType::BLUE) {
                                 ghost->setDirection(Direction::RIGHT);
-                                std::cout << "BLUE hit wall - switching to RIGHT" << std::endl;
                             } else {
                                 ghost->setDirection(Direction::LEFT);
-                                std::cout << "Ghost hit wall - switching to LEFT" << std::endl;
                             }
                         }
                         else {
@@ -986,20 +968,10 @@ namespace logic {
 
             // Increase ghost speed
             float newSpeed = baseGhostSpeed + (currentLevel - 1) * 0.01f;
-            std::cout << "About to set speed for ghost type " << (int)ghost->getType() << " to " << newSpeed << std::endl;  // ← ADD
-
             ghost->setSpeed(newSpeed);
-
-            std::cout << "Ghost type " << (int)ghost->getType()
-                      << " speed=" << ghost->getSpeed()
-                      << " target=" << ghost->getTargetSpeed() << std::endl;
         }
 
         // Decrease fear duration
         baseFearDuration = std::max(3.0f, 7.0f - (currentLevel - 1) * 0.5f);
-
-        std::cout << "=== LEVEL " << currentLevel << " ===" << std::endl;
-        std::cout << "Ghost speed: " << (baseGhostSpeed + (currentLevel - 1) * 0.1f) << std::endl;
-        std::cout << "Fear duration: " << baseFearDuration << std::endl;
     }
 }

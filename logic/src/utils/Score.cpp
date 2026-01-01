@@ -42,25 +42,21 @@ namespace logic {
         score += coinPoints;
         timeSinceLastCoin = 0.0f;
 
-        std::cout << "Score +=" << coinPoints << " (total: " << score << ")" << std::endl;
     }
 
     void Score::handleGhostEaten() {
         const int GHOST_BONUS = 200;
         score += GHOST_BONUS;
-        std::cout << "Score +=" << GHOST_BONUS << " (ghost eaten, total: " << score << ")" << std::endl;
     }
 
     void Score::handleFruitEaten() {
         const int FRUIT_BONUS = 100;
         score += FRUIT_BONUS;
-        std::cout << "Score +=" << FRUIT_BONUS << " (fruit eaten, total: " << score << ")" << std::endl;
     }
 
     void Score::handleLevelCleared() {
         const int LEVEL_BONUS = 500;
         score += LEVEL_BONUS;
-        std::cout << "Score +=" << LEVEL_BONUS << " (level cleared, total: " << score << ")" << std::endl;
     }
 
     void Score::update(float deltaTime) {

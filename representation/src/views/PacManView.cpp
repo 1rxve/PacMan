@@ -6,7 +6,7 @@ namespace representation {
                            std::shared_ptr<sf::Texture> sharedTexture)
             : EntityView(model, window, camera),
               pacManModel(model),
-              texture(sharedTexture),  // ← Store shared_ptr
+              texture(sharedTexture),
               animationTimer(0.0f),
               frameIndex(0) {
 
@@ -25,7 +25,7 @@ namespace representation {
 
         // Reset to full circle when stationary (including after respawn)
         if (currentDir == logic::Direction::NONE) {
-            sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));  // Full circle sprite
+            sprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
             sprite.setOrigin(29.5f, 22.0f);
             sprite.setScale(1.15f, 1.15f);
 

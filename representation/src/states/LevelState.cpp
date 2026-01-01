@@ -124,9 +124,6 @@ namespace representation {
             world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
             world->getScoreSubject()->notify();
 
-            // Show brief "LEVEL X" message (optional)
-            std::cout << "Level cleared! Starting level " << world->getCurrentLevel() << std::endl;
-
             // Trigger countdown
             isCountingDown = true;
             countdownTimer = 2.0f;
@@ -221,7 +218,6 @@ namespace representation {
                 // Check for cheat codes
                 if (cheatBuffer.find("GHOST") != std::string::npos) {
                     world->activateFearMode();
-                    std::cout << "CHEAT: GHOST activated - Fear mode!" << std::endl;
                     cheatBuffer.clear();  // Clear buffer after activation
                 }
 
@@ -234,8 +230,6 @@ namespace representation {
                     world->nextLevel();
                     isCountingDown = true;
                     countdownTimer = 2.0f;
-                    std::cout << "CHEAT: LEVEL activated - Skip to level "
-                              << world->getCurrentLevel() << " (+500 bonus)" << std::endl;
                     cheatBuffer.clear();
                 }
             }

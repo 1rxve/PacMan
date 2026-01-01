@@ -10,7 +10,7 @@ namespace representation {
             : State(win, fac, cam, sm),
               finalScore(finalScore),
               mapFile(mapFile),
-              playerName("   "),  // ← 3 spaties (leeg)
+              playerName("   "),
               currentLetterIndex(0),
               fontLoaded(false),
               blinkTimer(0.0f),
@@ -32,8 +32,8 @@ namespace representation {
             } else {
                 titleText.setString("HIGH SCORE");
             }
-            titleText.setCharacterSize(64);  // ← Bigger
-            titleText.setFillColor(sf::Color::Yellow);  // ← Match menu
+            titleText.setCharacterSize(64);
+            titleText.setFillColor(sf::Color::Yellow);
 
             sf::FloatRect titleBounds = titleText.getLocalBounds();
             titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
@@ -43,7 +43,7 @@ namespace representation {
             scoreText.setFont(font);
             scoreText.setString("SCORE: " + std::to_string(finalScore));
             scoreText.setCharacterSize(32);
-            scoreText.setFillColor(sf::Color::White);  // ← Keep white
+            scoreText.setFillColor(sf::Color::White);
 
             sf::FloatRect scoreBounds = scoreText.getLocalBounds();
             scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
@@ -52,13 +52,13 @@ namespace representation {
             // Name entry text - White (will be drawn as letters in render)
             nameText.setFont(font);
             nameText.setCharacterSize(80);
-            nameText.setFillColor(sf::Color::White);  // ← CHANGE from Cyan
+            nameText.setFillColor(sf::Color::White);
 
             // Instructions - White
             instructionText.setFont(font);
             instructionText.setString("ENTER NAME");
             instructionText.setCharacterSize(32);
-            instructionText.setFillColor(sf::Color::White);  // ← CHANGE from Cyan
+            instructionText.setFillColor(sf::Color::White);
 
             sf::FloatRect instrBounds = instructionText.getLocalBounds();
             instructionText.setOrigin(instrBounds.width / 2.0f, instrBounds.height / 2.0f);
@@ -67,7 +67,7 @@ namespace representation {
             pressEnterText.setFont(font);
             pressEnterText.setString("PRESS \"ENTER\"");
             pressEnterText.setCharacterSize(24);
-            pressEnterText.setFillColor(sf::Color::Yellow);  // ← CHANGE
+            pressEnterText.setFillColor(sf::Color::Yellow);
 
             sf::FloatRect pressEnterBounds = pressEnterText.getLocalBounds();
             pressEnterText.setOrigin(pressEnterBounds.width / 2.0f, pressEnterBounds.height / 2.0f);
@@ -77,7 +77,7 @@ namespace representation {
             whenDoneText.setFont(font);
             whenDoneText.setString("WHEN YOU ARE DONE");
             whenDoneText.setCharacterSize(24);
-            whenDoneText.setFillColor(sf::Color::Yellow);  // ← CHANGE
+            whenDoneText.setFillColor(sf::Color::Yellow);
 
             sf::FloatRect whenDoneBounds = whenDoneText.getLocalBounds();
             whenDoneText.setOrigin(whenDoneBounds.width / 2.0f, whenDoneBounds.height / 2.0f);
@@ -160,7 +160,7 @@ namespace representation {
                 if (playerName[i] != ' ') {
                     letterText.setString(std::string(1, playerName[i]));
                 } else {
-                    letterText.setString("_");  // Show underscore for empty
+                    letterText.setString("_");
                 }
 
                 letterText.setCharacterSize(80);
@@ -172,8 +172,6 @@ namespace representation {
 
                 window->draw(letterText);
             }
-
-            // NO CURSOR DRAWN - REMOVED
 
             window->draw(pressEnterText);
             window->draw(whenDoneText);

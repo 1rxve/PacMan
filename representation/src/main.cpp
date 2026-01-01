@@ -21,11 +21,6 @@ int main() {
         windowHeight = static_cast<unsigned int>(windowWidth / ASPECT_RATIO);
     }
 
-    std::cout << "=== Window Info ===" << std::endl;
-    std::cout << "Desktop: " << desktop.width << " x " << desktop.height << std::endl;
-    std::cout << "Window: " << windowWidth << " x " << windowHeight << std::endl;
-    std::cout << "===================" << std::endl;
-
     // Create NON-RESIZABLE window
     sf::RenderWindow window(
             sf::VideoMode(windowWidth, windowHeight),
