@@ -2,6 +2,7 @@
 #define PACMANGAME_MENUSTATE_H
 
 #include "State.h"
+#include "representation/SoundManager.h"
 #include <string>
 
 namespace representation {
@@ -16,7 +17,7 @@ namespace representation {
         bool fontLoaded;
         bool needsRefresh;
 
-        float blinkTimer;      // ← ADD
+        float blinkTimer;
         bool instructionVisible;
 
         void refreshHighScores();

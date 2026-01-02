@@ -19,7 +19,7 @@ namespace representation {
 
     public:
         Game(sf::RenderWindow* window, const std::string& mapFile);
-        ~Game();  // ← ADD EXPLICIT DESTRUCTOR DECLARATION
+        ~Game();
         void run();
     };
 }

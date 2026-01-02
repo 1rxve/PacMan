@@ -17,7 +17,7 @@ namespace logic {
         float cellWidth;
         float cellHeight;
 
-        // ← ADD THESE 2 LINES
+
         bool isDying;
         float deathTimer;
 

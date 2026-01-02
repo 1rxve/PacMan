@@ -16,10 +16,10 @@ namespace logic {
               pacmanSpawnX(0.0f),
               pacmanSpawnY(0.0f),
               hasJustRespawned(false),
-              fearModeActive(false),     // ← ADD
+              fearModeActive(false),
               fearModeTimer(0.0f),
-              currentLevel(1),              // ← ADD
-              baseGhostSpeed(0.5f),         // ← ADD
+              currentLevel(1),
+              baseGhostSpeed(0.5f),
               baseFearDuration(7.0f) {}
 
 
@@ -203,7 +203,7 @@ namespace logic {
 
                 ghost->update(deltaTime);
 
-                // ← ADD: EATEN ghosts ignore ALL collisions
+
                 if (ghost->getState() == GhostState::EATEN) {
                     continue;  // Skip collision detection entirely
                 }
@@ -364,7 +364,7 @@ namespace logic {
                                 pacman->setCellDimensions(cellWidth, cellHeight);
                             }
 
-                            // ← ADD THESE 2 LINES
+
                             pacmanSpawnX = normalizedX;
                             pacmanSpawnY = normalizedY;
 
@@ -387,7 +387,7 @@ namespace logic {
 
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
-                                // ← ADD: Set eaten respawn to center of spawn box (row 9, col 9)
+
                                 float eatenSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
                                 float eatenSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                                 ghostPtr->setEatenRespawnPosition(eatenSpawnX, eatenSpawnY);
@@ -432,7 +432,7 @@ namespace logic {
                                 ghosts.push_back(ghostPtr);
                                 ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
-                                // ← ADD: Spawn invisible ORANGE-only barrier at BLUE position
+
                                 auto barrierResult = factory->createNoEntry(normalizedX, normalizedY,
                                                                             cellWidth, cellHeight);
                                 if (barrierResult.model->isNoEntry()) {
@@ -470,7 +470,7 @@ namespace logic {
                                 float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                                 ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
 
-                                // ← ADD: Spawn invisible BLUE-only barrier at ORANGE position
+
                                 auto barrierResult = factory->createNoEntry(normalizedX, normalizedY,
                                                                             cellWidth, cellHeight);
                                 if (barrierResult.model->isNoEntry()) {
@@ -849,6 +849,9 @@ namespace logic {
     void World::handlePacManDeath() {
         if (!pacman) return;
 
+        score.setEvent(ScoreEvent::PACMAN_DEATH_ANIM);
+        scoreSubject.notify();
+
         pacman->startDeath();
         pacman->loseLife();
     }
@@ -866,7 +869,7 @@ namespace logic {
             ghost->setPosition(spawnX, spawnY);
             ghost->stopMovement();
 
-            // ← ADD: Reset ghost state based on type
+
             if (ghost->getType() == GhostType::RED) {
                 // RED spawns outside - direct to CHASING
                 ghost->resetToSpawn(0.0f);  // Will immediately go to CHASING
@@ -915,11 +918,12 @@ namespace logic {
         fearModeActive = true;
         fearModeTimer = baseFearDuration;
 
-        // Put all ghosts in fear mode
+        score.setEvent(ScoreEvent::GHOST_FEAR_MODE);
+        scoreSubject.notify();
+
         for (GhostModel* ghost : ghosts) {
             ghost->enterFearMode();
         }
-
     }
 
     void World::nextLevel() {

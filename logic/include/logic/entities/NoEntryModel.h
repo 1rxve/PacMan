@@ -2,7 +2,7 @@
 #define PACMANGAME_NOENTRYMODEL_H
 
 #include "EntityModel.h"
-#include "GhostModel.h"  // ← ADD
+#include "GhostModel.h"
 #include <unordered_set>
 
 namespace logic {

@@ -5,6 +5,7 @@
 #include "representation/StateManager.h"
 #include "logic/entities/PacManModel.h"
 #include "representation/states/NameEntryState.h"
+#include "representation/SoundManager.h"
 
 
 namespace representation {
@@ -67,12 +68,17 @@ namespace representation {
             pacman->setCellDimensions(cellWidth, cellHeight);
         }
 
+        SoundManager::getInstance().stopMenuMusic();
+
+        soundObserver = std::make_unique<SoundObserver>(world->getScoreObject());
+
         world->getScoreSubject()->attach(world->getScoreObject());
+        world->getScoreSubject()->attach(soundObserver.get());
 
         isCountingDown = true;
         countdownTimer = 1.0f;
 
-        // ← ADD: Setup "READY!" text
+
         if (fontLoaded) {
             readyText.setFont(font);
             readyText.setString("READY!");
@@ -98,10 +104,14 @@ namespace representation {
             return;
         }
 
+        SoundManager::getInstance().update(deltaTime);
+
+
         // Check if just respawned (before world update)
         if (world->justRespawned()) {
             isCountingDown = true;
             countdownTimer = 1.0f;
+            SoundManager::getInstance().stopCoinSound();
             return;
         }
 
@@ -120,6 +130,8 @@ namespace representation {
         if (coinsCollected >= totalCoins) {
             world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
             world->getScoreSubject()->notify();
+
+            SoundManager::getInstance().stopCoinSound();
 
             // ← CHANGE: Call nextLevel() IMMEDIATELY
             world->nextLevel();
@@ -156,7 +168,7 @@ namespace representation {
 
     void LevelState::render() {
 
-        // ← ADD THIS: Render all game entities
+
         world->renderInOrder();
 
         // Draw "READY!" during countdown
@@ -234,7 +246,8 @@ namespace representation {
 
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::P) {
-                cheatBuffer.clear();  // ← ADD: Clear buffer bij pause
+                cheatBuffer.clear();
+                SoundManager::getInstance().stopCoinSound();
                 stateManager->pushState(std::make_unique<PausedState>(
                         window, factory, camera, stateManager, this, mapFile
                 ));
@@ -242,7 +255,7 @@ namespace representation {
             }
 
             if (event.key.code == sf::Keyboard::Escape) {
-                cheatBuffer.clear();  // ← ADD
+                cheatBuffer.clear();
                 window->close();
                 return;
             }

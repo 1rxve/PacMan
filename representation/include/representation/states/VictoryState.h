@@ -19,9 +19,9 @@ namespace representation {
         sf::Text quitText;
         bool fontLoaded;
 
-        bool isHighScore;              // ← ADD
-        float blinkTimer;              // ← ADD
-        bool newHighScoreVisible;      // ← ADD
+        bool isHighScore;
+        float blinkTimer;
+        bool newHighScoreVisible;
 
     public:
         VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac,

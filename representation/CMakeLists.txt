@@ -8,8 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(WIN32)
     set(SFML_DIR "C:/SFML-2.6.1/lib/cmake/SFML")
 endif()
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
-
+find_package(SFML 2.5 COMPONENTS graphics window system audio REQUIRED)
 # Source files
 set(REPRESENTATION_SOURCES
         src/main.cpp
@@ -41,6 +40,9 @@ set(REPRESENTATION_SOURCES
         include/representation/views/DoorView.h
         src/states/FruitView.cpp
         include/representation/views/FruitView.h
+        src/SoundManager.cpp
+        include/representation/SoundManager.h
+        include/representation/SoundObserver.h
 )
 
 # Create executable
@@ -52,6 +54,8 @@ target_link_libraries(PacManGame PRIVATE
         sfml-graphics
         sfml-window
         sfml-system
+        sfml-audio
+
 )
 
 # Include directories

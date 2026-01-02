@@ -55,11 +55,11 @@ namespace logic {
 
         bool hasJustRespawned;
 
-        bool fearModeActive;      // ← ADD
-        float fearModeTimer;      // ← ADD
+        bool fearModeActive;
+        float fearModeTimer;
 
-        int currentLevel;           // ← ADD
-        float baseGhostSpeed;       // ← ADD
+        int currentLevel;
+        float baseGhostSpeed;
         float baseFearDuration;
 
         void handlePacManDeath();
@@ -85,7 +85,7 @@ namespace logic {
 
         bool isDirectionValid(Direction direction) const;
         Direction getViableDirectionForGhost(GhostModel* ghost) const;
-        std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;  // ← ADD
+        std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;
 
         void clearWorld();
 
@@ -95,7 +95,7 @@ namespace logic {
 
         void activateFearMode();
 
-        bool justRespawned() const { return hasJustRespawned; }  // ← ADD
+        bool justRespawned() const { return hasJustRespawned; }
         void clearRespawnFlag() { hasJustRespawned = false; }
 
 

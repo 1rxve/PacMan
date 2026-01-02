@@ -6,6 +6,7 @@
 #include "logic/world/World.h"
 #include <memory>
 #include <string>
+#include "representation/SoundObserver.h"
 
 namespace representation {
     class LevelState : public State {
@@ -18,13 +19,15 @@ namespace representation {
         sf::Text readyText;
         bool fontLoaded;
 
-        std::shared_ptr<sf::Texture> livesTexture;  // ← ADD
+        std::shared_ptr<sf::Texture> livesTexture;
         sf::Sprite livesSprite;
 
-        bool isCountingDown;     // ← ADD
+        bool isCountingDown;
         float countdownTimer;
 
         std::string cheatBuffer;
+
+        std::unique_ptr<SoundObserver> soundObserver;
 
     public:
         LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,

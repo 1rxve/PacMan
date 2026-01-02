@@ -39,7 +39,7 @@ namespace logic {
 
         bool hasExitedSpawn;
 
-        float eatenRespawnX;  // ← ADD
+        float eatenRespawnX;
         float eatenRespawnY;
 
         int exitStepCounter;
@@ -75,7 +75,7 @@ namespace logic {
         void enterFearMode();
         void exitFearMode();
 
-        void setFearTimer(float timer) { fearTimer = timer; }  // ← ADD
+        void setFearTimer(float timer) { fearTimer = timer; }
         float getFearTimer() const { return fearTimer; }
         int getRespawnFlickerCount() const { return respawnFlickerCount; }
 
@@ -86,7 +86,7 @@ namespace logic {
 
         void setEatenRespawnPosition(float x, float y);
 
-        float getEatenRespawnX() const { return eatenRespawnX; }  // ← ADD
+        float getEatenRespawnX() const { return eatenRespawnX; }
         float getEatenRespawnY() const { return eatenRespawnY; }
 
         void startExitingSpawn();

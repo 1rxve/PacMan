@@ -12,7 +12,7 @@ namespace representation {
         std::shared_ptr<sf::Texture> texture;
         sf::Sprite sprite;
 
-        bool showDebugVisualization;  // ← ADD
+        bool showDebugVisualization;
 
         float animationTimer;
         int frameIndex;

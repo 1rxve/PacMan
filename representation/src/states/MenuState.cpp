@@ -10,6 +10,8 @@ namespace representation {
             : State(win, fac, cam, sm), mapFile(mapFile), fontLoaded(false),
               blinkTimer(0.0f), instructionVisible(true) {
 
+        SoundManager::getInstance().playMenuMusic();
+
         // Load custom font with fallback
         if (font.loadFromFile("resources/fonts/joystix.otf")) {
             fontLoaded = true;
@@ -80,18 +82,21 @@ namespace representation {
     MenuState::~MenuState() {
     }
 
-    void MenuState::update(float deltaTime) {  // ← REMOVE /*deltaTime*/
-        // Blink effect for instruction text
+    void MenuState::update(float deltaTime) {
         blinkTimer += deltaTime;
 
-        if (blinkTimer >= 0.5f) {  // Blink every 0.5 seconds (adjust for speed)
+        if (blinkTimer >= 0.5f) {
             instructionVisible = !instructionVisible;
             blinkTimer = 0.0f;
         }
 
-        // Check if we need to refresh high scores (after returning from game)
+        // Restart menu music if it stopped playing
+        if (SoundManager::getInstance().isMenuMusicPlaying() == false) {
+            SoundManager::getInstance().playMenuMusic();
+        }
+
         if (!needsRefresh) {
-            needsRefresh = true;  // Set flag for next time
+            needsRefresh = true;
         } else {
             refreshHighScores();
             needsRefresh = false;

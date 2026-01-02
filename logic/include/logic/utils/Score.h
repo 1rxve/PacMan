@@ -11,7 +11,9 @@ namespace logic {
         GHOST_EATEN,
         FRUIT_EATEN,
         PACMAN_DIED,
-        LEVEL_CLEARED
+        LEVEL_CLEARED,
+        GHOST_FEAR_MODE,
+        PACMAN_DEATH_ANIM
     };
 
 
@@ -45,6 +47,8 @@ namespace logic {
         void reset();
 
         int getScore() const;
+
+        ScoreEvent getLastEvent() const { return lastEvent; }
 
 
         // High score management

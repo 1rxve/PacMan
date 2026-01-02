@@ -9,8 +9,8 @@ namespace representation {
     private:
         sf::Font font;
         sf::Text pausedText;
-        sf::Text resumeText;    // ← ADD: P - Resume
-        sf::Text restartText;   // ← ADD: R - Restart
+        sf::Text resumeText;
+        sf::Text restartText;
         sf::Text quitText;
         bool fontLoaded;
 
