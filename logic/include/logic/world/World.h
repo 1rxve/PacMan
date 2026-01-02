@@ -1,114 +1,111 @@
 #ifndef PACMANGAME_WORLD_H
 #define PACMANGAME_WORLD_H
 
-#include <vector>
-#include <memory>
-#include <fstream>
-#include <string>
-#include <iostream>
-#include "logic/entities/EntityModel.h"
-#include "logic/entities/PacManModel.h"
 #include "logic/entities/CoinModel.h"
-#include "logic/entities/GhostModel.h"
 #include "logic/entities/DoorModel.h"
+#include "logic/entities/EntityModel.h"
+#include "logic/entities/FruitModel.h"
+#include "logic/entities/GhostModel.h"
 #include "logic/entities/NoEntryModel.h"
+#include "logic/entities/PacManModel.h"
 #include "logic/patterns/AbstractFactory.h"
 #include "logic/patterns/Observer.h"
 #include "logic/utils/Score.h"
-#include "logic/entities/FruitModel.h"
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace logic {
-    class PacManModel;
-    class WallModel;
-    class CoinModel;
+class PacManModel;
+class WallModel;
+class CoinModel;
 
-    class World {
-    private:
-        std::vector<std::unique_ptr<EntityModel> > entities;
-        std::vector<std::unique_ptr<Observer>> wallViews;
-        std::vector<std::unique_ptr<Observer>> coinViews;
-        std::vector<std::unique_ptr<Observer>> fruitViews;
-        std::vector<std::unique_ptr<Observer>> doorViews;
-        std::vector<std::unique_ptr<Observer>> ghostViews;
-        std::unique_ptr<Observer> pacmanView;
-        AbstractFactory* factory;
+class World {
+private:
+    std::vector<std::unique_ptr<EntityModel>> entities;
+    std::vector<std::unique_ptr<Observer>> wallViews;
+    std::vector<std::unique_ptr<Observer>> coinViews;
+    std::vector<std::unique_ptr<Observer>> fruitViews;
+    std::vector<std::unique_ptr<Observer>> doorViews;
+    std::vector<std::unique_ptr<Observer>> ghostViews;
+    std::unique_ptr<Observer> pacmanView;
+    AbstractFactory* factory;
 
-        // Non-owning references to entities for performance optimization.
-        // Lifetime: Guaranteed by entities vector ownership (unique_ptr).
-        // Usage: Cached pointers to avoid searching entities vector in game loop.
-        PacManModel* pacman;
-        std::vector<WallModel*> walls;
-        std::vector<CoinModel*> coins;
-        std::vector<GhostModel*> ghosts;
-        std::vector<DoorModel*> doors;
-        std::vector<NoEntryModel*> noEntries;
-        std::vector<FruitModel*> fruits;
+    // Non-owning references to entities for performance optimization.
+    // Lifetime: Guaranteed by entities vector ownership (unique_ptr).
+    // Usage: Cached pointers to avoid searching entities vector in game loop.
+    PacManModel* pacman;
+    std::vector<WallModel*> walls;
+    std::vector<CoinModel*> coins;
+    std::vector<GhostModel*> ghosts;
+    std::vector<DoorModel*> doors;
+    std::vector<NoEntryModel*> noEntries;
+    std::vector<FruitModel*> fruits;
 
+    int coinsCollected;
+    Score score;
+    Subject scoreSubject;
 
-        int coinsCollected;
-        Score score;
-        Subject scoreSubject;
+    float pacmanSpawnX;
+    float pacmanSpawnY;
+    std::vector<std::pair<float, float>> ghostSpawnPositions;
 
-        float pacmanSpawnX;
-        float pacmanSpawnY;
-        std::vector<std::pair<float, float>> ghostSpawnPositions;
+    bool hasJustRespawned;
 
-        bool hasJustRespawned;
+    bool fearModeActive;
+    float fearModeTimer;
 
-        bool fearModeActive;
-        float fearModeTimer;
+    int currentLevel;
+    float baseGhostSpeed;
+    float baseFearDuration;
 
-        int currentLevel;
-        float baseGhostSpeed;
-        float baseFearDuration;
+    void handlePacManDeath();
+    void resetAfterDeath();
 
-        void handlePacManDeath();
-        void resetAfterDeath();
+public:
+    World();
 
+    ~World();
 
-    public:
-        World();
+    void update(float deltaTime);
 
-        ~World();
+    void setFactory(AbstractFactory* factory);
 
-        void update(float deltaTime);
+    void addEntity(std::unique_ptr<EntityModel> entity);
 
-        void setFactory(AbstractFactory* factory);
+    void loadMap(const std::string& filename);
 
-        void addEntity(std::unique_ptr<EntityModel> entity);
+    PacManModel* getPacMan();
 
-        void loadMap(const std::string& filename);
+    static std::pair<int, int> getMapDimensions(const std::string& filename);
 
-        PacManModel* getPacMan();
+    bool isDirectionValid(Direction direction) const;
+    Direction getViableDirectionForGhost(GhostModel* ghost) const;
+    std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;
 
-        static std::pair<int, int> getMapDimensions(const std::string& filename);
+    void clearWorld();
 
-        bool isDirectionValid(Direction direction) const;
-        Direction getViableDirectionForGhost(GhostModel* ghost) const;
-        std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;
+    void notifyViewsOnly();
 
-        void clearWorld();
+    void renderInOrder();
 
-        void notifyViewsOnly();
+    void activateFearMode();
 
-        void renderInOrder();
+    bool justRespawned() const { return hasJustRespawned; }
+    void clearRespawnFlag() { hasJustRespawned = false; }
 
-        void activateFearMode();
+    int getCoinsCollected() const { return coinsCollected; }
+    int getTotalCoins() const { return static_cast<int>(coins.size()); }
 
-        bool justRespawned() const { return hasJustRespawned; }
-        void clearRespawnFlag() { hasJustRespawned = false; }
+    int getScore() const { return score.getScore(); }
+    Score* getScoreObject() { return &score; }
+    Subject* getScoreSubject() { return &scoreSubject; }
 
+    int getCurrentLevel() const { return currentLevel; }
+    void nextLevel();
+};
+} // namespace logic
 
-        int getCoinsCollected() const { return coinsCollected; }
-        int getTotalCoins() const { return static_cast<int>(coins.size()); }
-
-        int getScore() const { return score.getScore(); }
-        Score* getScoreObject() { return &score; }
-        Subject* getScoreSubject() { return &scoreSubject; }
-
-        int getCurrentLevel() const { return currentLevel; }
-        void nextLevel();
-    };
-}
-
-#endif //PACMANGAME_WORLD_H
+#endif // PACMANGAME_WORLD_H

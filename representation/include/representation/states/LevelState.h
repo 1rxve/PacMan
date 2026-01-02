@@ -1,46 +1,43 @@
 #ifndef PACMANGAME_LEVELSTATE_H
 #define PACMANGAME_LEVELSTATE_H
 
-
 #include "State.h"
 #include "logic/world/World.h"
+#include "representation/SoundObserver.h"
 #include <memory>
 #include <string>
-#include "representation/SoundObserver.h"
 
 namespace representation {
-    class LevelState : public State {
-    private:
-        std::unique_ptr<logic::World> world;
-        std::string mapFile;
+class LevelState : public State {
+private:
+    std::unique_ptr<logic::World> world;
+    std::string mapFile;
 
-        sf::Font font;
-        sf::Text scoreText;
-        sf::Text readyText;
-        bool fontLoaded;
+    sf::Font font;
+    sf::Text scoreText;
+    sf::Text readyText;
+    bool fontLoaded;
 
-        std::shared_ptr<sf::Texture> livesTexture;
-        sf::Sprite livesSprite;
+    std::shared_ptr<sf::Texture> livesTexture;
+    sf::Sprite livesSprite;
 
-        bool isCountingDown;
-        float countdownTimer;
+    bool isCountingDown;
+    float countdownTimer;
 
-        std::string cheatBuffer;
+    std::string cheatBuffer;
 
-        std::unique_ptr<SoundObserver> soundObserver;
+    std::unique_ptr<SoundObserver> soundObserver;
 
-    public:
-        LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                   const Camera* cam, StateManager* sm,
-                   const std::string& mapFile);
+public:
+    LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const Camera* cam, StateManager* sm,
+               const std::string& mapFile);
 
-        ~LevelState();
+    ~LevelState();
 
-        void update(float deltaTime) override;
-        void render() override;
-        void handleEvent(const sf::Event& event) override;
-    };
-}
+    void update(float deltaTime) override;
+    void render() override;
+    void handleEvent(const sf::Event& event) override;
+};
+} // namespace representation
 
-
-#endif //PACMANGAME_LEVELSTATE_H
+#endif // PACMANGAME_LEVELSTATE_H

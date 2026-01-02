@@ -6,34 +6,32 @@
 #include <string>
 
 namespace representation {
-    class MenuState : public State {
-    private:
-        std::string mapFile;
-        sf::Font font;
-        sf::Text titleText;
-        sf::Text instructionText;
-        sf::Text highScoresTitle;
-        sf::Text highScoresText[5];
-        bool fontLoaded;
-        bool needsRefresh;
+class MenuState : public State {
+private:
+    std::string mapFile;
+    sf::Font font;
+    sf::Text titleText;
+    sf::Text instructionText;
+    sf::Text highScoresTitle;
+    sf::Text highScoresText[5];
+    bool fontLoaded;
+    bool needsRefresh;
 
-        float blinkTimer;
-        bool instructionVisible;
+    float blinkTimer;
+    bool instructionVisible;
 
-        void refreshHighScores();
+    void refreshHighScores();
 
-    public:
-        MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                  const Camera* cam, StateManager* sm,
-                  const std::string& mapFile);
+public:
+    MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac, const Camera* cam, StateManager* sm,
+              const std::string& mapFile);
 
-        ~MenuState();
+    ~MenuState();
 
-        void update(float deltaTime) override;
-        void render() override;
-        void handleEvent(const sf::Event& event) override;
-    };
-}
+    void update(float deltaTime) override;
+    void render() override;
+    void handleEvent(const sf::Event& event) override;
+};
+} // namespace representation
 
-
-#endif //PACMANGAME_MENUSTATE_H
+#endif // PACMANGAME_MENUSTATE_H

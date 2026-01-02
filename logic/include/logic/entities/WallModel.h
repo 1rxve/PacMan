@@ -4,16 +4,14 @@
 #include "EntityModel.h"
 
 namespace logic {
-    class WallModel : public EntityModel{
-        public:
-            WallModel(float x, float y, float width, float height);
+class WallModel : public EntityModel {
+public:
+    WallModel(float x, float y, float width, float height);
 
-            void update(float deltaTime) override;
+    void update(float deltaTime) override;
 
-        bool isWall() const override { return true; }
+    bool isWall() const override { return true; }
+};
+} // namespace logic
 
-    };
-}
-
-
-#endif //PACMANGAME_WALLMODEL_H
+#endif // PACMANGAME_WALLMODEL_H

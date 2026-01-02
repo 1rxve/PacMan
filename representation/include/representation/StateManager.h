@@ -1,27 +1,25 @@
 #ifndef PACMANGAME_STATEMANAGER_H
 #define PACMANGAME_STATEMANAGER_H
 
-
-#include <vector>
-#include <memory>
 #include <SFML/Graphics.hpp>
+#include <memory>
+#include <vector>
 
 namespace representation {
-    class State;
+class State;
 
-    class StateManager {
-    private:
-        std::vector<std::unique_ptr<State>> stateStack;
+class StateManager {
+private:
+    std::vector<std::unique_ptr<State>> stateStack;
 
-    public:
-        void pushState(std::unique_ptr<State> state);
-        void popState();
-        void update(float deltaTime);
-        void render();
-        void handleEvent(const sf::Event& event);
-        bool isEmpty() const;
-    };
-}
+public:
+    void pushState(std::unique_ptr<State> state);
+    void popState();
+    void update(float deltaTime);
+    void render();
+    void handleEvent(const sf::Event& event);
+    bool isEmpty() const;
+};
+} // namespace representation
 
-
-#endif //PACMANGAME_STATEMANAGER_H
+#endif // PACMANGAME_STATEMANAGER_H

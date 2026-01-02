@@ -2,21 +2,21 @@
 #define PACMANGAME_CAMERA_H
 
 namespace representation {
-    class Camera {
-    private:
-        float windowWidth;
-        float windowHeight;
-        float sidebarWidth;  // NEW
+class Camera {
+private:
+    float windowWidth;
+    float windowHeight;
+    float sidebarWidth; // NEW
 
-    public:
-        Camera(float windowWidth, float windowHeight, float sidebarWidth);
+public:
+    Camera(float windowWidth, float windowHeight, float sidebarWidth);
 
-        float normalizedToPixelX(float normalizedX) const;
-        float normalizedToPixelY(float normalizedY) const;
+    float normalizedToPixelX(float normalizedX) const;
+    float normalizedToPixelY(float normalizedY) const;
 
-        float getSidebarWidth() const { return sidebarWidth; }
-        float getGameAreaWidth() const { return windowWidth - sidebarWidth; }
-    };
-}
+    float getSidebarWidth() const { return sidebarWidth; }
+    float getGameAreaWidth() const { return windowWidth - sidebarWidth; }
+};
+} // namespace representation
 
 #endif

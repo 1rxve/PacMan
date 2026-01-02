@@ -5,40 +5,38 @@
 #include <string>
 
 namespace representation {
-    class NameEntryState : public State {
-    private:
-        int finalScore;
-        std::string mapFile;
+class NameEntryState : public State {
+private:
+    int finalScore;
+    std::string mapFile;
 
-        std::string playerName;  // 3 letters
-        int currentLetterIndex;  // 0, 1, or 2
-        sf::Font font;
-        sf::Text titleText;
-        sf::Text scoreText;
-        sf::Text instructionText;
-        sf::Text nameText;
-        sf::Text cursorText;
-        sf::Text pressEnterText;
-        sf::Text whenDoneText;
-        bool fontLoaded;
+    std::string playerName; // 3 letters
+    int currentLetterIndex; // 0, 1, or 2
+    sf::Font font;
+    sf::Text titleText;
+    sf::Text scoreText;
+    sf::Text instructionText;
+    sf::Text nameText;
+    sf::Text cursorText;
+    sf::Text pressEnterText;
+    sf::Text whenDoneText;
+    bool fontLoaded;
 
-        float blinkTimer;
+    float blinkTimer;
 
-        bool cursorVisible;
-        bool isNewHighScore;
-        void updateNameDisplay();
-        void saveAndContinue();
+    bool cursorVisible;
+    bool isNewHighScore;
+    void updateNameDisplay();
+    void saveAndContinue();
 
-    public:
-        NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fac,
-                       const Camera* cam, StateManager* sm,
-                       int finalScore, const std::string& mapFile);
+public:
+    NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fac, const Camera* cam, StateManager* sm,
+                   int finalScore, const std::string& mapFile);
 
-        void update(float deltaTime) override;
-        void render() override;
-        void handleEvent(const sf::Event& event) override;
-    };
-}
+    void update(float deltaTime) override;
+    void render() override;
+    void handleEvent(const sf::Event& event) override;
+};
+} // namespace representation
 
-
-#endif //PACMANGAME_NAMEENTRYSTATE_H
+#endif // PACMANGAME_NAMEENTRYSTATE_H

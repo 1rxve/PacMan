@@ -5,56 +5,54 @@
 
 namespace logic {
 
-    class PacManModel : public EntityModel {
-    private:
-        float speed;
-        int lives;
+class PacManModel : public EntityModel {
+private:
+    float speed;
+    int lives;
 
-        Direction currentDirection;
-        Direction nextDirection;
+    Direction currentDirection;
+    Direction nextDirection;
 
-        // Grid info voor center-locking
-        float cellWidth;
-        float cellHeight;
+    // Grid info voor center-locking
+    float cellWidth;
+    float cellHeight;
 
+    bool isDying;
+    float deathTimer;
 
-        bool isDying;
-        float deathTimer;
+public:
+    PacManModel(float x, float y, float width, float height, float speed = 0.5f);
 
-    public:
-        PacManModel(float x, float y, float width, float height, float speed = 0.5f);
+    void update(float deltaTime) override;
 
-        void update(float deltaTime) override;
+    int getLives() const;
 
-        int getLives() const;
+    void loseLife();
 
-        void loseLife();
+    float getSpeed() const;
 
-        float getSpeed() const;
+    Direction getCurrentDirection() const;
 
-        Direction getCurrentDirection() const;
+    Direction getNextDirection() const; // NIEUW
 
-        Direction getNextDirection() const;  // NIEUW
+    void setSpeed(float speed);
 
-        void setSpeed(float speed);
+    void setNextDirection(Direction direction);
 
-        void setNextDirection(Direction direction);
+    void applyNextDirection(); // NIEUW
 
-        void applyNextDirection();  // NIEUW
+    void stopMovement();
 
-        void stopMovement();
+    void setCellDimensions(float cellW, float cellH);
 
-        void setCellDimensions(float cellW, float cellH);
+    bool getIsDying() const { return isDying; }
+    float getDeathTimer() const { return deathTimer; }
+    void startDeath();
+    void updateDeath(float deltaTime);
+    void respawn(float spawnX, float spawnY);
 
-        bool getIsDying() const { return isDying; }
-        float getDeathTimer() const { return deathTimer; }
-        void startDeath();
-        void updateDeath(float deltaTime);
-        void respawn(float spawnX, float spawnY);
+    bool isPacMan() const override { return true; }
+};
+} // namespace logic
 
-        bool isPacMan() const override { return true; }
-
-    };
-}
-
-#endif //PACMANGAME_PACMANMODEL_H
+#endif // PACMANGAME_PACMANMODEL_H
