@@ -85,6 +85,7 @@ namespace representation {
         }
     }
 
+    // In LevelState::update()
     void LevelState::update(float deltaTime) {
         // Countdown logic
         if (isCountingDown) {
@@ -92,14 +93,12 @@ namespace representation {
 
             if (countdownTimer <= 0.0f) {
                 isCountingDown = false;
-                world->clearRespawnFlag();  // ← ADD
+                world->clearRespawnFlag();
             }
-
-
             return;
         }
 
-        // ← ADD: Check if just respawned (before world update)
+        // Check if just respawned (before world update)
         if (world->justRespawned()) {
             isCountingDown = true;
             countdownTimer = 1.0f;
@@ -111,7 +110,6 @@ namespace representation {
         // Update UI text
         if (fontLoaded) {
             scoreText.setString("SCORE: " + std::to_string(world->getScore()));
-            // Lives are rendered as icons, no text update needed
         }
 
         // Victory conditions
@@ -120,11 +118,13 @@ namespace representation {
 
         // WIN: All coins collected
         if (coinsCollected >= totalCoins) {
-
             world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
             world->getScoreSubject()->notify();
 
-            // Trigger countdown
+            // ← CHANGE: Call nextLevel() IMMEDIATELY
+            world->nextLevel();
+
+            // ← THEN start countdown
             isCountingDown = true;
             countdownTimer = 2.0f;
 
@@ -133,23 +133,19 @@ namespace representation {
 
         // LOSE: No lives remaining
         logic::PacManModel* pacman = world->getPacMan();
-        // GAME OVER: No lives remaining
         if (pacman && pacman->getLives() <= 0) {
             int finalScore = world->getScore();
 
-            // Check if top 5 high score
             if (logic::Score::isHighScore(finalScore)) {
-                // Name entry → Game Over screen
                 stateManager->pushState(std::make_unique<NameEntryState>(
                         window, factory, camera, stateManager,
                         finalScore,
                         mapFile
                 ));
             } else {
-                // Directly to Game Over screen
                 stateManager->pushState(std::make_unique<VictoryState>(
                         window, factory, camera, stateManager,
-                        false,  // won = false (game over)
+                        false,
                         finalScore,
                         mapFile
                 ));
