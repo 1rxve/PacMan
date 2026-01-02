@@ -41,11 +41,17 @@ namespace logic {
         bool intersects(const EntityModel &other) const;
 
         virtual bool isPacMan() const { return false; }
+
         virtual bool isWall() const { return false; }
+
         virtual bool isCoin() const { return false; }
+
         virtual bool isGhost() const { return false; }
+
         virtual bool isDoor() const { return false; }
+
         virtual bool isNoEntry() const { return false; }
+
         virtual bool isFruit() const { return false; }
     };
 }

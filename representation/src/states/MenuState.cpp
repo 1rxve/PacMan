@@ -90,11 +90,6 @@ namespace representation {
             blinkTimer = 0.0f;
         }
 
-        // Restart menu music if it stopped playing
-        if (SoundManager::getInstance().isMenuMusicPlaying() == false) {
-            SoundManager::getInstance().playMenuMusic();
-        }
-
         if (!needsRefresh) {
             needsRefresh = true;
         } else {
