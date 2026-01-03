@@ -7,9 +7,6 @@ PacManModel::PacManModel(float x, float y, float width, float height, float spee
       nextDirection(Direction::NONE), cellWidth(0.0f), cellHeight(0.0f), isDying(false), deathTimer(0.0f) {}
 
 void PacManModel::update(float deltaTime) {
-    // nextDirection wordt NU in World::update() geapplied
-    // Hier alleen beweging berekenen op basis van currentDirection
-
     float moveDistance = speed * deltaTime;
     float newX = x;
     float newY = y;
@@ -31,13 +28,13 @@ void PacManModel::update(float deltaTime) {
         break;
     }
 
-    // CENTER-LOCKING
+    // CENTER-LOCKING: Auto-align to grid perpendicular to movement direction
+    // Prevents diagonal drift, ensures clean corridor navigation
     if (cellWidth > 0.0f && cellHeight > 0.0f) {
         if (currentDirection == Direction::LEFT || currentDirection == Direction::RIGHT) {
             float gridY = std::floor((newY + 1.0f) / cellHeight);
             float centerY = -1.0f + cellHeight / 2.0f + gridY * cellHeight;
             newY = centerY;
-
         } else if (currentDirection == Direction::UP || currentDirection == Direction::DOWN) {
             float gridX = std::floor((newX + 1.0f) / cellWidth);
             float centerX = -1.0f + cellWidth / 2.0f + gridX * cellWidth;
@@ -65,7 +62,7 @@ void PacManModel::setNextDirection(Direction direction) { nextDirection = direct
 void PacManModel::applyNextDirection() {
     if (nextDirection != Direction::NONE) {
         currentDirection = nextDirection;
-        nextDirection = Direction::NONE; // Clear buffer na gebruik
+        nextDirection = Direction::NONE;
     }
 }
 
@@ -92,6 +89,7 @@ void PacManModel::updateDeath(float deltaTime) {
 
     deathTimer += deltaTime;
 
+    // 2-second death animation before respawn
     const float DEATH_ANIMATION_DURATION = 2.0f;
 
     if (deathTimer >= DEATH_ANIMATION_DURATION) {

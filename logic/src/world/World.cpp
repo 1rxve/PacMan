@@ -23,7 +23,6 @@ World::~World() {
     doors.clear();
     noEntries.clear();
 
-    // ← REPLACE
     wallViews.clear();
     coinViews.clear();
     fruitViews.clear();
@@ -37,7 +36,6 @@ World::~World() {
 void World::update(float deltaTime) {
     score.update(deltaTime);
 
-    // Fear mode timer
     if (fearModeActive) {
         fearModeTimer -= deltaTime;
 
@@ -48,14 +46,13 @@ void World::update(float deltaTime) {
         if (fearModeTimer <= 0.0f) {
             fearModeActive = false;
 
-            // Exit fear mode for all ghosts
             for (auto& ghost : ghosts) {
                 ghost->exitFearMode();
             }
         }
     }
 
-    // Check if PacMan is dying - pause all gameplay
+    // Death animation pauses all gameplay
     if (pacman && pacman->getIsDying()) {
         pacman->updateDeath(deltaTime);
 
@@ -71,13 +68,13 @@ void World::update(float deltaTime) {
         if (entity->isPacMan()) {
             auto pm = std::dynamic_pointer_cast<PacManModel>(entity);
 
-            // Buffered input handling
+            // Apply buffered input when valid (responsive controls)
             Direction nextDir = pm->getNextDirection();
             if (nextDir != Direction::NONE && isDirectionValid(nextDir)) {
                 pm->applyNextDirection();
             }
 
-            // Predictive collision
+            // Predictive collision: test new position before applying
             float oldX = pm->getX();
             float oldY = pm->getY();
 
@@ -86,10 +83,10 @@ void World::update(float deltaTime) {
             float newX = pm->getX();
             float newY = pm->getY();
 
-            // Tunnel wraparound
+            // Tunnel wraparound at world edges
             const float WORLD_LEFT = -1.0f;
             const float WORLD_RIGHT = 1.0f;
-            const float TUNNEL_THRESHOLD = 0.02f;
+            const float TUNNEL_THRESHOLD = 0.02f; // Prevents instant re-wrap
 
             if (newX < WORLD_LEFT - TUNNEL_THRESHOLD) {
                 pm->setPosition(WORLD_RIGHT - TUNNEL_THRESHOLD, newY);
@@ -120,14 +117,12 @@ void World::update(float deltaTime) {
                 pm->stopMovement();
             }
 
-            // Ghost collision check
             for (auto& ghost : ghosts) {
                 if (ghost->getState() == GhostState::CHASING && pm->intersects(*ghost)) {
                     handlePacManDeath();
-                    return; // Stop update immediately
+                    return;
                 }
 
-                // Eat ghost during fear mode
                 if (ghost->getState() == GhostState::FEAR && pm->intersects(*ghost)) {
                     ghost->getEaten();
 
@@ -136,7 +131,6 @@ void World::update(float deltaTime) {
                 }
             }
 
-            // Coin collision
             for (auto& coin : coins) {
                 if (!coin->isCollected() && pm->intersects(*coin)) {
                     coin->collect();
@@ -147,7 +141,6 @@ void World::update(float deltaTime) {
                 }
             }
 
-            // Fruit collision
             for (auto& fruit : fruits) {
                 if (!fruit->isCollected() && pm->intersects(*fruit)) {
                     fruit->collect();
@@ -191,7 +184,7 @@ void World::update(float deltaTime) {
             ghost->update(deltaTime);
 
             if (ghost->getState() == GhostState::EATEN) {
-                continue; // Skip collision detection entirely
+                continue;
             }
 
             bool wallCollision = false;
@@ -205,13 +198,10 @@ void World::update(float deltaTime) {
             bool doorCollision = false;
             for (auto& door : doors) {
                 if (ghost->intersects(*door)) {
-                    // Allow EATEN (eyes) ghosts through door
                     if (ghost->getState() == GhostState::EATEN) {
-                        // Eyes can pass through door freely
-                        continue; // Skip collision
+                        continue;
                     }
 
-                    // Allow EXITING_SPAWN ghosts through door
                     if (ghost->getState() == GhostState::EXITING_SPAWN) {
                         ghost->markAsExited();
                     } else if (ghost->hasExited()) {
@@ -234,18 +224,13 @@ void World::update(float deltaTime) {
             if (wallCollision || doorCollision || noEntryCollision) {
                 ghost->setPosition(oldX, oldY);
 
+                // Hardcoded spawn exit collision responses
                 if (ghost->getState() == GhostState::EXITING_SPAWN) {
-                    // ORANGE: LEFT hit barrier → UP
                     if (ghost->getType() == GhostType::ORANGE && ghost->getCurrentDirection() == Direction::LEFT) {
                         ghost->setDirection(Direction::UP);
-                    }
-                    // BLUE: RIGHT hit barrier → UP
-                    else if (ghost->getType() == GhostType::BLUE && ghost->getCurrentDirection() == Direction::RIGHT) {
+                    } else if (ghost->getType() == GhostType::BLUE && ghost->getCurrentDirection() == Direction::RIGHT) {
                         ghost->setDirection(Direction::UP);
-                    }
-                    // Any ghost: UP hit wall → LEFT or RIGHT
-                    else if (ghost->getCurrentDirection() == Direction::UP) {
-                        // BLUE goes RIGHT after exiting, others go LEFT
+                    } else if (ghost->getCurrentDirection() == Direction::UP) {
                         if (ghost->getType() == GhostType::BLUE) {
                             ghost->setDirection(Direction::RIGHT);
                         } else {
@@ -255,7 +240,6 @@ void World::update(float deltaTime) {
                         ghost->stopMovement();
                     }
                 } else {
-                    // Normal collision handling
                     ghost->stopMovement();
                     Direction viableDir = getViableDirectionForGhost(ghost);
                     ghost->setDirection(viableDir);
@@ -294,6 +278,7 @@ void World::loadMap(const std::string& filename) {
     int height = static_cast<int>(mapLines.size());
     int width = static_cast<int>(mapLines[0].length());
 
+    // Convert world space [-1, 1] to grid cells
     float cellWidth = 2.0f / width;
     float cellHeight = 2.0f / height;
 
@@ -301,15 +286,18 @@ void World::loadMap(const std::string& filename) {
         for (int col = 0; col < width; col++) {
             char symbol = mapLines[row][col];
 
+            // Center of cell in normalized coordinates
             float normalizedX = -1.0f + cellWidth / 2.0f + col * cellWidth;
             float normalizedY = -1.0f + cellHeight / 2.0f + row * cellHeight;
 
+            // ASCII map symbols:
+            // # = wall, C = PacMan, R/P/B/O = ghosts, . = coin, F = fruit
+            // D = door, N = NoEntry barrier, * = empty space
             switch (symbol) {
             case '#': {
                 if (factory) {
                     auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
 
-                    // ← CHANGE: cast to shared_ptr
                     if (auto wallPtr = std::dynamic_pointer_cast<WallModel>(result.model)) {
                         walls.push_back(wallPtr);
                     }
@@ -359,11 +347,12 @@ void World::loadMap(const std::string& filename) {
 
                     if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
-                        ghostPtr->markAsExited();
+                        ghostPtr->markAsExited(); // RED spawns outside
                         ghosts.push_back(ghostPtr);
 
                         ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
+                        // Hardcoded: center of spawn room (column 9, row 9)
                         float eatenSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
                         float eatenSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                         ghostPtr->setEatenRespawnPosition(eatenSpawnX, eatenSpawnY);
@@ -400,13 +389,14 @@ void World::loadMap(const std::string& filename) {
             case 'B': {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
-                                                       GhostType::BLUE, 5.0f);
+                                                       GhostType::BLUE, 5.0f); // 5s spawn delay
 
                     if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
                         ghosts.push_back(ghostPtr);
                         ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
+                        // NoEntry barrier blocks ORANGE from BLUE's spawn position
                         auto barrierResult = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
                         if (auto barrier = std::dynamic_pointer_cast<NoEntryModel>(barrierResult.model)) {
                             barrier->clearBlockedGhostTypes();
@@ -425,7 +415,7 @@ void World::loadMap(const std::string& filename) {
             case 'O': {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
-                                                       GhostType::ORANGE, 10.0f);
+                                                       GhostType::ORANGE, 10.0f); // 10s spawn delay
 
                     if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
@@ -437,6 +427,7 @@ void World::loadMap(const std::string& filename) {
                         float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                         ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
 
+                        // NoEntry barrier blocks BLUE from ORANGE's spawn position
                         auto barrierResult = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
                         if (auto barrier = std::dynamic_pointer_cast<NoEntryModel>(barrierResult.model)) {
                             barrier->clearBlockedGhostTypes();
@@ -492,7 +483,7 @@ void World::loadMap(const std::string& filename) {
                 }
                 break;
             }
-            case '*': // ← VOEG TOE: sterretjes = leeg
+            case '*':
                 break;
 
             default:
@@ -502,7 +493,7 @@ void World::loadMap(const std::string& filename) {
     }
 }
 
-std::shared_ptr<PacManModel> World::getPacMan() {  // ← CHANGE return type
+std::shared_ptr<PacManModel> World::getPacMan() {
     for (auto& entity : entities) {
         if (entity->isPacMan()) {
             return std::dynamic_pointer_cast<PacManModel>(entity);
@@ -540,6 +531,7 @@ bool World::isDirectionValid(Direction direction) const {
     if (direction == Direction::NONE)
         return true;
 
+    // Predictive collision: test position 0.1 units ahead
     const float TEST_DISTANCE = 0.1f;
 
     float testX = pacman->getX();
@@ -588,7 +580,7 @@ bool World::isDirectionValid(Direction direction) const {
         float doorBottom = door->getY() + door->getHeight() / 2.0f;
 
         if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
-            return false; // Door blocks PacMan
+            return false;
         }
     }
 
@@ -603,7 +595,6 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
 
     std::vector<Direction> viableDirections;
 
-    // Test all 4 directions
     for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
         float testX = ghost->getX();
         float testY = ghost->getY();
@@ -635,7 +626,6 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
 
         bool hitObstacle = false;
 
-        // Check walls
         for (auto& wall : walls) {
             float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
             float wallRight = wall->getX() + wall->getWidth() / 2.0f;
@@ -648,7 +638,6 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
             }
         }
 
-        // Check doors
         if (!hitObstacle) {
             for (auto& door : doors) {
                 float doorLeft = door->getX() - door->getWidth() / 2.0f;
@@ -657,8 +646,7 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
                 float doorBottom = door->getY() + door->getHeight() / 2.0f;
 
                 if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
-                    // Would intersect door
-                    if (ghost->hasExited()) { // ← CHANGE: use flag instead of canPass()
+                    if (ghost->hasExited()) {
                         hitObstacle = true;
                         break;
                     }
@@ -674,7 +662,7 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
                 float neBottom = noEntry->getY() + noEntry->getHeight() / 2.0f;
 
                 if (!(right < neLeft || left > neRight || bottom < neTop || top > neBottom)) {
-                    hitObstacle = true; // NoEntry always blocks ghosts
+                    hitObstacle = true;
                     break;
                 }
             }
@@ -685,12 +673,10 @@ Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) c
         }
     }
 
-    // If no viable directions, return NONE
     if (viableDirections.empty()) {
         return Direction::NONE;
     }
 
-    // Pick random viable direction
     int randomIndex = Random::getInstance().getInt(0, static_cast<int>(viableDirections.size()) - 1);
     return viableDirections[randomIndex];
 }
@@ -702,7 +688,6 @@ std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostM
     const float TEST_DISTANCE = 0.1f;
     std::vector<Direction> viableDirections;
 
-    // Test all 4 directions
     for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
         float testX = ghost->getX();
         float testY = ghost->getY();
@@ -734,7 +719,6 @@ std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostM
 
         bool hitObstacle = false;
 
-        // Check walls
         for (auto& wall : walls) {
             float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
             float wallRight = wall->getX() + wall->getWidth() / 2.0f;
@@ -747,7 +731,6 @@ std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostM
             }
         }
 
-        // Check doors
         if (!hitObstacle) {
             for (auto& door : doors) {
                 float doorLeft = door->getX() - door->getWidth() / 2.0f;
@@ -756,8 +739,7 @@ std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostM
                 float doorBottom = door->getY() + door->getHeight() / 2.0f;
 
                 if (!(right < doorLeft || left > doorRight || bottom < doorTop || top > doorBottom)) {
-                    // Would intersect door
-                    if (ghost->hasExited()) { // ← CHANGE: use flag instead of canPass()
+                    if (ghost->hasExited()) {
                         hitObstacle = true;
                         break;
                     }
@@ -773,7 +755,7 @@ std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostM
                 float neBottom = noEntry->getY() + noEntry->getHeight() / 2.0f;
 
                 if (!(right < neLeft || left > neRight || bottom < neTop || top > neBottom)) {
-                    hitObstacle = true; // NoEntry always blocks ghosts
+                    hitObstacle = true;
                     break;
                 }
             }
@@ -796,7 +778,6 @@ void World::clearWorld() {
     fruits.clear();
     pacman = nullptr;
 
-    // ← REPLACE
     wallViews.clear();
     coinViews.clear();
     fruitViews.clear();
@@ -840,10 +821,8 @@ void World::resetAfterDeath() {
         ghost->stopMovement();
 
         if (ghost->getType() == GhostType::RED) {
-            // RED spawns outside - direct to CHASING
-            ghost->resetToSpawn(0.0f); // Will immediately go to CHASING
+            ghost->resetToSpawn(0.0f);
         } else {
-            // ORANGE/PINK/BLUE spawn inside - wait + exit
             float delay = 0.0f;
             if (ghost->getType() == GhostType::ORANGE)
                 delay = 10.0f;
@@ -866,7 +845,9 @@ void World::notifyViewsOnly() {
 }
 
 void World::renderInOrder() {
-    for (auto& view : doorViews) { // ← MOVE TO FIRST
+    // Render order: doors → walls → coins → fruits → ghosts → pacman
+    // Ensures proper layering (PacMan always on top)
+    for (auto& view : doorViews) {
         view->onNotify();
     }
     for (auto& view : wallViews) {
@@ -901,29 +882,24 @@ void World::activateFearMode() {
 void World::nextLevel() {
     currentLevel++;
 
-    // Respawn coins
     for (auto& coin : coins) {
         coin->uncollect();
         coin->notify();
     }
 
-    // Respawn fruits
     for (auto& fruit : fruits) {
         fruit->uncollect();
         fruit->notify();
     }
 
-    // Reset collected count
     coinsCollected = 0;
 
-    // Reset PacMan
     if (pacman) {
         pacman->setPosition(pacmanSpawnX, pacmanSpawnY);
         pacman->stopMovement();
         pacman->notify();
     }
 
-    // Reset ghosts
     for (size_t i = 0; i < ghosts.size() && i < ghostSpawnPositions.size(); i++) {
         auto& ghost = ghosts[i];
         float spawnX = ghostSpawnPositions[i].first;
@@ -931,7 +907,6 @@ void World::nextLevel() {
 
         ghost->setPosition(spawnX, spawnY);
 
-        // Reset to SPAWNING with original delays
         if (ghost->getType() == GhostType::RED) {
             ghost->resetToSpawn(0.0f);
         } else if (ghost->getType() == GhostType::PINK) {
@@ -942,12 +917,12 @@ void World::nextLevel() {
             ghost->resetToSpawn(10.0f);
         }
 
-        // Increase ghost speed
+        // Level progression: +0.01 speed per level
         float newSpeed = baseGhostSpeed + (currentLevel - 1) * 0.01f;
         ghost->setSpeed(newSpeed);
     }
 
-    // Decrease fear duration
+    // Level progression: -0.5s fear duration per level (min 3s)
     baseFearDuration = std::max(3.0f, 7.0f - (currentLevel - 1) * 0.5f);
 }
 } // namespace logic

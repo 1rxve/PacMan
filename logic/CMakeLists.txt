@@ -18,11 +18,8 @@ set(LOGIC_SOURCES
         src/utils/Score.cpp
         src/entities/GhostModel.cpp
         src/entities/DoorModel.cpp
-        include/logic/entities/DoorModel.h
         src/entities/NoEntryModel.cpp
-        include/logic/entities/NoEntryModel.h
         src/entities/FruitModel.cpp
-        include/logic/entities/FruitModel.h
 )
 
 # Header files (IDE support)
@@ -39,11 +36,8 @@ set(LOGIC_HEADERS
         include/logic/entities/CoinModel.h
         include/logic/utils/Score.h
         include/logic/entities/GhostModel.h
-        src/entities/DoorModel.cpp
         include/logic/entities/DoorModel.h
-        src/entities/NoEntryModel.cpp
         include/logic/entities/NoEntryModel.h
-        src/entities/FruitModel.cpp
         include/logic/entities/FruitModel.h
 )
 

@@ -1,7 +1,6 @@
 #include "logic/utils/Score.h"
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 
 namespace logic {
 Score::Score() : score(0), timeSinceLastCoin(0.0f), accumulatedDecay(0.0f), lastEvent(ScoreEvent::COIN_COLLECTED) {}
@@ -33,6 +32,9 @@ void Score::onNotify() {
 }
 
 void Score::handleCoinCollected() {
+    // Time bonus: faster collection = higher multiplier
+    // Formula: base × (1 + 2 / timeSinceLastCoin)
+    // Max protection: clamp minimum time to 0.1s to prevent division issues
     float timeBonus = TIME_BONUS_MULTIPLIER / std::max(timeSinceLastCoin, 0.1f);
     int coinPoints = static_cast<int>(BASE_COIN_VALUE * (1.0f + timeBonus));
 
@@ -97,7 +99,7 @@ std::vector<Score::HighScoreEntry> Score::loadHighScores() {
 
     std::ifstream file(getHighScoresFilePath());
     if (!file.is_open()) {
-        return scores; // File doesn't exist yet
+        return scores;
     }
 
     std::string name;
@@ -140,13 +142,13 @@ void Score::saveHighScore(const std::string& name, int score) {
 bool Score::isHighScore(int score) {
     std::vector<HighScoreEntry> scores = loadHighScores();
 
-    // Als er minder dan 5 scores zijn, is elke score een high score
+    // Top 5 not full yet - any score qualifies
     if (scores.size() < 5) {
         return true;
     }
 
-    // Check of score hoger is dan de laagste in top 5
-    return score > scores[4].score; // scores[4] is de 5de (laagste)
+    // Check if better than 5th place (lowest in top 5)
+    return score > scores[4].score;
 }
 
 bool Score::isTopScore(int score) {

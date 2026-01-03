@@ -4,6 +4,13 @@
 #include "EntityModel.h"
 
 namespace logic {
+/**
+ * Represents a collectible fruit power-up.
+ *
+ * When collected by PacMan, activates fear mode for all ghosts,
+ * making them vulnerable and reversing their direction.
+ * Respawns for next level like coins.
+ */
 class FruitModel : public EntityModel {
 private:
     bool collected;

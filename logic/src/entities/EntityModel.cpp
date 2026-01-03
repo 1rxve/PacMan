@@ -18,8 +18,8 @@ void EntityModel::setPosition(float newX, float newY) {
     y = newY;
 }
 
-// Collision detecting
 bool EntityModel::intersects(const EntityModel& other) const {
+    // AABB collision: Calculate bounding box edges (center - half size)
     float left1 = x - width / 2.0f;
     float right1 = x + width / 2.0f;
     float top1 = y - height / 2.0f;
@@ -30,6 +30,7 @@ bool EntityModel::intersects(const EntityModel& other) const {
     float top2 = other.y - other.height / 2.0f;
     float bottom2 = other.y + other.height / 2.0f;
 
+    // Boxes intersect if NOT separated on any axis
     return !(right1 < left2 || left1 > right2 || bottom1 < top2 || top1 > bottom2);
 }
 } // namespace logic

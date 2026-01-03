@@ -2,9 +2,15 @@
 #define PACMANGAME_DOORMODEL_H
 
 #include "EntityModel.h"
-#include <unordered_set>
 
 namespace logic {
+/**
+ * Represents the ghost house door in the maze center.
+ *
+ * Blocks PacMan from entering the ghost spawn area.
+ * Ghosts can pass through when exiting spawn or returning after being eaten.
+ * Collision handling is managed by World based on ghost state.
+ */
 class DoorModel : public EntityModel {
 public:
     DoorModel(float x, float y, float width, float height);

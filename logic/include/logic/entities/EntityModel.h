@@ -5,8 +5,22 @@
 
 namespace logic {
 
+/**
+ * Movement directions for entities in the game world.
+ */
 enum class Direction { NONE, LEFT, RIGHT, UP, DOWN };
 
+/**
+ * Base class for all game entities (PacMan, ghosts, walls, coins, etc.).
+ *
+ * Provides common functionality:
+ * - Position and size in normalized coordinates [-1, 1]
+ * - AABB collision detection
+ * - Observer pattern integration (inherits from Subject)
+ * - Type identification via virtual is*() methods
+ *
+ * All entities notify their observers on state changes for rendering.
+ */
 class EntityModel : public Subject {
 protected:
     float x;
@@ -31,7 +45,12 @@ public:
 
     void setPosition(float newX, float newY);
 
-    // Collision detection
+    /**
+     * Axis-Aligned Bounding Box (AABB) collision detection.
+     *
+     * @param other Entity to check collision with
+     * @return true if bounding boxes intersect
+     */
     bool intersects(const EntityModel& other) const;
 
     virtual bool isPacMan() const { return false; }

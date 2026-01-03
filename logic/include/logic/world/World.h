@@ -18,6 +18,20 @@
 #include <vector>
 
 namespace logic {
+/**
+ * Central game state manager and entity controller.
+ *
+ * Responsibilities:
+ * - Entity lifecycle (creation, update, collision detection, destruction)
+ * - Map loading from ASCII files (# = wall, C = PacMan, etc.)
+ * - Game mechanics (fear mode, lives, level progression, scoring)
+ * - Pathfinding helpers for ghost AI
+ * - Observer management (view rendering order, score events)
+ *
+ * Coordinate system: Normalized [-1, 1] for resolution independence.
+ * Uses predictive collision detection (validates movement before applying).
+ */
+
 class PacManModel;
 class WallModel;
 class CoinModel;
@@ -73,14 +87,48 @@ public:
 
     void addEntity(std::unique_ptr<EntityModel> entity);
 
+    /**
+     * Loads maze from ASCII map file.
+     *
+     * Map symbols:
+     * # = Wall, . = Coin, C = PacMan spawn, F = Fruit
+     * R/P/B/O = Ghost spawns (Red/Pink/Blue/Orange)
+     * D = Door, N = NoEntry barrier, * = Empty space
+     *
+     * Converts ASCII grid to normalized coordinates [-1, 1].
+     * Creates entities via AbstractFactory (attaches views automatically).
+     *
+     * @param filename Path to map file (e.g., "resources/maps/map")
+     * @throws std::runtime_error if file not found
+     */
     void loadMap(const std::string& filename);
 
     std::shared_ptr<PacManModel> getPacMan();
 
     static std::pair<int, int> getMapDimensions(const std::string& filename);
 
+    /**
+     * Predictive collision detection for PacMan's next direction.
+     *
+     * Tests if moving in given direction would collide with walls/doors.
+     * Used for buffered input validation (apply nextDirection when valid).
+     *
+     * @param direction Direction to test (uses PacMan's current position)
+     * @return true if movement in direction is collision-free
+     */
     bool isDirectionValid(Direction direction) const;
+
     Direction getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) const;
+
+    /**
+     * Returns all collision-free directions for ghost at current position.
+     *
+     * Used by ghost AI to determine valid movement options at intersections.
+     * Checks walls, doors (ghost state dependent), and NoEntry barriers.
+     *
+     * @param ghost Ghost to check viable directions for
+     * @return Vector of directions that don't collide with obstacles
+     */
     std::vector<Direction> getViableDirectionsForGhost(std::shared_ptr<GhostModel> ghost) const;
 
     void clearWorld();
@@ -92,16 +140,21 @@ public:
     void activateFearMode();
 
     bool justRespawned() const { return hasJustRespawned; }
+
     void clearRespawnFlag() { hasJustRespawned = false; }
 
     int getCoinsCollected() const { return coinsCollected; }
+
     int getTotalCoins() const { return static_cast<int>(coins.size()); }
 
     int getScore() const { return score.getScore(); }
+
     Score* getScoreObject() { return &score; }
+
     Subject* getScoreSubject() { return &scoreSubject; }
 
     int getCurrentLevel() const { return currentLevel; }
+
     void nextLevel();
 };
 } // namespace logic

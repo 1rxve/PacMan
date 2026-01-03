@@ -4,29 +4,41 @@
 #include <random>
 
 namespace logic {
+/**
+ * Singleton random number generator using Mersenne Twister.
+ *
+ * Provides centralized RNG for game logic (ghost AI, spawning, etc.).
+ * Seeded once at construction for deterministic-within-session randomness.
+ *
+ * Thread-safety: Not thread-safe (single-threaded game loop).
+ */
 class Random {
 private:
-    // Static instance pointer
     static Random* instance;
 
-    // Private constructor
     Random();
 
-    // Random number generator (Mersenne Twister)
     std::mt19937 generator;
 
 public:
-    // Static getter
     static Random& getInstance();
 
-    // Delete copy/move
     Random(const Random&) = delete;
+
     Random& operator=(const Random&) = delete;
+
     Random(Random&&) = delete;
+
     Random& operator=(Random&&) = delete;
 
-    // Public methods
+    /**
+     * Generates random integer in range [min, max] (inclusive).
+     */
     int getInt(int min, int max);
+
+    /**
+     * Generates random float in range [min, max) (max exclusive).
+     */
     float getFloat(float min, float max);
 };
 } // namespace logic

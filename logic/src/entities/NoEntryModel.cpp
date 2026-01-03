@@ -2,7 +2,6 @@
 
 namespace logic {
 NoEntryModel::NoEntryModel(float x, float y, float width, float height) : EntityModel(x, y, width, height) {
-    // Default: block all ghost types
     blockedGhostTypes.insert(GhostType::RED);
     blockedGhostTypes.insert(GhostType::PINK);
     blockedGhostTypes.insert(GhostType::BLUE);
