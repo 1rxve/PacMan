@@ -11,25 +11,20 @@ MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac, const C
     SoundManager::getInstance().playMenuMusic();
 
     // Load custom font with fallback
-    if (font.loadFromFile("resources/fonts/joystix.otf")) {
-        fontLoaded = true;
-    } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+    if (font.loadFromFile("resources/fonts/joystix.otf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         fontLoaded = true;
     }
 
     if (fontLoaded) {
-        // PAC-MAN title - LARGE, no outline
         titleText.setFont(font);
         titleText.setString("PAC-MAN");
         titleText.setCharacterSize(140);
         titleText.setFillColor(sf::Color::Yellow);
-        // NO outline
 
         sf::FloatRect titleBounds = titleText.getLocalBounds();
         titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
         titleText.setPosition(window->getSize().x / 2.0f, 120);
 
-        // HIGH SCORES title - White
         highScoresTitle.setFont(font);
         highScoresTitle.setString("HIGH SCORES");
         highScoresTitle.setCharacterSize(32);
@@ -37,9 +32,8 @@ MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac, const C
 
         sf::FloatRect hsBounds = highScoresTitle.getLocalBounds();
         highScoresTitle.setOrigin(hsBounds.width / 2.0f, hsBounds.height / 2.0f);
-        highScoresTitle.setPosition(window->getSize().x / 2.0f, 350); // ← FIX
+        highScoresTitle.setPosition(window->getSize().x / 2.0f, 350);
 
-        // Top 5 high scores
         auto highScores = logic::Score::loadHighScores();
 
         for (int i = 0; i < 5; i++) {
@@ -59,10 +53,9 @@ MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac, const C
 
             sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
             highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
-            highScoresText[i].setPosition(window->getSize().x / 2.0f, 450 + i * 50); // ← FIX
+            highScoresText[i].setPosition(window->getSize().x / 2.0f, 450 + i * 50);
         }
 
-        // Instruction text
         instructionText.setFont(font);
         instructionText.setString("Press SPACE to start");
         instructionText.setCharacterSize(28);
@@ -79,6 +72,7 @@ MenuState::MenuState(sf::RenderWindow* win, logic::AbstractFactory* fac, const C
 MenuState::~MenuState() {}
 
 void MenuState::update(float deltaTime) {
+    // Blink instruction text every 0.5 seconds for visual feedback
     blinkTimer += deltaTime;
 
     if (blinkTimer >= 0.5f) {
@@ -86,6 +80,8 @@ void MenuState::update(float deltaTime) {
         blinkTimer = 0.0f;
     }
 
+    // Refresh high scores on second update() call (after returning from gameplay)
+    // First call sets flag, second call refreshes, prevents double-refresh
     if (!needsRefresh) {
         needsRefresh = true;
     } else {
@@ -99,17 +95,15 @@ void MenuState::render() {
         window->draw(titleText);
         window->draw(highScoresTitle);
 
-        // Draw all 5 high scores
         for (int i = 0; i < 5; i++) {
             window->draw(highScoresText[i]);
         }
 
-        // Draw blinking instruction text
         if (instructionVisible) {
             window->draw(instructionText);
         }
     } else {
-        // Fallback: colored rectangles
+        // Fallback for missing fonts (development/debugging aid)
         sf::RectangleShape titleBox(sf::Vector2f(300, 100));
         titleBox.setFillColor(sf::Color::Yellow);
         titleBox.setPosition(window->getSize().x / 2.0f - 150, 50);
@@ -145,7 +139,7 @@ void MenuState::refreshHighScores() {
             highScoresText[i].setString(text);
         }
 
-        // Re-center after text change
+        // Re-center text after content change (text width varies with score)
         sf::FloatRect scoreBounds = highScoresText[i].getLocalBounds();
         highScoresText[i].setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
         highScoresText[i].setPosition(window->getSize().x / 2.0f, 450 + i * 50);

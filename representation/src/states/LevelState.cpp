@@ -8,15 +8,13 @@
 #include "representation/states/VictoryState.h"
 
 namespace representation {
-LevelState::~LevelState() {
-    // World unique_ptr auto-destructs and handles cleanup
-}
+// World owned by unique_ptr, auto-destructs and cascades cleanup to entities
+LevelState::~LevelState() {}
 
 LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const Camera* cam, StateManager* sm,
                        const std::string& mapFile)
     : State(win, fac, cam, sm), mapFile(mapFile), cheatBuffer("") {
 
-    // Create World
     world = std::make_unique<logic::World>();
     world->setFactory(factory);
 
@@ -24,13 +22,12 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
         world->loadMap(mapFile);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
-        throw;  // Re-throw to Game
+        throw;
     }
 
-
-    // Load font for UI
+    // Load font with fallback (custom font → system font)
     fontLoaded = false;
-    if (font.loadFromFile("resources/fonts/joystix.otf")) {
+    if (font.loadFromFile("resources/fonts/joystix.otf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         fontLoaded = true;
 
         scoreText.setFont(font);
@@ -38,52 +35,14 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
         scoreText.setFillColor(sf::Color::Yellow);
         scoreText.setPosition(10.0f, 10.0f);
 
-        // Lives icons - load Pac-Man sprite
         livesTexture = std::make_shared<sf::Texture>();
         if (livesTexture->loadFromFile("resources/sprites/pacman_sprites.png")) {
             livesSprite.setTexture(*livesTexture);
-            livesSprite.setTextureRect(sf::IntRect(840, 0, 50, 50)); // Full circle
+            livesSprite.setTextureRect(sf::IntRect(840, 0, 50, 50));
             livesSprite.setOrigin(25.0f, 25.0f);
-            livesSprite.setScale(0.6f, 0.6f); // Small icons
+            livesSprite.setScale(0.6f, 0.6f);
         }
-    } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
-        fontLoaded = true;
 
-        scoreText.setFont(font);
-        scoreText.setCharacterSize(24);
-        scoreText.setFillColor(sf::Color::Yellow);
-        scoreText.setPosition(10.0f, 10.0f);
-
-        // Lives icons - load Pac-Man sprite
-        livesTexture = std::make_shared<sf::Texture>();
-        if (livesTexture->loadFromFile("resources/sprites/pacman_sprites.png")) {
-            livesSprite.setTexture(*livesTexture);
-            livesSprite.setTextureRect(sf::IntRect(840, 0, 50, 50)); // Full circle
-            livesSprite.setOrigin(25.0f, 25.0f);
-            livesSprite.setScale(0.6f, 0.6f); // Small icons
-        }
-    }
-
-    // Setup PacMan cell dimensions
-    auto pacman = world->getPacMan();
-    if (pacman) {
-        auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
-        float cellWidth = 2.0f / mapWidth;
-        float cellHeight = 2.0f / mapHeight;
-        pacman->setCellDimensions(cellWidth, cellHeight);
-    }
-
-    SoundManager::getInstance().stopMenuMusic();
-
-    soundObserver = std::make_unique<SoundObserver>(world->getScoreObject());
-
-    world->getScoreSubject()->attach(world->getScoreObject());
-    world->getScoreSubject()->attach(soundObserver.get());
-
-    isCountingDown = true;
-    countdownTimer = 1.0f;
-
-    if (fontLoaded) {
         readyText.setFont(font);
         readyText.setString("READY!");
         readyText.setCharacterSize(35);
@@ -93,11 +52,28 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
         readyText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
         readyText.setPosition(window->getSize().x / 2.0f, window->getSize().y / 2.0f - 7);
     }
+
+    // Convert normalized coordinates [-1,1] to grid cell dimensions
+    auto pacman = world->getPacMan();
+    if (pacman) {
+        auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
+        float cellWidth = 2.0f / mapWidth;   // 2.0f = full normalized width
+        float cellHeight = 2.0f / mapHeight; // 2.0f = full normalized height
+        pacman->setCellDimensions(cellWidth, cellHeight);
+    }
+
+    SoundManager::getInstance().stopMenuMusic();
+
+    soundObserver = std::make_unique<SoundObserver>(world->getScoreObject());
+    world->getScoreSubject()->attach(world->getScoreObject());
+    world->getScoreSubject()->attach(soundObserver.get());
+
+    // Initial countdown before gameplay starts
+    isCountingDown = true;
+    countdownTimer = 1.0f; // 1 second "READY!" display
 }
 
-
 void LevelState::update(float deltaTime) {
-    // Countdown logic
     if (isCountingDown) {
         countdownTimer -= deltaTime;
 
@@ -110,44 +86,39 @@ void LevelState::update(float deltaTime) {
 
     SoundManager::getInstance().update(deltaTime);
 
-    // Check if just respawned (before world update)
+    // Respawn triggers new countdown (after death)
     if (world->justRespawned()) {
         isCountingDown = true;
-        countdownTimer = 1.0f;
+        countdownTimer = 1.0f; // 1 second pause after respawn
         SoundManager::getInstance().stopCoinSound();
         return;
     }
 
     world->update(deltaTime);
 
-    // Update UI text
     if (fontLoaded) {
         scoreText.setString("SCORE: " + std::to_string(world->getScore()));
     }
 
-    // Victory conditions
     int coinsCollected = world->getCoinsCollected();
     int totalCoins = world->getTotalCoins();
 
-    // WIN: All coins collected
+    // Victory: All coins collected → next level
     if (coinsCollected >= totalCoins) {
         world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
         world->getScoreSubject()->notify();
 
         SoundManager::getInstance().stopCoinSound();
 
-        // ← CHANGE: Call nextLevel() IMMEDIATELY
         world->nextLevel();
 
-        // ← THEN start countdown
         isCountingDown = true;
-        countdownTimer = 2.0f;
-
+        countdownTimer = 2.0f; // 2 second "READY!" between levels
         return;
     }
 
-    // LOSE: No lives remaining
-    auto pacman = world->getPacMan();  // ← Now returns shared_ptr
+    // Game Over: Lives depleted → high score entry or victory screen
+    auto pacman = world->getPacMan();
     if (pacman && pacman->getLives() <= 0) {
         int finalScore = world->getScore();
 
@@ -163,29 +134,24 @@ void LevelState::update(float deltaTime) {
 }
 
 void LevelState::render() {
-
     world->renderInOrder();
 
-    // Draw "READY!" during countdown
     if (isCountingDown && fontLoaded) {
         window->draw(readyText);
     }
 
-    // Draw UI overlay
     if (fontLoaded) {
         window->draw(scoreText);
 
-        // Draw lives as Pac-Man icons
-        auto pacman = world->getPacMan();  // ← CHANGE
+        auto pacman = world->getPacMan();
         if (pacman && livesTexture) {
             int lives = pacman->getLives();
             for (int i = 0; i < lives; i++) {
-                livesSprite.setPosition(20.0f + i * 35.0f, 55.0f); // Horizontal spacing
+                livesSprite.setPosition(20.0f + i * 35.0f, 55.0f);
                 window->draw(livesSprite);
             }
         }
 
-        // Show current level
         sf::Text levelText;
         levelText.setFont(font);
         levelText.setString("LEVEL: " + std::to_string(world->getCurrentLevel()));
@@ -197,37 +163,34 @@ void LevelState::render() {
 }
 
 void LevelState::handleEvent(const sf::Event& event) {
-    auto pacman = world->getPacMan();  // ← CHANGE
+    auto pacman = world->getPacMan();
     if (!pacman)
         return;
 
-    // ========== CHEAT CODE HANDLING ==========
+    // Cheat code system: buffer last 10 chars typed, search for keywords
     if (event.type == sf::Event::TextEntered) {
         char typed = static_cast<char>(event.text.unicode);
 
-        // Only accept A-Z letters (case insensitive)
         if ((typed >= 'a' && typed <= 'z') || (typed >= 'A' && typed <= 'Z')) {
-            // Convert to uppercase
             if (typed >= 'a' && typed <= 'z') {
                 typed = typed - 'a' + 'A';
             }
 
             cheatBuffer += typed;
 
-            // Keep buffer max 10 chars (prevents memory issues)
+            // Sliding window: keep only last 10 chars to prevent memory growth
             if (cheatBuffer.length() > 10) {
-                cheatBuffer = cheatBuffer.substr(1); // Remove first char
+                cheatBuffer = cheatBuffer.substr(1);
             }
 
-            // Check for cheat codes
+            // "GHOST" cheat: activate fear mode
             if (cheatBuffer.find("GHOST") != std::string::npos) {
                 world->activateFearMode();
-                cheatBuffer.clear(); // Clear buffer after activation
+                cheatBuffer.clear();
             }
 
+            // "LEVEL" cheat: skip to next level
             if (cheatBuffer.find("LEVEL") != std::string::npos) {
-                // Award level clear bonus BEFORE nextLevel (which resets coins)
-                world->getScoreSubject()->notify(); // Trigger score update
                 world->getScoreObject()->setEvent(logic::ScoreEvent::LEVEL_CLEARED);
                 world->getScoreSubject()->notify();
 
@@ -238,9 +201,9 @@ void LevelState::handleEvent(const sf::Event& event) {
             }
         }
     }
-    // ========================================
 
     if (event.type == sf::Event::KeyPressed) {
+        // Pause game
         if (event.key.code == sf::Keyboard::P) {
             cheatBuffer.clear();
             SoundManager::getInstance().stopCoinSound();
@@ -249,29 +212,22 @@ void LevelState::handleEvent(const sf::Event& event) {
             return;
         }
 
+        // Quit game
         if (event.key.code == sf::Keyboard::Escape) {
             cheatBuffer.clear();
             window->close();
             return;
         }
 
-        // Arrow key handling
-        if (event.key.code == sf::Keyboard::Up) {
-            if (pacman->getCurrentDirection() != logic::Direction::UP) {
-                pacman->setNextDirection(logic::Direction::UP);
-            }
-        } else if (event.key.code == sf::Keyboard::Down) {
-            if (pacman->getCurrentDirection() != logic::Direction::DOWN) {
-                pacman->setNextDirection(logic::Direction::DOWN);
-            }
-        } else if (event.key.code == sf::Keyboard::Left) {
-            if (pacman->getCurrentDirection() != logic::Direction::LEFT) {
-                pacman->setNextDirection(logic::Direction::LEFT);
-            }
-        } else if (event.key.code == sf::Keyboard::Right) {
-            if (pacman->getCurrentDirection() != logic::Direction::RIGHT) {
-                pacman->setNextDirection(logic::Direction::RIGHT);
-            }
+        // Arrow key input → buffered direction (applied when valid in World::update)
+        if (event.key.code == sf::Keyboard::Up && pacman->getCurrentDirection() != logic::Direction::UP) {
+            pacman->setNextDirection(logic::Direction::UP);
+        } else if (event.key.code == sf::Keyboard::Down && pacman->getCurrentDirection() != logic::Direction::DOWN) {
+            pacman->setNextDirection(logic::Direction::DOWN);
+        } else if (event.key.code == sf::Keyboard::Left && pacman->getCurrentDirection() != logic::Direction::LEFT) {
+            pacman->setNextDirection(logic::Direction::LEFT);
+        } else if (event.key.code == sf::Keyboard::Right && pacman->getCurrentDirection() != logic::Direction::RIGHT) {
+            pacman->setNextDirection(logic::Direction::RIGHT);
         }
     }
 }

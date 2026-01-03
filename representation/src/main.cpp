@@ -6,28 +6,24 @@
 int main() {
     const std::string MAP_FILE = "resources/maps/map";
 
-    // Get desktop size for dynamic initial sizing
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-    float windowScale = 0.8f; // 80% of screen
+    float windowScale = 0.8f;
 
-    // Calculate window size (maintains 1450x1050 aspect ratio)
+    // Target aspect ratio based on original design (1450x1050)
     const float ASPECT_RATIO = 1450.0f / 1050.0f;
     unsigned int windowHeight = static_cast<unsigned int>(desktop.height * windowScale);
     unsigned int windowWidth = static_cast<unsigned int>(windowHeight * ASPECT_RATIO);
 
-    // Cap at desktop width if too wide
     if (windowWidth > desktop.width * windowScale) {
         windowWidth = static_cast<unsigned int>(desktop.width * windowScale);
         windowHeight = static_cast<unsigned int>(windowWidth / ASPECT_RATIO);
     }
 
-    // Create NON-RESIZABLE window
+    // Non-resizable to prevent Camera coordinate conversion issues
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "PacMan Game",
-                            sf::Style::Close | sf::Style::Titlebar // No Resize flag
-    );
-    window.setFramerateLimit(60);
+                            sf::Style::Close | sf::Style::Titlebar);
+    window.setFramerateLimit(60); // Cap at 60 FPS (matches typical display refresh rate)
 
-    // Create and run game
     representation::Game game(&window, MAP_FILE);
     game.run();
 

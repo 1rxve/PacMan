@@ -9,15 +9,11 @@ NameEntryState::NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fa
     : State(win, fac, cam, sm), finalScore(finalScore), mapFile(mapFile), playerName("   "), currentLetterIndex(0),
       fontLoaded(false), blinkTimer(0.0f), cursorVisible(true), isNewHighScore(logic::Score::isTopScore(finalScore)) {
 
-    // Load font
-    if (font.loadFromFile("resources/fonts/joystix.otf")) {
-        fontLoaded = true;
-    } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+    if (font.loadFromFile("resources/fonts/joystix.otf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         fontLoaded = true;
     }
 
     if (fontLoaded) {
-        // Title - Yellow like MenuState
         titleText.setFont(font);
         if (isNewHighScore) {
             titleText.setString("NEW HIGH SCORE!");
@@ -31,7 +27,6 @@ NameEntryState::NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fa
         titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
         titleText.setPosition(window->getSize().x / 2.0f, 150);
 
-        // Score - White
         scoreText.setFont(font);
         scoreText.setString("SCORE: " + std::to_string(finalScore));
         scoreText.setCharacterSize(32);
@@ -41,12 +36,10 @@ NameEntryState::NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fa
         scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
         scoreText.setPosition(window->getSize().x / 2.0f, 300);
 
-        // Name entry text - White (will be drawn as letters in render)
         nameText.setFont(font);
         nameText.setCharacterSize(80);
         nameText.setFillColor(sf::Color::White);
 
-        // Instructions - White
         instructionText.setFont(font);
         instructionText.setString("ENTER NAME");
         instructionText.setCharacterSize(32);
@@ -65,7 +58,6 @@ NameEntryState::NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fa
         pressEnterText.setOrigin(pressEnterBounds.width / 2.0f, pressEnterBounds.height / 2.0f);
         pressEnterText.setPosition(window->getSize().x / 2.0f, 800);
 
-        // "WHEN YOU ARE DONE" text
         whenDoneText.setFont(font);
         whenDoneText.setString("WHEN YOU ARE DONE");
         whenDoneText.setCharacterSize(24);
@@ -80,17 +72,15 @@ NameEntryState::NameEntryState(sf::RenderWindow* win, logic::AbstractFactory* fa
 }
 
 void NameEntryState::updateNameDisplay() {
-    // Just update cursor position
-    float letterWidth = 80.0f;
-    float spacing = 20.0f;
-    float startX = window->getSize().x / 2.0f - (3 * letterWidth + 2 * spacing) / 2.0f;
+    const float LETTER_WIDTH = 80.0f;  // Letter cell width in pixels
+    const float SPACING = 20.0f;        // Horizontal spacing between letters
+    float startX = window->getSize().x / 2.0f - (3 * LETTER_WIDTH + 2 * SPACING) / 2.0f;
 
-    float cursorX = startX + currentLetterIndex * (letterWidth + spacing) + letterWidth / 2.0f;
+    float cursorX = startX + currentLetterIndex * (LETTER_WIDTH + SPACING) + LETTER_WIDTH / 2.0f;
     cursorText.setPosition(cursorX - 10, 410);
 }
 
 void NameEntryState::saveAndContinue() {
-    // Save high score
     logic::Score::saveHighScore(playerName, finalScore);
 
     // CRITICAL: Copy ALL needed data to LOCAL variables BEFORE popping
@@ -104,12 +94,10 @@ void NameEntryState::saveAndContinue() {
     sm->popState(); // Pop NameEntryState - 'this' is now DESTROYED
     // DO NOT ACCESS ANY MEMBER VARIABLES AFTER THIS LINE
 
-    // Push VictoryState with LOCAL copies
     sm->pushState(std::make_unique<VictoryState>(win, fac, cam, sm, true, score, map));
 }
 
 void NameEntryState::update(float deltaTime) {
-    // Blink cursor
     blinkTimer += deltaTime;
     if (blinkTimer >= 0.5f) {
         cursorVisible = !cursorVisible;
@@ -118,7 +106,7 @@ void NameEntryState::update(float deltaTime) {
 }
 
 void NameEntryState::render() {
-    // Dark overlay
+    // Semi-transparent dark overlay (alpha 220 = ~86% opacity)
     sf::RectangleShape overlay(
         sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y)));
     overlay.setFillColor(sf::Color(0, 0, 0, 220));
@@ -129,19 +117,18 @@ void NameEntryState::render() {
         window->draw(scoreText);
         window->draw(instructionText);
 
-        // Draw 3 letters WITHOUT boxes
-        float letterWidth = 80.0f;
-        float spacing = 20.0f;
-        float startX = window->getSize().x / 2.0f - (3 * letterWidth + 2 * spacing) / 2.0f;
+        const float LETTER_WIDTH = 80.0f;
+        const float SPACING = 20.0f;
+        float startX = window->getSize().x / 2.0f - (3 * LETTER_WIDTH + 2 * SPACING) / 2.0f;
         float startY = 500.0f;
 
         for (int i = 0; i < 3; i++) {
-            float letterX = startX + i * (letterWidth + spacing);
+            float letterX = startX + i * (LETTER_WIDTH + SPACING);
 
-            // Draw letter (or space)
             sf::Text letterText;
             letterText.setFont(font);
 
+            // Display underscore for empty positions, actual letter otherwise
             if (playerName[i] != ' ') {
                 letterText.setString(std::string(1, playerName[i]));
             } else {
@@ -153,7 +140,7 @@ void NameEntryState::render() {
 
             sf::FloatRect letterBounds = letterText.getLocalBounds();
             letterText.setOrigin(letterBounds.width / 2.0f, letterBounds.height / 2.0f);
-            letterText.setPosition(letterX + letterWidth / 2.0f, startY);
+            letterText.setPosition(letterX + LETTER_WIDTH / 2.0f, startY);
 
             window->draw(letterText);
         }
@@ -167,16 +154,14 @@ void NameEntryState::handleEvent(const sf::Event& event) {
     if (event.type == sf::Event::TextEntered) {
         char typed = static_cast<char>(event.text.unicode);
 
-        // Convert lowercase to uppercase
         if (typed >= 'a' && typed <= 'z') {
             typed = typed - 'a' + 'A';
         }
 
-        // Only accept A-Z
         if (typed >= 'A' && typed <= 'Z') {
             playerName[currentLetterIndex] = typed;
 
-            // Auto-advance to next empty box (if not at end)
+            // Auto-advance to next position (if not at end)
             if (currentLetterIndex < 2) {
                 currentLetterIndex++;
             }
@@ -191,21 +176,16 @@ void NameEntryState::handleEvent(const sf::Event& event) {
         return;
     }
 
-    // Backspace - delete current letter and move back
     if (event.key.code == sf::Keyboard::Backspace) {
-        // Clear current letter
         playerName[currentLetterIndex] = ' ';
 
-        // Move back if not at start
         if (currentLetterIndex > 0) {
             currentLetterIndex--;
         }
 
         updateNameDisplay();
     }
-    // Enter - save and continue (only if at least 1 letter entered)
     else if (event.key.code == sf::Keyboard::Enter) {
-        // Check if at least one letter is entered
         bool hasLetter = false;
         for (int i = 0; i < 3; i++) {
             if (playerName[i] != ' ') {
@@ -215,7 +195,7 @@ void NameEntryState::handleEvent(const sf::Event& event) {
         }
 
         if (hasLetter) {
-            // Replace trailing spaces with 'A' for valid name
+            // Auto-fill trailing spaces with 'A' for valid 3-letter name
             for (int i = 0; i < 3; i++) {
                 if (playerName[i] == ' ') {
                     playerName[i] = 'A';

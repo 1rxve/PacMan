@@ -4,10 +4,11 @@
 namespace representation {
 WallView::WallView(logic::WallModel* model, sf::RenderWindow* window, const Camera* camera)
     : EntityView(model, window, camera) {
-    shape.setFillColor(sf::Color::Blue);
+    shape.setFillColor(sf::Color::Blue); // Classic PacMan blue maze walls
 }
 
 void WallView::draw() {
+    // Convert center-based normalized coordinates to top-left pixel coordinates
     float centerX = model->getX();
     float centerY = model->getY();
     float width = model->getWidth();

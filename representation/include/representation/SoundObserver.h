@@ -6,6 +6,21 @@
 #include "representation/SoundManager.h"
 
 namespace representation {
+/**
+ * Observer that bridges game events (logic layer) to audio feedback (representation layer).
+ *
+ * Attached to Score subject in LevelState, receives notifications via onNotify()
+ * whenever Score::setEvent() + scoreSubject.notify() is called.
+ *
+ * Event → Sound mapping:
+ * - COIN_COLLECTED → continuous coin loop (starts/extends timeout)
+ * - FRUIT_EATEN → fruit eat sound
+ * - GHOST_EATEN → ghost eaten sound
+ * - GHOST_FEAR_MODE → fear mode sound
+ * - PACMAN_DEATH_ANIM → stops coin loop + plays death sound
+ *
+ * Inline implementation kept in header for simplicity (small switch-case logic).
+ */
 class SoundObserver : public logic::Observer {
 private:
     logic::Score* scoreObject;
@@ -28,6 +43,7 @@ public:
             SoundManager::getInstance().playSound(SoundEffect::GHOST_FEAR);
             break;
         case logic::ScoreEvent::PACMAN_DEATH_ANIM:
+            // Stop looping coin sound before death sound to prevent audio overlap
             SoundManager::getInstance().stopCoinSound();
             SoundManager::getInstance().playSound(SoundEffect::DEATH);
             break;

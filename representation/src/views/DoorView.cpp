@@ -6,7 +6,7 @@ DoorView::DoorView(logic::DoorModel* model, sf::RenderWindow* window, const Came
     : EntityView(model, window, camera), doorModel(model), texture(sharedTexture) {
 
     sprite.setTexture(*texture);
-    sprite.setTextureRect(sf::IntRect(636, 520, 15, 5));
+    sprite.setTextureRect(sf::IntRect(636, 520, 15, 5)); // Horizontal door bar from sprite sheet
     sprite.setOrigin(7.0f, 7.0f);
 }
 
@@ -17,11 +17,11 @@ void DoorView::draw() {
     float pixelCenterX = camera->normalizedToPixelX(centerX);
     float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-    sprite.setPosition(pixelCenterX, pixelCenterY - 3.0f);
-    sprite.setScale(4.5f, 3.5f);
+    sprite.setPosition(pixelCenterX, pixelCenterY - 3.0f); // -3.0f vertical adjustment for visual alignment
+    sprite.setScale(4.5f, 3.5f);                           // Scale 15x5 sprite to visible door size
     window->draw(sprite);
 
-    // DEBUG VISUALISATIE
+    // Debug visualization: green outline showing collision bounds
     if (showDebugVisualization) {
         float width = doorModel->getWidth();
         float height = doorModel->getHeight();
@@ -39,7 +39,6 @@ void DoorView::draw() {
         float pixelWidth = pixelBottomRightX - pixelTopLeftX;
         float pixelHeight = pixelBottomRightY - pixelTopLeftY;
 
-        // Groen vierkant = collision bounds
         sf::RectangleShape debugBox(sf::Vector2f(pixelWidth, pixelHeight));
         debugBox.setFillColor(sf::Color::Transparent);
         debugBox.setOutlineColor(sf::Color::Green);

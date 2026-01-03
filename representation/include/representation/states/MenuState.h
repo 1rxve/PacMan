@@ -6,6 +6,19 @@
 #include <string>
 
 namespace representation {
+/**
+ * Initial state displaying title, high scores, and start prompt.
+ *
+ * Features:
+ * - Menu music loop (managed via SoundManager)
+ * - Top 5 high scores from persistent storage
+ * - Blinking "Press SPACE to start" instruction
+ * - Dynamic high score refresh on return from gameplay
+ *
+ * State transitions:
+ * - SPACE → LevelState (push)
+ * - ESC → close window
+ */
 class MenuState : public State {
 private:
     std::string mapFile;
@@ -20,6 +33,10 @@ private:
     float blinkTimer;
     bool instructionVisible;
 
+    /**
+     * Reloads high scores from file and updates UI text elements.
+     * Called on update() to reflect new scores after gameplay.
+     */
     void refreshHighScores();
 
 public:
@@ -29,7 +46,9 @@ public:
     ~MenuState();
 
     void update(float deltaTime) override;
+
     void render() override;
+
     void handleEvent(const sf::Event& event) override;
 };
 } // namespace representation

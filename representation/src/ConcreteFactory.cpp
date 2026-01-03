@@ -15,17 +15,18 @@
 #include <iostream>
 
 namespace representation {
+// Load shared textures once in constructor, throw on failure (fail-fast)
 ConcreteFactory::ConcreteFactory(sf::RenderWindow* window, const Camera* camera)
     : window(window), camera(camera) {
 
     sharedTexture = std::make_shared<sf::Texture>();
     if (!sharedTexture->loadFromFile("resources/sprites/pacman_sprites.png")) {
-        throw std::runtime_error("ERROR: Failed to load pacman_sprites.png");  // ← ADD
+        throw std::runtime_error("ERROR: Failed to load pacman_sprites.png");
     }
 
     doorTexture = std::make_shared<sf::Texture>();
     if (!doorTexture->loadFromFile("resources/sprites/door_sprite.png")) {
-        throw std::runtime_error("ERROR: Failed to load door_sprite.png");  // ← ADD
+        throw std::runtime_error("ERROR: Failed to load door_sprite.png");
     }
 }
 
@@ -60,6 +61,7 @@ logic::EntityCreationResult ConcreteFactory::createDoor(float x, float y, float 
     return {model, std::move(view)};
 }
 
+// NoEntry is invisible barrier (collision logic only, no visual representation)
 logic::EntityCreationResult ConcreteFactory::createNoEntry(float x, float y, float w, float h) {
     auto model = std::make_shared<logic::NoEntryModel>(x, y, w, h);
     return {model, nullptr};

@@ -8,6 +8,21 @@
 #include <string>
 
 namespace representation {
+/**
+ * Active gameplay state managing World logic, UI overlay, and input handling.
+ *
+ * Responsibilities:
+ * - Owns World instance (game logic controller)
+ * - Renders HUD (score, lives, level number)
+ * - Countdown timer between deaths/level transitions
+ * - Cheat code detection (text input buffering)
+ * - Sound event observation via SoundObserver
+ *
+ * State transitions:
+ * - P key → PausedState (push)
+ * - All coins collected → next level (internal reset)
+ * - Lives depleted → VictoryState or NameEntryState (push)
+ */
 class LevelState : public State {
 private:
     std::unique_ptr<logic::World> world;
@@ -35,7 +50,9 @@ public:
     ~LevelState();
 
     void update(float deltaTime) override;
+
     void render() override;
+
     void handleEvent(const sf::Event& event) override;
 };
 } // namespace representation

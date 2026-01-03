@@ -38,7 +38,7 @@ set(REPRESENTATION_SOURCES
         include/representation/views/GhostView.h
         src/views/DoorView.cpp
         include/representation/views/DoorView.h
-        src/states/FruitView.cpp
+        src/views/FruitView.cpp
         include/representation/views/FruitView.h
         src/SoundManager.cpp
         include/representation/SoundManager.h

@@ -10,15 +10,11 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
     : State(win, fac, cam, sm), won(won), finalScore(finalScore), mapFile(mapFile), fontLoaded(false),
       isHighScore(logic::Score::isTopScore(finalScore)), blinkTimer(0.0f), newHighScoreVisible(true) {
 
-    // Load font
-    if (font.loadFromFile("resources/fonts/joystix.otf")) {
-        fontLoaded = true;
-    } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+    if (font.loadFromFile("resources/fonts/joystix.otf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         fontLoaded = true;
     }
 
     if (fontLoaded) {
-        // Score at top
         scoreText.setFont(font);
         scoreText.setString("FINAL SCORE: " + std::to_string(finalScore));
         scoreText.setCharacterSize(32);
@@ -28,7 +24,6 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
         scoreText.setOrigin(scoreBounds.width / 2.0f, scoreBounds.height / 2.0f);
         scoreText.setPosition(window->getSize().x / 2.0f, 150);
 
-        // "NEW HIGH SCORE" text (small, blinking, below score)
         if (isHighScore) {
             newHighScoreText.setFont(font);
             newHighScoreText.setString("NEW HIGH SCORE");
@@ -40,7 +35,7 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
             newHighScoreText.setPosition(window->getSize().x / 2.0f, 200);
         }
 
-        // GAME OVER - huge, red, centered
+        // Always "GAME OVER" (red) regardless of won parameter
         titleText.setFont(font);
         titleText.setString("GAME OVER");
         titleText.setCharacterSize(140);
@@ -50,7 +45,6 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
         titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
         titleText.setPosition(window->getSize().x / 2.0f, window->getSize().y / 2.0f - 100);
 
-        // R - Restart (bottom)
         restartText.setFont(font);
         restartText.setString("R - Restart");
         restartText.setCharacterSize(28);
@@ -60,7 +54,6 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
         restartText.setOrigin(restartBounds.width / 2.0f, restartBounds.height / 2.0f);
         restartText.setPosition(window->getSize().x / 2.0f, window->getSize().y - 200);
 
-        // ESC - Main Menu (below restart)
         quitText.setFont(font);
         quitText.setString("ESC - Main Menu");
 
@@ -71,10 +64,10 @@ VictoryState::VictoryState(sf::RenderWindow* win, logic::AbstractFactory* fac, c
 }
 
 void VictoryState::update(float deltaTime) {
-    // Blink "NEW HIGH SCORE" text
     if (isHighScore) {
         blinkTimer += deltaTime;
 
+        // Blink "NEW HIGH SCORE" every 0.5 seconds
         if (blinkTimer >= 0.5f) {
             newHighScoreVisible = !newHighScoreVisible;
             blinkTimer = 0.0f;
@@ -83,25 +76,24 @@ void VictoryState::update(float deltaTime) {
 }
 
 void VictoryState::render() {
-    // Dark overlay
+    // Semi-transparent dark overlay (alpha 200 = ~78% opacity)
     sf::RectangleShape overlay(
         sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y)));
     overlay.setFillColor(sf::Color(0, 0, 0, 200));
     window->draw(overlay);
 
     if (fontLoaded) {
-        window->draw(scoreText); // Top
+        window->draw(scoreText);
 
-        // Blinking "NEW HIGH SCORE"
         if (isHighScore && newHighScoreVisible) {
             window->draw(newHighScoreText);
         }
 
-        window->draw(titleText);   // Center (GAME OVER)
-        window->draw(restartText); // Bottom
+        window->draw(titleText);
+        window->draw(restartText);
         window->draw(quitText);
     } else {
-        // Fallback rectangles
+        // Fallback for missing fonts (won parameter only used here)
         sf::RectangleShape titleBox(sf::Vector2f(400, 100));
         titleBox.setFillColor(won ? sf::Color::Green : sf::Color::Red);
         titleBox.setPosition(window->getSize().x / 2.0f - 200, 200);
@@ -114,9 +106,8 @@ void VictoryState::handleEvent(const sf::Event& event) {
         return;
     }
 
-    // R = Restart game (fresh LevelState)
     if (event.key.code == sf::Keyboard::R) {
-        // Copy all needed data BEFORE popping
+        // CRITICAL: Copy all needed data BEFORE popping
         StateManager* sm = stateManager;
         sf::RenderWindow* win = window;
         logic::AbstractFactory* fac = factory;
@@ -127,15 +118,13 @@ void VictoryState::handleEvent(const sf::Event& event) {
         sm->popState(); // Pop LevelState
         // DO NOT ACCESS ANY MEMBER VARIABLES AFTER THIS LINE
 
-        // Push fresh LevelState
         sm->pushState(std::make_unique<LevelState>(win, fac, cam, sm, map));
         return;
     }
 
-    // ESC = Main menu
     if (event.key.code == sf::Keyboard::Escape) {
-        stateManager->popState(); // Pop VictoryState
-        stateManager->popState(); // Pop LevelState, back to MenuState
+        stateManager->popState();
+        stateManager->popState();
     }
 }
 } // namespace representation

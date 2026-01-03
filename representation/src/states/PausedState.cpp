@@ -8,25 +8,20 @@ PausedState::PausedState(sf::RenderWindow* win, logic::AbstractFactory* fac, con
                          State* levelState, const std::string& mapFile)
     : State(win, fac, cam, sm), fontLoaded(false), levelStateBelow(levelState), mapFile(mapFile) {
 
-    // Load font
-    if (font.loadFromFile("resources/fonts/joystix.otf")) {
-        fontLoaded = true;
-    } else if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+    if (font.loadFromFile("resources/fonts/joystix.otf") || font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         fontLoaded = true;
     }
 
     if (fontLoaded) {
-        // Paused text (larger + centered)
         pausedText.setFont(font);
         pausedText.setString("PAUSED");
-        pausedText.setCharacterSize(120); // ← Bigger
+        pausedText.setCharacterSize(120);
         pausedText.setFillColor(sf::Color::White);
 
         sf::FloatRect pausedBounds = pausedText.getLocalBounds();
         pausedText.setOrigin(pausedBounds.width / 2.0f, pausedBounds.height / 2.0f);
         pausedText.setPosition(window->getSize().x / 2.0f, 250);
 
-        // Instruction texts (3 separate lines, centered)
         resumeText.setFont(font);
         resumeText.setString("P - Resume");
         resumeText.setCharacterSize(28);
@@ -53,29 +48,27 @@ PausedState::PausedState(sf::RenderWindow* win, logic::AbstractFactory* fac, con
     }
 }
 
-void PausedState::update(float /*deltaTime*/) {
-    // Nothing to update when paused
-}
+void PausedState::update(float /*deltaTime*/) {}
 
 void PausedState::render() {
-    // Render frozen level state underneath
+    // Render frozen LevelState underneath for visual context
     if (levelStateBelow) {
         levelStateBelow->render();
     }
 
-    // Dark semi-transparent overlay (dimmed effect)
+    // Semi-transparent dark overlay (alpha 200 = ~78% opacity)
     sf::RectangleShape overlay(
         sf::Vector2f(static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y)));
-    overlay.setFillColor(sf::Color(0, 0, 0, 200)); // Black with transparency
+    overlay.setFillColor(sf::Color(0, 0, 0, 200));
     window->draw(overlay);
 
     if (fontLoaded) {
         window->draw(pausedText);
-        window->draw(resumeText); // ← 3 separate lines
+        window->draw(resumeText);
         window->draw(restartText);
         window->draw(quitText);
     } else {
-        // Fallback: white rectangles
+        // Fallback for missing fonts (development/debugging aid)
         sf::RectangleShape pausedBox(sf::Vector2f(250, 100));
         pausedBox.setFillColor(sf::Color::White);
         pausedBox.setPosition(window->getSize().x / 2.0f - 125, 200);
@@ -85,18 +78,15 @@ void PausedState::render() {
 
 void PausedState::handleEvent(const sf::Event& event) {
     if (event.type == sf::Event::KeyPressed) {
-        // P = resume game
         if (event.key.code == sf::Keyboard::P) {
-            stateManager->popState(); // Pop PausedState, back to LevelState
+            stateManager->popState();
         }
 
-        // ESC = quit to main menu
         if (event.key.code == sf::Keyboard::Escape) {
-            stateManager->popState(); // Pop PausedState
-            stateManager->popState(); // Pop LevelState, back to MenuState
+            stateManager->popState();
+            stateManager->popState();
         }
 
-        // R = restart level
         if (event.key.code == sf::Keyboard::R) {
             // CRITICAL: Copy all needed data BEFORE popping
             StateManager* sm = stateManager;
@@ -109,7 +99,6 @@ void PausedState::handleEvent(const sf::Event& event) {
             sm->popState(); // Pop old LevelState
             // DO NOT ACCESS ANY MEMBER VARIABLES AFTER THIS LINE
 
-            // Push fresh LevelState with LOCAL copies
             sm->pushState(std::make_unique<LevelState>(win, fac, cam, sm, map));
         }
     }

@@ -5,6 +5,12 @@
 #include "logic/entities/WallModel.h"
 
 namespace representation {
+/**
+ * SFML view for rendering maze walls as blue rectangles.
+ *
+ * Uses sf::RectangleShape instead of sprites for simplicity.
+ * Size converted from normalized WallModel dimensions to pixel coordinates via Camera.
+ */
 class WallView : public EntityView {
 private:
     sf::RectangleShape shape;

@@ -1,13 +1,28 @@
 #ifndef PACMANGAME_STATE_H
 #define PACMANGAME_STATE_H
 
-#include "logic/patterns/AbstractFactory.h" // ← CORRECT (same as EntityView doet)
+#include "logic/patterns/AbstractFactory.h"
 #include <SFML/Graphics.hpp>
 
 namespace representation {
-class Camera;       // ← Forward declare (eigen namespace)
-class StateManager; // ← Forward declare (eigen namespace)
+class Camera;
+class StateManager;
 
+/**
+ * Abstract base class for State Pattern implementation (finite state machine).
+ *
+ * Concrete states (MenuState, LevelState, PausedState, VictoryState, NameEntryState)
+ * manage different phases of gameplay with isolated update/render/input logic.
+ *
+ * State Stack managed by StateManager:
+ * - States can push new states (e.g., LevelState → PausedState)
+ * - States can pop themselves (e.g., PausedState resume → pop to LevelState)
+ * - Only top state receives update/render/handleEvent calls
+ *
+ * Protected members allow subclasses direct access to core resources
+ * (window for rendering, factory for entity creation, camera for coordinate
+ * conversion, stateManager for state transitions).
+ */
 class State {
 protected:
     sf::RenderWindow* window;
@@ -22,7 +37,9 @@ public:
     virtual ~State() = default;
 
     virtual void update(float deltaTime) = 0;
+
     virtual void render() = 0;
+
     virtual void handleEvent(const sf::Event& event) = 0;
 };
 } // namespace representation

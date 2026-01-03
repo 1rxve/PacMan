@@ -4,8 +4,11 @@
 namespace representation {
 SoundManager* SoundManager::instance = nullptr;
 
-SoundManager::SoundManager() : coinSoundTimeout(0.0f), isCoinSoundActive(false) { loadSounds(); }
+SoundManager::SoundManager() : coinSoundTimeout(0.0f), isCoinSoundActive(false) {
+    loadSounds();
+}
 
+// Singleton lazy initialization (allocated on first access)
 SoundManager& SoundManager::getInstance() {
     if (instance == nullptr) {
         instance = new SoundManager();
@@ -34,24 +37,25 @@ void SoundManager::loadSounds() {
         std::cerr << "Failed to load death.wav" << std::endl;
     }
 
-    // Setup sounds (non-coin)
+    // One-shot sounds: play once per event
     sounds[SoundEffect::FRUIT_EAT].setBuffer(soundBuffers[SoundEffect::FRUIT_EAT]);
     sounds[SoundEffect::GHOST_FEAR].setBuffer(soundBuffers[SoundEffect::GHOST_FEAR]);
     sounds[SoundEffect::GHOST_EATEN].setBuffer(soundBuffers[SoundEffect::GHOST_EATEN]);
     sounds[SoundEffect::DEATH].setBuffer(soundBuffers[SoundEffect::DEATH]);
 
-    // Setup continuous coin sound
+    // Coin sound: continuous loop while collecting, auto-stop after 0.3s timeout
     coinSound.setBuffer(soundBuffers[SoundEffect::COIN_COLLECT]);
     coinSound.setLoop(true);
-    coinSound.setVolume(100.0f);
+    coinSound.setVolume(100.0f); // Full volume for coin collection feedback
 
     if (!menuMusic.openFromFile("resources/sounds/menu_music.wav")) {
         std::cerr << "Failed to load menu_music.wav" << std::endl;
     }
-    menuMusic.setLoop(false);
-    menuMusic.setVolume(50.0f);
+    menuMusic.setLoop(false); // Menu music plays once (non-looping)
+    menuMusic.setVolume(50.0f); // Lower volume for background music
 }
 
+// Timeout system: stop coin loop if no new coins collected within COIN_TIMEOUT_DURATION
 void SoundManager::update(float deltaTime) {
     if (isCoinSoundActive) {
         coinSoundTimeout -= deltaTime;
@@ -71,9 +75,10 @@ void SoundManager::stopCoinSound() {
     }
 }
 
+// Coin sound extends timeout (keeps looping), others play as one-shot
 void SoundManager::playSound(SoundEffect effect) {
     if (effect == SoundEffect::COIN_COLLECT) {
-        coinSoundTimeout = COIN_TIMEOUT_DURATION;
+        coinSoundTimeout = COIN_TIMEOUT_DURATION; // Reset/extend timeout
 
         if (!isCoinSoundActive) {
             coinSound.play();
@@ -87,11 +92,17 @@ void SoundManager::playSound(SoundEffect effect) {
     }
 }
 
-void SoundManager::playMenuMusic() { menuMusic.play(); }
+void SoundManager::playMenuMusic() {
+    menuMusic.play();
+}
 
-void SoundManager::stopMenuMusic() { menuMusic.stop(); }
+void SoundManager::stopMenuMusic() {
+    menuMusic.stop();
+}
 
-bool SoundManager::isMenuMusicPlaying() const { return menuMusic.getStatus() == sf::Music::Playing; }
+bool SoundManager::isMenuMusicPlaying() const {
+    return menuMusic.getStatus() == sf::Music::Playing;
+}
 
 void SoundManager::setVolume(float volume) {
     coinSound.setVolume(volume);

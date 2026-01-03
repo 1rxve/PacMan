@@ -15,11 +15,11 @@ void GhostView::draw() {
     logic::Direction direction = ghostModel->getCurrentDirection();
     logic::GhostState state = ghostModel->getState();
 
-    // Update animation (only when moving)
+    // 2-frame animation: switch every 0.15s when moving
     if (direction != logic::Direction::NONE) {
-        animationTimer += 0.016f; // ~60 FPS frame time
+        animationTimer += 0.016f; // Approximate frame time at 60 FPS
 
-        if (animationTimer >= 0.15f) { // Switch frame every 0.15s
+        if (animationTimer >= 0.15f) {
             frameIndex = (frameIndex == 0) ? 1 : 0;
             animationTimer = 0.0f;
         }
@@ -28,38 +28,33 @@ void GhostView::draw() {
     int spriteX = 0;
     int spriteY = 0;
 
-    // FEAR MODE - Blue sprite with flicker warning
+    // State-driven sprite selection: FEAR mode with flicker warning
     if (state == logic::GhostState::FEAR) {
         float fearTimer = ghostModel->getFearTimer();
-        const float FLICKER_THRESHOLD = 1.5f;
+        const float FLICKER_THRESHOLD = 1.5f; // Start flicker warning at 1.5s remaining
 
-        // Flicker between blue and white in last 1.5 seconds
         if (fearTimer < FLICKER_THRESHOLD && fearTimer > 0.0f) {
-            // Flicker every 0.2 seconds
             bool showWhite = (static_cast<int>(fearTimer / 0.2f) % 2 == 0);
-            spriteX = showWhite ? 50 : 0; // X=50 (white) or X=0 (blue)
+            spriteX = showWhite ? 50 : 0;
         } else {
-            spriteX = 0; // Always blue when > 1.5s remaining
+            spriteX = 0;
         }
 
-        spriteY = 550 + (frameIndex * 50); // Y=550 or Y=600 (animation)
+        spriteY = 550 + (frameIndex * 50);
     }
-    // EATEN MODE - Eyes sprite
+    // EATEN mode: eyes-only sprite navigating back to spawn
     else if (state == logic::GhostState::EATEN) {
         spriteX = 300;
         spriteY = 250;
     }
-    // RESPAWNING - Flicker between eyes and normal sprite
+    // RESPAWNING mode: flicker between eyes and normal sprite (6 flickers total)
     else if (state == logic::GhostState::RESPAWNING) {
         int flickerCount = ghostModel->getRespawnFlickerCount();
 
-        // Even count = eyes, odd count = normal sprite
         if (flickerCount % 2 == 0) {
-            // Show eyes
             spriteX = 300;
             spriteY = 250;
         } else {
-            // Show normal colored sprite (facing right, frame 0)
             switch (type) {
             case logic::GhostType::RED:
                 spriteX = 0;
@@ -74,12 +69,11 @@ void GhostView::draw() {
                 spriteX = 150;
                 break;
             }
-            spriteY = 0; // Right direction, frame 0
+            spriteY = 0;
         }
     }
-    // NORMAL MODE - Color + direction + animation
+    // NORMAL/CHASING/EXITING_SPAWN modes: color-coded + directional + animated
     else {
-        // Determine base X position based on ghost type
         switch (type) {
         case logic::GhostType::RED:
             spriteX = 0;
@@ -95,7 +89,6 @@ void GhostView::draw() {
             break;
         }
 
-        // Determine Y position based on direction + frame
         switch (direction) {
         case logic::Direction::RIGHT:
             spriteY = (frameIndex == 0) ? 0 : 50;
@@ -110,27 +103,25 @@ void GhostView::draw() {
             spriteY = (frameIndex == 0) ? 300 : 350;
             break;
         case logic::Direction::NONE:
-            spriteY = 0; // Default to RIGHT frame 1
+            spriteY = 0;
             break;
         }
     }
 
     sprite.setTextureRect(sf::IntRect(spriteX, spriteY, 50, 50));
 
-    // Render position
     float centerX = ghostModel->getX();
     float centerY = ghostModel->getY();
 
     float pixelCenterX = camera->normalizedToPixelX(centerX);
     float pixelCenterY = camera->normalizedToPixelY(centerY);
 
-    // Sprite rendering
-    sprite.setOrigin(19.0f, 22.0f);
+    sprite.setOrigin(19.0f, 22.0f); // Empirically tuned for accurate center-point rendering
     sprite.setPosition(pixelCenterX, pixelCenterY);
     sprite.setScale(1.15f, 1.15f);
     window->draw(sprite);
 
-    // DEBUG VISUALISATIE
+    // Debug visualization: green sprite box + red center dot
     if (showDebugVisualization) {
         sf::RectangleShape debugBox(sf::Vector2f(50.0f, 50.0f));
         debugBox.setFillColor(sf::Color::Transparent);
