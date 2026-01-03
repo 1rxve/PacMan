@@ -20,7 +20,7 @@ void Score::onNotify() {
         handleFruitEaten();
         break;
     case ScoreEvent::PACMAN_DIED:
-        // TODO: death penalty
+        handlePacManDied();
         break;
     case ScoreEvent::LEVEL_CLEARED:
         handleLevelCleared();
@@ -49,6 +49,15 @@ void Score::handleFruitEaten() {
 void Score::handleLevelCleared() {
     const int LEVEL_BONUS = 500;
     score += LEVEL_BONUS;
+}
+
+void Score::handlePacManDied() {
+    const int DEATH_PENALTY = 500;
+    score -= DEATH_PENALTY;
+
+    if (score < 0) {
+        score = 0;
+    }
 }
 
 void Score::update(float deltaTime) {

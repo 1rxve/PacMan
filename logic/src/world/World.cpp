@@ -824,6 +824,9 @@ void World::handlePacManDeath() {
 
     pacman->startDeath();
     pacman->loseLife();
+
+    score.setEvent(ScoreEvent::PACMAN_DIED);
+    scoreSubject.notify();
 }
 
 void World::resetAfterDeath() {

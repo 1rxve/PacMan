@@ -36,6 +36,9 @@ private:
 
     void handleLevelCleared();
 
+    void handlePacManDied();
+
+
 public:
     Score();
 
