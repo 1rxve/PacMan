@@ -3,7 +3,7 @@
 namespace logic {
 DoorModel::DoorModel(float x, float y, float width, float height) : EntityModel(x, y, width, height) {}
 
-DoorModel::~DoorModel() { exitedGhosts.clear(); }
+DoorModel::~DoorModel() {}
 
 void DoorModel::update(float /*deltaTime*/) {}
 } // namespace logic

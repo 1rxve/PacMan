@@ -25,6 +25,10 @@ void Score::onNotify() {
     case ScoreEvent::LEVEL_CLEARED:
         handleLevelCleared();
         break;
+    case ScoreEvent::GHOST_FEAR_MODE:
+        break;
+    case ScoreEvent::PACMAN_DEATH_ANIM:
+        break;
     }
 }
 
