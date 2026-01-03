@@ -8,7 +8,7 @@
 
 namespace logic {
 struct EntityCreationResult {
-    std::unique_ptr<EntityModel> model;
+    std::shared_ptr<EntityModel> model;
     std::unique_ptr<Observer> view;
 };
 
@@ -26,4 +26,4 @@ public:
 };
 } // namespace logic
 
-#endif // PACMANGAME_ABSTRACTFACTORY_H
+#endif

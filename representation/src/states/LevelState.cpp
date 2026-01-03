@@ -19,7 +19,14 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
     // Create World
     world = std::make_unique<logic::World>();
     world->setFactory(factory);
-    world->loadMap(mapFile);
+
+    try {
+        world->loadMap(mapFile);
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        throw;  // Re-throw to Game
+    }
+
 
     // Load font for UI
     fontLoaded = false;
@@ -58,7 +65,7 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
     }
 
     // Setup PacMan cell dimensions
-    logic::PacManModel* pacman = world->getPacMan();
+    auto pacman = world->getPacMan();
     if (pacman) {
         auto [mapWidth, mapHeight] = logic::World::getMapDimensions(mapFile);
         float cellWidth = 2.0f / mapWidth;
@@ -88,7 +95,7 @@ LevelState::LevelState(sf::RenderWindow* win, logic::AbstractFactory* fac, const
     }
 }
 
-// In LevelState::update()
+
 void LevelState::update(float deltaTime) {
     // Countdown logic
     if (isCountingDown) {
@@ -140,7 +147,7 @@ void LevelState::update(float deltaTime) {
     }
 
     // LOSE: No lives remaining
-    logic::PacManModel* pacman = world->getPacMan();
+    auto pacman = world->getPacMan();  // ← Now returns shared_ptr
     if (pacman && pacman->getLives() <= 0) {
         int finalScore = world->getScore();
 
@@ -169,7 +176,7 @@ void LevelState::render() {
         window->draw(scoreText);
 
         // Draw lives as Pac-Man icons
-        logic::PacManModel* pacman = world->getPacMan();
+        auto pacman = world->getPacMan();  // ← CHANGE
         if (pacman && livesTexture) {
             int lives = pacman->getLives();
             for (int i = 0; i < lives; i++) {
@@ -190,7 +197,7 @@ void LevelState::render() {
 }
 
 void LevelState::handleEvent(const sf::Event& event) {
-    logic::PacManModel* pacman = world->getPacMan();
+    auto pacman = world->getPacMan();  // ← CHANGE
     if (!pacman)
         return;
 

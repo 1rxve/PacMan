@@ -41,7 +41,7 @@ void World::update(float deltaTime) {
     if (fearModeActive) {
         fearModeTimer -= deltaTime;
 
-        for (GhostModel* ghost : ghosts) {
+        for (auto& ghost : ghosts) {
             ghost->setFearTimer(fearModeTimer);
         }
 
@@ -49,7 +49,7 @@ void World::update(float deltaTime) {
             fearModeActive = false;
 
             // Exit fear mode for all ghosts
-            for (GhostModel* ghost : ghosts) {
+            for (auto& ghost : ghosts) {
                 ghost->exitFearMode();
             }
         }
@@ -69,7 +69,7 @@ void World::update(float deltaTime) {
 
     for (const auto& entity : entities) {
         if (entity->isPacMan()) {
-            PacManModel* pm = static_cast<PacManModel*>(entity.get());
+            auto pm = std::dynamic_pointer_cast<PacManModel>(entity);
 
             // Buffered input handling
             Direction nextDir = pm->getNextDirection();
@@ -99,7 +99,7 @@ void World::update(float deltaTime) {
 
             bool collided = false;
 
-            for (WallModel* wall : walls) {
+            for (auto& wall : walls) {
                 if (pm->intersects(*wall)) {
                     collided = true;
                     break;
@@ -107,7 +107,7 @@ void World::update(float deltaTime) {
             }
 
             if (!collided) {
-                for (DoorModel* door : doors) {
+                for (auto& door : doors) {
                     if (pm->intersects(*door)) {
                         collided = true;
                         break;
@@ -121,7 +121,7 @@ void World::update(float deltaTime) {
             }
 
             // Ghost collision check
-            for (GhostModel* ghost : ghosts) {
+            for (auto& ghost : ghosts) {
                 if (ghost->getState() == GhostState::CHASING && pm->intersects(*ghost)) {
                     handlePacManDeath();
                     return; // Stop update immediately
@@ -137,7 +137,7 @@ void World::update(float deltaTime) {
             }
 
             // Coin collision
-            for (CoinModel* coin : coins) {
+            for (auto& coin : coins) {
                 if (!coin->isCollected() && pm->intersects(*coin)) {
                     coin->collect();
                     coinsCollected++;
@@ -148,7 +148,7 @@ void World::update(float deltaTime) {
             }
 
             // Fruit collision
-            for (FruitModel* fruit : fruits) {
+            for (auto& fruit : fruits) {
                 if (!fruit->isCollected() && pm->intersects(*fruit)) {
                     fruit->collect();
 
@@ -159,7 +159,7 @@ void World::update(float deltaTime) {
                 }
             }
         } else if (entity->isGhost()) {
-            GhostModel* ghost = static_cast<GhostModel*>(entity.get());
+            auto ghost = std::dynamic_pointer_cast<GhostModel>(entity);
 
             if ((ghost->getState() == GhostState::CHASING || ghost->getState() == GhostState::FEAR) &&
                 ghost->getCurrentDirection() == Direction::NONE) {
@@ -195,7 +195,7 @@ void World::update(float deltaTime) {
             }
 
             bool wallCollision = false;
-            for (WallModel* wall : walls) {
+            for (auto& wall : walls) {
                 if (ghost->intersects(*wall)) {
                     wallCollision = true;
                     break;
@@ -203,7 +203,7 @@ void World::update(float deltaTime) {
             }
 
             bool doorCollision = false;
-            for (DoorModel* door : doors) {
+            for (auto& door : doors) {
                 if (ghost->intersects(*door)) {
                     // Allow EATEN (eyes) ghosts through door
                     if (ghost->getState() == GhostState::EATEN) {
@@ -224,7 +224,7 @@ void World::update(float deltaTime) {
             }
 
             bool noEntryCollision = false;
-            for (NoEntryModel* noEntry : noEntries) {
+            for (auto& noEntry : noEntries) {
                 if (ghost->intersects(*noEntry) && noEntry->blocksGhostType(ghost->getType())) {
                     noEntryCollision = true;
                     break;
@@ -275,8 +275,7 @@ void World::addEntity(std::unique_ptr<EntityModel> entity) { entities.push_back(
 void World::loadMap(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "ERROR: Cannot open map file: " << filename << std::endl;
-        return;
+        throw std::runtime_error("ERROR: Cannot open map file: " + filename);
     }
 
     clearWorld();
@@ -309,11 +308,13 @@ void World::loadMap(const std::string& filename) {
             case '#': {
                 if (factory) {
                     auto result = factory->createWall(normalizedX, normalizedY, cellWidth, cellHeight);
-                    if (result.model->isWall()) {
-                        WallModel* wallPtr = static_cast<WallModel*>(result.model.get());
+
+                    // ← CHANGE: cast to shared_ptr
+                    if (auto wallPtr = std::dynamic_pointer_cast<WallModel>(result.model)) {
                         walls.push_back(wallPtr);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     wallViews.push_back(std::move(result.view));
                 }
                 break;
@@ -322,30 +323,31 @@ void World::loadMap(const std::string& filename) {
             case 'D': {
                 if (factory) {
                     auto result = factory->createDoor(normalizedX, normalizedY, cellWidth, cellHeight);
-                    if (result.model->isDoor()) {
-                        DoorModel* doorPtr = static_cast<DoorModel*>(result.model.get());
+
+                    if (auto doorPtr = std::dynamic_pointer_cast<DoorModel>(result.model)) {
                         doors.push_back(doorPtr);
                     }
-                    entities.push_back(std::move(result.model));
-                    doorViews.push_back(std::move(result.view)); // ← CHANGE
+
+                    entities.push_back(result.model);
+                    doorViews.push_back(std::move(result.view));
                 }
                 break;
             }
 
             case 'C': {
                 if (factory) {
-                    auto result =
-                        factory->createPacMan(normalizedX, normalizedY, cellWidth * 0.9f, cellHeight * 0.9f, 0.5f);
-                    if (result.model->isPacMan()) {
-                        pacman = static_cast<PacManModel*>(result.model.get());
+                    auto result = factory->createPacMan(normalizedX, normalizedY, cellWidth * 0.9f, cellHeight * 0.9f, 0.5f);
+
+                    pacman = std::dynamic_pointer_cast<PacManModel>(result.model);
+                    if (pacman) {
                         pacman->setCellDimensions(cellWidth, cellHeight);
                     }
 
                     pacmanSpawnX = normalizedX;
                     pacmanSpawnY = normalizedY;
 
-                    entities.push_back(std::move(result.model));
-                    pacmanView = std::move(result.view); // ← CHANGE (unique_ptr, geen push_back)
+                    entities.push_back(result.model);
+                    pacmanView = std::move(result.view);
                 }
                 break;
             }
@@ -354,8 +356,8 @@ void World::loadMap(const std::string& filename) {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
                                                        GhostType::RED, 0.0f);
-                    if (result.model->isGhost()) {
-                        GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+
+                    if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
                         ghostPtr->markAsExited();
                         ghosts.push_back(ghostPtr);
@@ -366,7 +368,8 @@ void World::loadMap(const std::string& filename) {
                         float eatenSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                         ghostPtr->setEatenRespawnPosition(eatenSpawnX, eatenSpawnY);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     ghostViews.push_back(std::move(result.view));
                 }
                 break;
@@ -375,20 +378,20 @@ void World::loadMap(const std::string& filename) {
             case 'P': {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
-                                                       GhostType::PINK, 0.0f); // 0 second delay
-                    if (result.model->isGhost()) {
-                        GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+                                                       GhostType::PINK, 0.0f);
+
+                    if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
                         ghosts.push_back(ghostPtr);
 
                         ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
-                        // Set eaten respawn to CENTER of spawn (Col 9)
                         float centerSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
                         float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                         ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     ghostViews.push_back(std::move(result.view));
                 }
                 break;
@@ -398,26 +401,22 @@ void World::loadMap(const std::string& filename) {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
                                                        GhostType::BLUE, 5.0f);
-                    if (result.model->isGhost()) {
-                        GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+
+                    if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
                         ghosts.push_back(ghostPtr);
                         ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
                         auto barrierResult = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
-                        if (barrierResult.model->isNoEntry()) {
-                            NoEntryModel* barrier = static_cast<NoEntryModel*>(barrierResult.model.get());
-
-                            // Configure: ONLY block ORANGE
-                            barrier->clearBlockedGhostTypes(); // ← NOW PUBLIC
+                        if (auto barrier = std::dynamic_pointer_cast<NoEntryModel>(barrierResult.model)) {
+                            barrier->clearBlockedGhostTypes();
                             barrier->addBlockedGhostType(GhostType::ORANGE);
-
                             noEntries.push_back(barrier);
                         }
-                        entities.push_back(std::move(barrierResult.model));
-                        // No view needed - invisible barrier
+                        entities.push_back(barrierResult.model);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     ghostViews.push_back(std::move(result.view));
                 }
                 break;
@@ -427,32 +426,27 @@ void World::loadMap(const std::string& filename) {
                 if (factory) {
                     auto result = factory->createGhost(normalizedX, normalizedY, cellWidth * 0.85f, cellHeight * 0.85f,
                                                        GhostType::ORANGE, 10.0f);
-                    if (result.model->isGhost()) {
-                        GhostModel* ghostPtr = static_cast<GhostModel*>(result.model.get());
+
+                    if (auto ghostPtr = std::dynamic_pointer_cast<GhostModel>(result.model)) {
                         ghostPtr->setCellDimensions(cellWidth, cellHeight);
                         ghosts.push_back(ghostPtr);
 
                         ghostSpawnPositions.push_back({normalizedX, normalizedY});
 
-                        // Set eaten respawn to CENTER of spawn (Col 9)
                         float centerSpawnX = -1.0f + cellWidth / 2.0f + 9 * cellWidth;
                         float centerSpawnY = -1.0f + cellHeight / 2.0f + 9 * cellHeight;
                         ghostPtr->setEatenRespawnPosition(centerSpawnX, centerSpawnY);
 
                         auto barrierResult = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
-                        if (barrierResult.model->isNoEntry()) {
-                            NoEntryModel* barrier = static_cast<NoEntryModel*>(barrierResult.model.get());
-
-                            // Configure: ONLY block BLUE
+                        if (auto barrier = std::dynamic_pointer_cast<NoEntryModel>(barrierResult.model)) {
                             barrier->clearBlockedGhostTypes();
                             barrier->addBlockedGhostType(GhostType::BLUE);
-
                             noEntries.push_back(barrier);
                         }
-                        entities.push_back(std::move(barrierResult.model));
-                        // No view needed - invisible barrier
+                        entities.push_back(barrierResult.model);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     ghostViews.push_back(std::move(result.view));
                 }
                 break;
@@ -461,41 +455,43 @@ void World::loadMap(const std::string& filename) {
             case '.': {
                 if (factory) {
                     auto result = factory->createCoin(normalizedX, normalizedY, cellWidth * 0.15f, cellHeight * 0.15f);
-                    if (result.model->isCoin()) {
-                        CoinModel* coinPtr = static_cast<CoinModel*>(result.model.get());
+
+                    if (auto coinPtr = std::dynamic_pointer_cast<CoinModel>(result.model)) {
                         coins.push_back(coinPtr);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     coinViews.push_back(std::move(result.view));
                 }
                 break;
             }
 
-            case 'N': { // No Entry (ghosts blocked, PacMan can pass)
+            case 'N': {
                 if (factory) {
                     auto result = factory->createNoEntry(normalizedX, normalizedY, cellWidth, cellHeight);
-                    if (result.model->isNoEntry()) {
-                        NoEntryModel* noEntryPtr = static_cast<NoEntryModel*>(result.model.get());
+
+                    if (auto noEntryPtr = std::dynamic_pointer_cast<NoEntryModel>(result.model)) {
                         noEntries.push_back(noEntryPtr);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                 }
                 break;
             }
 
-            case 'F': { // Fruit
+            case 'F': {
                 if (factory) {
                     auto result = factory->createFruit(normalizedX, normalizedY, cellWidth * 0.3f, cellHeight * 0.3f);
-                    if (result.model->isFruit()) {
-                        FruitModel* fruitPtr = static_cast<FruitModel*>(result.model.get());
+
+                    if (auto fruitPtr = std::dynamic_pointer_cast<FruitModel>(result.model)) {
                         fruits.push_back(fruitPtr);
                     }
-                    entities.push_back(std::move(result.model));
+
+                    entities.push_back(result.model);
                     fruitViews.push_back(std::move(result.view));
                 }
                 break;
             }
-
             case '*': // ← VOEG TOE: sterretjes = leeg
                 break;
 
@@ -506,10 +502,10 @@ void World::loadMap(const std::string& filename) {
     }
 }
 
-PacManModel* World::getPacMan() {
+std::shared_ptr<PacManModel> World::getPacMan() {  // ← CHANGE return type
     for (auto& entity : entities) {
         if (entity->isPacMan()) {
-            return static_cast<PacManModel*>(entity.get());
+            return std::dynamic_pointer_cast<PacManModel>(entity);
         }
     }
     return nullptr;
@@ -574,7 +570,7 @@ bool World::isDirectionValid(Direction direction) const {
     float top = testY - height / 2.0f;
     float bottom = testY + height / 2.0f;
 
-    for (const WallModel* wall : walls) {
+    for (auto& wall : walls) {
         float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
         float wallRight = wall->getX() + wall->getWidth() / 2.0f;
         float wallTop = wall->getY() - wall->getHeight() / 2.0f;
@@ -585,7 +581,7 @@ bool World::isDirectionValid(Direction direction) const {
         }
     }
 
-    for (const DoorModel* door : doors) {
+    for (auto& door : doors) {
         float doorLeft = door->getX() - door->getWidth() / 2.0f;
         float doorRight = door->getX() + door->getWidth() / 2.0f;
         float doorTop = door->getY() - door->getHeight() / 2.0f;
@@ -599,7 +595,7 @@ bool World::isDirectionValid(Direction direction) const {
     return true;
 }
 
-Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
+Direction World::getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) const {
     if (!ghost)
         return Direction::NONE;
 
@@ -640,7 +636,7 @@ Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
         bool hitObstacle = false;
 
         // Check walls
-        for (const WallModel* wall : walls) {
+        for (auto& wall : walls) {
             float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
             float wallRight = wall->getX() + wall->getWidth() / 2.0f;
             float wallTop = wall->getY() - wall->getHeight() / 2.0f;
@@ -654,7 +650,7 @@ Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
 
         // Check doors
         if (!hitObstacle) {
-            for (const DoorModel* door : doors) {
+            for (auto& door : doors) {
                 float doorLeft = door->getX() - door->getWidth() / 2.0f;
                 float doorRight = door->getX() + door->getWidth() / 2.0f;
                 float doorTop = door->getY() - door->getHeight() / 2.0f;
@@ -671,7 +667,7 @@ Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
         }
 
         if (!hitObstacle) {
-            for (const NoEntryModel* noEntry : noEntries) {
+            for (auto& noEntry : noEntries) {
                 float neLeft = noEntry->getX() - noEntry->getWidth() / 2.0f;
                 float neRight = noEntry->getX() + noEntry->getWidth() / 2.0f;
                 float neTop = noEntry->getY() - noEntry->getHeight() / 2.0f;
@@ -699,7 +695,7 @@ Direction World::getViableDirectionForGhost(GhostModel* ghost) const {
     return viableDirections[randomIndex];
 }
 
-std::vector<Direction> World::getViableDirectionsForGhost(GhostModel* ghost) const {
+std::vector<Direction> World::getViableDirectionsForGhost(std::shared_ptr<GhostModel> ghost) const {
     if (!ghost)
         return {};
 
@@ -739,7 +735,7 @@ std::vector<Direction> World::getViableDirectionsForGhost(GhostModel* ghost) con
         bool hitObstacle = false;
 
         // Check walls
-        for (const WallModel* wall : walls) {
+        for (auto& wall : walls) {
             float wallLeft = wall->getX() - wall->getWidth() / 2.0f;
             float wallRight = wall->getX() + wall->getWidth() / 2.0f;
             float wallTop = wall->getY() - wall->getHeight() / 2.0f;
@@ -753,7 +749,7 @@ std::vector<Direction> World::getViableDirectionsForGhost(GhostModel* ghost) con
 
         // Check doors
         if (!hitObstacle) {
-            for (const DoorModel* door : doors) {
+            for (auto& door : doors) {
                 float doorLeft = door->getX() - door->getWidth() / 2.0f;
                 float doorRight = door->getX() + door->getWidth() / 2.0f;
                 float doorTop = door->getY() - door->getHeight() / 2.0f;
@@ -770,7 +766,7 @@ std::vector<Direction> World::getViableDirectionsForGhost(GhostModel* ghost) con
         }
 
         if (!hitObstacle) {
-            for (const NoEntryModel* noEntry : noEntries) {
+            for (auto& noEntry : noEntries) {
                 float neLeft = noEntry->getX() - noEntry->getWidth() / 2.0f;
                 float neRight = noEntry->getX() + noEntry->getWidth() / 2.0f;
                 float neTop = noEntry->getY() - noEntry->getHeight() / 2.0f;
@@ -836,7 +832,7 @@ void World::resetAfterDeath() {
     pacman->respawn(pacmanSpawnX, pacmanSpawnY);
 
     for (size_t i = 0; i < ghosts.size() && i < ghostSpawnPositions.size(); i++) {
-        GhostModel* ghost = ghosts[i];
+        auto& ghost = ghosts[i];
         float spawnX = ghostSpawnPositions[i].first;
         float spawnY = ghostSpawnPositions[i].second;
 
@@ -897,7 +893,7 @@ void World::activateFearMode() {
     score.setEvent(ScoreEvent::GHOST_FEAR_MODE);
     scoreSubject.notify();
 
-    for (GhostModel* ghost : ghosts) {
+    for (auto& ghost : ghosts) {
         ghost->enterFearMode();
     }
 }
@@ -906,13 +902,13 @@ void World::nextLevel() {
     currentLevel++;
 
     // Respawn coins
-    for (CoinModel* coin : coins) {
+    for (auto& coin : coins) {
         coin->uncollect();
         coin->notify();
     }
 
     // Respawn fruits
-    for (FruitModel* fruit : fruits) {
+    for (auto& fruit : fruits) {
         fruit->uncollect();
         fruit->notify();
     }
@@ -929,7 +925,7 @@ void World::nextLevel() {
 
     // Reset ghosts
     for (size_t i = 0; i < ghosts.size() && i < ghostSpawnPositions.size(); i++) {
-        GhostModel* ghost = ghosts[i];
+        auto& ghost = ghosts[i];
         float spawnX = ghostSpawnPositions[i].first;
         float spawnY = ghostSpawnPositions[i].second;
 

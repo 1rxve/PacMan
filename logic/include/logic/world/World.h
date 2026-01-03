@@ -24,25 +24,23 @@ class CoinModel;
 
 class World {
 private:
-    std::vector<std::unique_ptr<EntityModel>> entities;
+    std::vector<std::shared_ptr<EntityModel>> entities;
     std::vector<std::unique_ptr<Observer>> wallViews;
     std::vector<std::unique_ptr<Observer>> coinViews;
     std::vector<std::unique_ptr<Observer>> fruitViews;
     std::vector<std::unique_ptr<Observer>> doorViews;
     std::vector<std::unique_ptr<Observer>> ghostViews;
     std::unique_ptr<Observer> pacmanView;
+
     AbstractFactory* factory;
 
-    // Non-owning references to entities for performance optimization.
-    // Lifetime: Guaranteed by entities vector ownership (unique_ptr).
-    // Usage: Cached pointers to avoid searching entities vector in game loop.
-    PacManModel* pacman;
-    std::vector<WallModel*> walls;
-    std::vector<CoinModel*> coins;
-    std::vector<GhostModel*> ghosts;
-    std::vector<DoorModel*> doors;
-    std::vector<NoEntryModel*> noEntries;
-    std::vector<FruitModel*> fruits;
+    std::shared_ptr<PacManModel> pacman;
+    std::vector<std::shared_ptr<WallModel>> walls;
+    std::vector<std::shared_ptr<CoinModel>> coins;
+    std::vector<std::shared_ptr<GhostModel>> ghosts;
+    std::vector<std::shared_ptr<DoorModel>> doors;
+    std::vector<std::shared_ptr<NoEntryModel>> noEntries;
+    std::vector<std::shared_ptr<FruitModel>> fruits;
 
     int coinsCollected;
     Score score;
@@ -77,13 +75,13 @@ public:
 
     void loadMap(const std::string& filename);
 
-    PacManModel* getPacMan();
+    std::shared_ptr<PacManModel> getPacMan();
 
     static std::pair<int, int> getMapDimensions(const std::string& filename);
 
     bool isDirectionValid(Direction direction) const;
-    Direction getViableDirectionForGhost(GhostModel* ghost) const;
-    std::vector<Direction> getViableDirectionsForGhost(GhostModel* ghost) const;
+    Direction getViableDirectionForGhost(std::shared_ptr<GhostModel> ghost) const;
+    std::vector<Direction> getViableDirectionsForGhost(std::shared_ptr<GhostModel> ghost) const;
 
     void clearWorld();
 
