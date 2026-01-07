@@ -48,6 +48,22 @@ set(REPRESENTATION_SOURCES
 # Create executable
 add_executable(PacManGame ${REPRESENTATION_SOURCES})
 
+# Copy resources directory to build output location
+add_custom_command(TARGET PacManGame POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        $<TARGET_FILE_DIR:PacManGame>/resources
+        COMMENT "Copying resources to build directory"
+)
+
+# NIEUWE REGEL: Copy resources to build root (for running from build/)
+add_custom_command(TARGET PacManGame POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        ${CMAKE_BINARY_DIR}/resources
+        COMMENT "Copying resources to build root"
+)
+
 # Link libraries
 target_link_libraries(PacManGame PRIVATE
         GameLogic
