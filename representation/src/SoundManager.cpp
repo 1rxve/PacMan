@@ -8,6 +8,24 @@ SoundManager::SoundManager() : coinSoundTimeout(0.0f), isCoinSoundActive(false) 
     loadSounds();
 }
 
+
+SoundManager::~SoundManager() {
+    coinSound.stop();
+    for (auto& [effect, sound] : sounds) {
+        sound.stop();
+    }
+    menuMusic.stop();
+
+    soundBuffers.clear();
+}
+
+void SoundManager::cleanup() {
+    if (instance != nullptr) {
+        delete instance;
+        instance = nullptr;
+    }
+}
+
 // Singleton lazy initialization (allocated on first access)
 SoundManager& SoundManager::getInstance() {
     if (instance == nullptr) {

@@ -20,7 +20,9 @@ Game::Game(sf::RenderWindow* win, const std::string& mapFile) : window(win), map
         std::make_unique<MenuState>(window, factory.get(), camera.get(), stateManager.get(), mapFile));
 }
 
-Game::~Game() {}
+Game::~Game() {
+    SoundManager::cleanup();
+}
 
 void Game::run() {
     try {

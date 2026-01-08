@@ -37,6 +37,10 @@ private:
     SoundManager();
 
 public:
+    ~SoundManager();
+
+    static void cleanup();
+
     static SoundManager& getInstance();
 
     SoundManager(const SoundManager&) = delete;
